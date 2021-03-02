@@ -201,6 +201,349 @@
             
 
   
+    <article id="post-IMX6U汇编LED" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+  
+  
+    <h1 itemprop="name">
+	
+	  <a class="article-title" href="/2021/03/02/IMX6U%E6%B1%87%E7%BC%96LED/" target="_blank">IMX6U汇编LED</a>
+  
+    </h1>
+  
+
+
+  
+  
+<a href="/2021/03/02/IMX6U%E6%B1%87%E7%BC%96LED/" class="archive-article-date">
+        <time datetime="2021-03-02T12:02:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-03-02</time>
+</a>
+
+  
+  
+    
+
+  
+  </header>
+  
+  <div class="article-entry" itemprop="articleBody">
+    
+    
+    
+
+    
+
+    
+
+  </div>
+  <div class="article-info article-info-index">
+    
+    
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">ubuntu</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">linux</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">shell</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+    
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/Linux//" class="article-tag-list-link color1">Linux</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+    
+    <p class="article-more-link">
+      <a class="article-more-a" href="/2021/03/02/IMX6U%E6%B1%87%E7%BC%96LED/">展开全文 >></a>
+    </p>
+    
+
+    
+    <div class="clearfix"></div>
+  </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-LinuxC编程入门" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+  
+  
+    <h1 itemprop="name">
+	
+	  <a class="article-title" href="/2021/03/02/LinuxC%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/" target="_blank">LinuxC编程入门</a>
+  
+    </h1>
+  
+
+
+  
+  
+<a href="/2021/03/02/LinuxC%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/" class="archive-article-date">
+        <time datetime="2021-03-02T09:18:20.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-03-02</time>
+</a>
+
+  
+  
+    
+
+  
+  </header>
+  
+  <div class="article-entry" itemprop="articleBody">
+    
+    <h3 id="GCC-编译器"><a href="#GCC-编译器" class="headerlink" title="GCC 编译器"></a>GCC 编译器</h3><p>gcc 命令格式如下： </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">gcc [选项] [文件名字]</span><br><span class="line"></span><br><span class="line">gcc main.c calcu.c input.c -o main </span><br></pre></td></tr></table></figure>
+<p>-c<strong>：</strong>只编译不链接为可执行文件，编译器将输入的.c 文件编译为.o 的目标文件。 </p>
+<p>-o<strong>：</strong>&lt;输出文件名&gt;用来指定编译结束以后的输出文件名，如果使用这个选项的话 GCC 默认编译出来的可执行文件名字为 a.out。 </p>
+<p>-g<strong>：</strong>添加调试信息，如果要使用调试工具(如 GDB)的话就必须加入此选项，此选项指示编译的时候生成调试所需的符号信息。 </p>
+<p>-O：对程序进行优化编译，如果使用此选项的话整个源代码在编译、链接的的时候都会进行优化，这样产生的可执行文件执行效率就高。 </p>
+<p>-O2<strong>：</strong>比-O 更幅度更大的优化，生成的可执行效率更高，但是整个编译过程会很慢。 </p>
+<h3 id="Makefile-语法"><a href="#Makefile-语法" class="headerlink" title="Makefile 语法"></a>Makefile 语法</h3><h4 id="Makefile-规则格式"><a href="#Makefile-规则格式" class="headerlink" title="Makefile 规则格式"></a>Makefile 规则格式</h4><p>Makefile 里面是由一系列的规则组成的，这些规则格式如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">目标…... : 依赖文件集合……</span><br><span class="line">    命令 1</span><br><span class="line">    命令 2</span><br><span class="line">……</span><br></pre></td></tr></table></figure>
+<p>比如下面这条规则： </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">main : main.o input.o calcu.o</span><br><span class="line">	gcc -o main main.o input.o calcu.o</span><br></pre></td></tr></table></figure>
+<p>这条规则的目标是 main，main.o、input.o 和 calcu.o 是生成 main 的依赖文件，如果要更新 目标 main，就必须先更新它的所有依赖文件，如果依赖文件中的任何一个有更新，那么目标也 必须更新，“更新”就是执行一遍规则中的命令列表。 </p>
+<p>命令列表中的每条命令必须以 TAB 键开始，不能使用空格！</p>
+<h4 id="Makefile-变量"><a href="#Makefile-变量" class="headerlink" title="Makefile 变量"></a>Makefile 变量</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">objects &#x3D; main.o input.o calcu.o </span><br><span class="line">main: $(objects) </span><br><span class="line">	gcc -o main $(objects) </span><br><span class="line">	</span><br><span class="line">%.o : %.c </span><br><span class="line">	#命令 </span><br><span class="line">	</span><br><span class="line">clean: </span><br><span class="line">	rm *.o </span><br><span class="line">	rm main</span><br></pre></td></tr></table></figure>
+<p><img src="E:\MYBOKE\Blog\source\image\1614677709213.png" alt="1614677709213"></p>
+<p><img src="E:\MYBOKE\Blog\source\image\1614677792948.png" alt="1614677792948"></p>
+
+    
+
+    
+
+    
+
+  </div>
+  <div class="article-info article-info-index">
+    
+    
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">linux</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">shell</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">gcc</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">Makefile</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+    
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/Linux//" class="article-tag-list-link color1">Linux</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+    
+    <p class="article-more-link">
+      <a class="article-more-a" href="/2021/03/02/LinuxC%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/">展开全文 >></a>
+    </p>
+    
+
+    
+    <div class="clearfix"></div>
+  </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-Linux终端命令" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+  
+  
+    <h1 itemprop="name">
+	
+	  <a class="article-title" href="/2021/03/02/Linux%E7%BB%88%E7%AB%AF%E5%91%BD%E4%BB%A4/" target="_blank">Linux终端命令</a>
+  
+    </h1>
+  
+
+
+  
+  
+<a href="/2021/03/02/Linux%E7%BB%88%E7%AB%AF%E5%91%BD%E4%BB%A4/" class="archive-article-date">
+        <time datetime="2021-03-02T09:07:04.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-03-02</time>
+</a>
+
+  
+  
+    
+
+  
+  </header>
+  
+  <div class="article-entry" itemprop="articleBody">
+    
+    <h1 id="Shell操作"><a href="#Shell操作" class="headerlink" title="Shell操作"></a>Shell操作</h1><h2 id="Shell-命令的格式如下："><a href="#Shell-命令的格式如下：" class="headerlink" title="Shell 命令的格式如下："></a>Shell 命令的格式如下：</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">command -options [argument] </span><br></pre></td></tr></table></figure>
+<p><strong>command:</strong> Shell 命令名称。 </p>
+<p><strong>options</strong>：选项，同一种命令可能有不同的选项，不同的选项其实现的功能不同。 </p>
+<p><strong>argument</strong>：Shell 命令是可以带参数的，也可以不带参数运行。 </p>
+<h2 id="常用Shell-命令"><a href="#常用Shell-命令" class="headerlink" title="常用Shell 命令"></a>常用Shell <strong>命令</strong></h2><h3 id="1、目录信息查看命令ls"><a href="#1、目录信息查看命令ls" class="headerlink" title="1、目录信息查看命令ls"></a>1、目录信息查看命令ls</h3><p>ls 命令主要用于显示指定目录下的内容，列出指定目录下包含的所有的文件以及子目录， </p>
+<p>它的主要参数有： </p>
+<p><strong>-a</strong> 显示所有的文件以及子目录，包括以“.”开头的隐藏文件。 </p>
+<p><strong>-l</strong> 显示文件的详细信息，比如文件的形态、权限、所有者、大小等信息。 </p>
+<p><strong>-t</strong> 将文件按照创建时间排序列出。 </p>
+<p><strong>-A</strong> 和-a 一样，但是不列出“.”(当前目录)和“..”(父目录)。 </p>
+<p><strong>-R</strong> 递归列出所有文件，包括子目录中的文件。 </p>
+<h3 id="2、目录切换命令cd"><a href="#2、目录切换命令cd" class="headerlink" title="2、目录切换命令cd"></a>2、目录切换命令cd</h3>
+    
+
+    
+
+    
+
+  </div>
+  <div class="article-info article-info-index">
+    
+    
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">ubuntu</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">linux</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">shell</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+    
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/Linux//" class="article-tag-list-link color1">Linux</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+    
+    <p class="article-more-link">
+      <a class="article-more-a" href="/2021/03/02/Linux%E7%BB%88%E7%AB%AF%E5%91%BD%E4%BB%A4/">展开全文 >></a>
+    </p>
+    
+
+    
+    <div class="clearfix"></div>
+  </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-my-new-post" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -603,6 +946,26 @@
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">test</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">ubuntu</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">linux</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">shell</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">gcc</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">Makefile</a>
               </li>
             
             <div class="clearfix"></div>
