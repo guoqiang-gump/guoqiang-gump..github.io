@@ -69,6 +69,10 @@
             
     			
             
+    			
+    			<a q-on="click: openSlider(e, 'aboutme')" href="javascript:void(0)">关于我</a>
+    			
+            
 		</nav>
 		<nav class="header-nav">
 			<div class="social">
@@ -247,7 +251,7 @@
   
 <nav id="article-nav">
   
-    <a href="/2021/02/19/hellowo/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2021/02/19/hello/" id="article-nav-newer" class="article-nav-link-wrap">
       <i class="icon-circle-left"></i>
       <div class="article-nav-title">
         
@@ -377,6 +381,10 @@ MathJax.Hub.Queue(function() {
     
       
     
+      
+      
+      
+    
     
 
     <ul style="width: 70%">
@@ -386,6 +394,10 @@ MathJax.Hub.Queue(function() {
         
       
         
+      
+      <li style="width: 100%" q-on="click: openSlider(e, 'aboutme')"><a href="javascript:void(0)" q-class="active:aboutme">关于我</a></li>
+      
+        
     </ul>
   </div>
   <div class="tools-wrap">
@@ -393,6 +405,12 @@ MathJax.Hub.Queue(function() {
 
     
 
+    
+    	<section class="tools-section tools-section-me" q-show="aboutme">
+  	  	
+  	  		<div class="aboutme-wrap" id="js-aboutme">虽然咸鱼翻身还是咸鱼,但至少可以变得好吃一点</div>
+  	  	
+    	</section>
     
   </div>
   
