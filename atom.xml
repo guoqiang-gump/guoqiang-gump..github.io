@@ -6,7 +6,7 @@
   <link href="https://guoqiang-gump.github.io/atom.xml" rel="self"/>
   
   <link href="https://guoqiang-gump.github.io/"/>
-  <updated>2021-03-02T12:06:52.230Z</updated>
+  <updated>2021-03-03T09:31:19.300Z</updated>
   <id>https://guoqiang-gump.github.io/</id>
   
   <author>
@@ -17,23 +17,132 @@
   <generator uri="https://hexo.io/">Hexo</generator>
   
   <entry>
-    <title>IMX6U汇编LED</title>
-    <link href="https://guoqiang-gump.github.io/2021/03/02/IMX6U%E6%B1%87%E7%BC%96LED/"/>
-    <id>https://guoqiang-gump.github.io/2021/03/02/IMX6U%E6%B1%87%E7%BC%96LED/</id>
-    <published>2021-03-02T12:02:00.000Z</published>
-    <updated>2021-03-02T12:06:52.230Z</updated>
+    <title>IMAX6U按键</title>
+    <link href="https://guoqiang-gump.github.io/2021/03/03/IMAX6U%E6%8C%89%E9%94%AE/"/>
+    <id>https://guoqiang-gump.github.io/2021/03/03/IMAX6U%E6%8C%89%E9%94%AE/</id>
+    <published>2021-03-03T09:30:19.000Z</published>
+    <updated>2021-03-03T09:31:19.300Z</updated>
     
+    <content type="html"><![CDATA[<p><img src="IMAX6U%E6%8C%89%E9%94%AE.assets/1614763870728.png" alt="1614763870728"></p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;p&gt;&lt;img src=&quot;IMAX6U%E6%8C%89%E9%94%AE.assets/1614763870728.png&quot; alt=&quot;1614763870728&quot;&gt;&lt;/p&gt;
+</summary>
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>IMX6U蜂鸣器</title>
+    <link href="https://guoqiang-gump.github.io/2021/03/03/IMX6U%E8%9C%82%E9%B8%A3%E5%99%A8/"/>
+    <id>https://guoqiang-gump.github.io/2021/03/03/IMX6U%E8%9C%82%E9%B8%A3%E5%99%A8/</id>
+    <published>2021-03-02T16:11:05.000Z</published>
+    <updated>2021-03-02T16:29:47.303Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="硬件原理图分析"><a href="#硬件原理图分析" class="headerlink" title="硬件原理图分析"></a>硬件原理图分析</h1><p>​    BEEP控制IO为SNVS_TAMPER1，当输出高电平的时候蜂鸣器关闭，输出低电平的时候蜂鸣器打开。</p>  <a id="more"></a>  <h1 id="实验程序编写"><a href="#实验程序编写" class="headerlink" title="实验程序编写"></a>实验程序编写</h1><p>​    1、初始化SNVS_TAMPER1这个IO复用为GPIO5_IO01</p><p>​    2、设置SNVS_TAMPER1这个IO的电气属性。</p><p>​    3、初始化GPIO</p><p>​    4、控制GPIO输出高低电平。</p><p><img src="E:\MYBOKE\Blog\source\image\1614701807357.png" alt="1614701807357"></p><p><img src="../image/1614702577746.png" alt="1614702577746"></p>]]></content>
+    
+    
+    <summary type="html">&lt;h1 id=&quot;硬件原理图分析&quot;&gt;&lt;a href=&quot;#硬件原理图分析&quot; class=&quot;headerlink&quot; title=&quot;硬件原理图分析&quot;&gt;&lt;/a&gt;硬件原理图分析&lt;/h1&gt;&lt;p&gt;​    BEEP控制IO为SNVS_TAMPER1，当输出高电平的时候蜂鸣器关闭，输出低电平的时候蜂鸣器打开。&lt;/p&gt;</summary>
     
     
     
     <category term="Linux" scheme="https://guoqiang-gump.github.io/categories/Linux/"/>
     
     
-    <category term="ubuntu" scheme="https://guoqiang-gump.github.io/tags/ubuntu/"/>
+    <category term="linux" scheme="https://guoqiang-gump.github.io/tags/linux/"/>
+    
+    <category term="IMX6U" scheme="https://guoqiang-gump.github.io/tags/IMX6U/"/>
+    
+    <category term="蜂鸣器" scheme="https://guoqiang-gump.github.io/tags/%E8%9C%82%E9%B8%A3%E5%99%A8/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>IMX6U_C语言LED</title>
+    <link href="https://guoqiang-gump.github.io/2021/03/03/IMX6U-C%E8%AF%AD%E8%A8%80LED/"/>
+    <id>https://guoqiang-gump.github.io/2021/03/03/IMX6U-C%E8%AF%AD%E8%A8%80LED/</id>
+    <published>2021-03-02T16:00:05.000Z</published>
+    <updated>2021-03-02T16:14:07.638Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="C语言运行环境构建"><a href="#C语言运行环境构建" class="headerlink" title="C语言运行环境构建"></a>C语言运行环境构建</h1><h2 id="设置处理器模式"><a href="#设置处理器模式" class="headerlink" title="设置处理器模式"></a>设置处理器模式</h2><p>​    设置6ULL处于SVC模式 下。设置CPSR寄存器的bit4-0，也就是M[4:0]为10011=0X13。读写状态寄存器需要用到MRS和MSR指令。MRS将CPSR寄存器数据读出到通用寄存器里面，MSR指令将通用寄存器的值写入到CPSR寄存器里面去。</p> <a id="more"></a> <h2 id="设置sp指针"><a href="#设置sp指针" class="headerlink" title="设置sp指针"></a>设置sp指针</h2><p>​    Sp可以指向内部RAM，也可以指向DDR，我们将其指向DDR。Sp设置到哪里？512MB的范围0x80000000~0x9FFFFFFF。栈大小，0x200000=2MB。处理器栈增长方式，对于A7而言是向下增长的。设置sp指向0x80200000。</p><h3 id="跳转到C语言"><a href="#跳转到C语言" class="headerlink" title="跳转到C语言"></a>跳转到C语言</h3><p>​    使用b指令，跳转到C语言函数，比如main函数。</p><p>汇编文件只是用来完成 C 语言环境搭建。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;***************************************************************</span><br><span class="line">start.s：I.MX6UL&#x2F;I.MX6ULL开发板启动文件，完成C环境初始化，</span><br><span class="line"></span><br><span class="line"> C环境初始化完成以后跳转到C代码。</span><br><span class="line">**************************************************************&#x2F;</span><br><span class="line"></span><br><span class="line">.global _start     &#x2F;* 全局标号 *&#x2F;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"></span><br><span class="line"> \* 描述： _start函数，程序从此函数开始执行，此函数主要功能是设置C</span><br><span class="line"></span><br><span class="line"> \*    运行环境。</span><br><span class="line"></span><br><span class="line"> *&#x2F;</span><br><span class="line"></span><br><span class="line">_start:</span><br><span class="line"></span><br><span class="line">  &#x2F;* 进入SVC模式 *&#x2F;</span><br><span class="line"></span><br><span class="line">  mrs r0, cpsr</span><br><span class="line"></span><br><span class="line">  bic r0, r0, #0x1f  &#x2F;* 将r0寄存器中的低5位清零，也就是cpsr的M0~M4 *&#x2F;</span><br><span class="line"></span><br><span class="line">  orr r0, r0, #0x13  &#x2F;* r0或上0x13,表示使用SVC模式          *&#x2F;</span><br><span class="line"></span><br><span class="line">  msr cpsr, r0    &#x2F;* 将r0 的数据写入到cpsr_c中          *&#x2F;</span><br><span class="line"></span><br><span class="line">  ldr sp, &#x3D;0X80200000 &#x2F;* 设置栈指针       *&#x2F;</span><br><span class="line"></span><br><span class="line">  b main       &#x2F;* 跳转到main函数     *&#x2F;</span><br></pre></td></tr></table></figure>]]></content>
+    
+    
+    <summary type="html">&lt;h1 id=&quot;C语言运行环境构建&quot;&gt;&lt;a href=&quot;#C语言运行环境构建&quot; class=&quot;headerlink&quot; title=&quot;C语言运行环境构建&quot;&gt;&lt;/a&gt;C语言运行环境构建&lt;/h1&gt;&lt;h2 id=&quot;设置处理器模式&quot;&gt;&lt;a href=&quot;#设置处理器模式&quot; class=&quot;headerlink&quot; title=&quot;设置处理器模式&quot;&gt;&lt;/a&gt;设置处理器模式&lt;/h2&gt;&lt;p&gt;​    设置6ULL处于SVC模式 下。设置CPSR寄存器的bit4-0，也就是M[4:0]为10011=0X13。读写状态寄存器需要用到MRS和MSR指令。MRS将CPSR寄存器数据读出到通用寄存器里面，MSR指令将通用寄存器的值写入到CPSR寄存器里面去。&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="Linux" scheme="https://guoqiang-gump.github.io/categories/Linux/"/>
+    
     
     <category term="linux" scheme="https://guoqiang-gump.github.io/tags/linux/"/>
     
-    <category term="shell" scheme="https://guoqiang-gump.github.io/tags/shell/"/>
+    <category term="IMX6U" scheme="https://guoqiang-gump.github.io/tags/IMX6U/"/>
+    
+    <category term="C语言" scheme="https://guoqiang-gump.github.io/tags/C%E8%AF%AD%E8%A8%80/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>IMX6U编译与烧写</title>
+    <link href="https://guoqiang-gump.github.io/2021/03/02/IMX6U%E7%BC%96%E8%AF%91%E4%B8%8E%E7%83%A7%E5%86%99/"/>
+    <id>https://guoqiang-gump.github.io/2021/03/02/IMX6U%E7%BC%96%E8%AF%91%E4%B8%8E%E7%83%A7%E5%86%99/</id>
+    <published>2021-03-02T15:32:19.000Z</published>
+    <updated>2021-03-02T15:50:42.617Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="编译程序"><a href="#编译程序" class="headerlink" title="编译程序"></a>编译程序</h1><p>​    1、编译程序    </p><p>①、使用*<strong>*arm-linux-gnueabihf-gcc*****</strong>*，****将.c .s文件变为.o</p><p>②、将所有的.o文件连接为elf格式的可执行文件。</p><p>③、将elf文件转为bin文件。</p><p>④、将elf文件转为汇编，反汇编。</p>  <a id="more"></a>  <p>链接：</p><p>​    链接就是将所有.o文件链接在一起，并且链接到指定的地方。本实验链接的时候要指定链接起始地址。链接起始地址就是代码运行的起始地址。</p><p>​    对于6ULL来说，链接起始地址应该指向RAM地址。RAM分为内部RAM和外部RAM，也就是 DDR。6ULL内部RAM地址范围0X900000<del>0X91FFFF。也可以放到外部DDR中，对于I.MX6U-ALPHA开发板，512MB字节DDR版本的核心板，DDR范围就是0X80000000</del>0X9FFFFFFF。对于256MB的DDR来说，那就是0X80000000~0X8FFFFFFF。</p><p>​    本系列视频，裸机代码的链接起始地址为0X87800000。要使用DDR，那么必须要初始化DDR，对于I.MX来说bin文件不能直接运行，需要添加一个头部，这个头部信息包含了DDR的初始化参数，I.MX系列SOC内部boot rom会从SD卡，EMMC等外置存储中读取头部信息，然后初始化DDR，并且将bin文件拷贝到指定的地方。</p><p>​    Bin的运行地址一定要和链接起始地址一致。位置无关代码除外。</p><h2 id="编译代码"><a href="#编译代码" class="headerlink" title="编译代码"></a><strong>编译代码</strong></h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">arm-linux-gnueabihf-gcc -g -c led.s -o led.o &#x2F;&#x2F;编译文件</span><br></pre></td></tr></table></figure><p>​    上述命令就是将 led.s 编译为 led.o，其中“-g”选项是产生调试信息，GDB 能够使用这些调试信息进行代码调试。“-c”选项是编译源文件，但是不链接。“-o”选项是指定编译产生的文 件名字，这里我们指定 led.s 编译完成以后的文件名字为 led.o。执行上述命令以后就会编译生 成一个 led.o 文件。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">arm-linux-gnueabihf-ld -Ttext 0X87800000 led.o -o led.elf </span><br><span class="line">&#x2F;&#x2F;链接文件 </span><br></pre></td></tr></table></figure><p>​    arm-linux-gnueabihf-ld 用来将众多的.o 文件链接到一个指定的链接位置。我们在学习 SMT32 的时候基本就没有听过“链接”这个词，我们一般用 MDK 编写好代码，然后点击“编译”，MDK 或者 IAR 就会自动帮我们编译好整个工程，最后再点击“下载”就可以将代码下载 到开发板中。这是因为链接这个操作 MDK 或者 IAR 已经帮你做好了，后面我就以 MDK 为例给大家讲解。大家可以打开一个 STM32 的工程，然后编译一下，肯定能找到很多.o 文件</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">arm-linux-gnueabihf-objcopy -O binary -S -g led.elf led.bin</span><br></pre></td></tr></table></figure><p>​    上述命令中，“-O”选项指定以什么格式输出，后面的“binary”表示以二进制格式输出， 选项“-S”表示不要复制源文件中的重定位信息和符号信息，“-g”表示不复制源文件中的调试 信息。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">arm-linux-gnueabihf-objdump -D led.elf &gt; led.dis</span><br></pre></td></tr></table></figure><p>​    上述代码中的“-D”选项表示反汇编所有的段，反汇编完成以后就会在当前目录下出现一个名为 led.dis 文件</p><h1 id="烧写bin文件"><a href="#烧写bin文件" class="headerlink" title="烧写bin文件"></a>烧写bin文件</h1><p>6ULL支持SD卡、EMMC、NAND、nor、SPI flash等等启动。裸机例程选择烧写到SD卡里面。</p><p>​    在ubuntu下向SD卡烧写裸机bin文件。烧写不是将bin文件拷贝到SD卡中，而是将bin文件烧写到SD卡绝对地址上。而且对于I.MX而言，不能直接烧写bin文件，比如先在bin文件前面添加头部。完成这个工作，需要使用正点原子提供的imxdownload软件。</p><p>​    Imxdownload使用方法，确定要烧写的SD卡文件，我的是/dev/sdf。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">给予imxdownload可执行权限：</span><br><span class="line"></span><br><span class="line">Chmod 777 imxdownload</span><br></pre></td></tr></table></figure><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">烧写：</span><br><span class="line">.&#x2F;imxdownload led.bin &#x2F;dev&#x2F;sdf</span><br></pre></td></tr></table></figure><p>​    Imxdownlaod会向led.bin添加一个头部，生成新的load.imx文件，这个load.imx文件就是最终烧写到SD卡里面去的。</p>]]></content>
+    
+    
+    <summary type="html">&lt;h1 id=&quot;编译程序&quot;&gt;&lt;a href=&quot;#编译程序&quot; class=&quot;headerlink&quot; title=&quot;编译程序&quot;&gt;&lt;/a&gt;编译程序&lt;/h1&gt;&lt;p&gt;​    1、编译程序    &lt;/p&gt;
+&lt;p&gt;①、使用*&lt;strong&gt;*arm-linux-gnueabihf-gcc*****&lt;/strong&gt;*，****将.c .s文件变为.o&lt;/p&gt;
+&lt;p&gt;②、将所有的.o文件连接为elf格式的可执行文件。&lt;/p&gt;
+&lt;p&gt;③、将elf文件转为bin文件。&lt;/p&gt;
+&lt;p&gt;④、将elf文件转为汇编，反汇编。&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="Linux" scheme="https://guoqiang-gump.github.io/categories/Linux/"/>
+    
+    
+    <category term="linux" scheme="https://guoqiang-gump.github.io/tags/linux/"/>
+    
+    <category term="IMX6U" scheme="https://guoqiang-gump.github.io/tags/IMX6U/"/>
+    
+    <category term="编译" scheme="https://guoqiang-gump.github.io/tags/%E7%BC%96%E8%AF%91/"/>
+    
+    <category term="烧写" scheme="https://guoqiang-gump.github.io/tags/%E7%83%A7%E5%86%99/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>IMX6U汇编LED</title>
+    <link href="https://guoqiang-gump.github.io/2021/03/02/IMX6U%E6%B1%87%E7%BC%96LED/"/>
+    <id>https://guoqiang-gump.github.io/2021/03/02/IMX6U%E6%B1%87%E7%BC%96LED/</id>
+    <published>2021-03-02T12:02:00.000Z</published>
+    <updated>2021-03-02T15:38:16.645Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="一、汇编LED原理分析"><a href="#一、汇编LED原理分析" class="headerlink" title="一、汇编LED原理分析"></a>一、汇编LED原理分析</h1><p>​    为什么要学习Cortex-A汇编：</p><p>​    ①、需要用汇编初始化一些SOC外设。</p><p>​    ②、使用汇编初始化DDR，I.MX6U不需要。</p><p>​    ③、设置sp指针，一般指向DDR，设置好C语言运行环境。</p> <a id="more"></a> <h3 id="1、ALPHA开发板LED灯硬件原理分析："><a href="#1、ALPHA开发板LED灯硬件原理分析：" class="headerlink" title="1、ALPHA开发板LED灯硬件原理分析："></a>1、ALPHA开发板LED灯硬件原理分析：</h3><h3 id="I-MX6ULL-IO初始化："><a href="#I-MX6ULL-IO初始化：" class="headerlink" title="I.MX6ULL IO初始化："></a>I.MX6ULL IO初始化：</h3><p>​    ①、使能时钟，CCGR0<del>CCGR6这7个寄存器控制着6ULL所有外设时钟的使能。为了简单，设置CCGR0</del>CCGR6这7个寄存器全部为0XFFFFFFFF，相当于使能所有外设时钟。</p><p>​    ②、IO复用，将寄存器IOMUXC_SW_MUX_CTL_PAD_GPIO1_IO03的bit3~0设置为0101=5，这样GPIO1_IO03就复用为GPIO。</p><p>​    ③、寄存器IOMUXC_SW_PAD_CTL_PAD_GPIO1_IO03是设置GPIO1_IO03的电气属性。包括压摆率、速度、驱动能力、开漏、上下拉等。</p><p>​    ④、配置GPIO功能，设置输入输出。设置GPIO1_DR寄存器bit3为1，也就是设置为输出模式。设置GPIO1_DR寄存器的bit3，为1表示输出高电平，为0表示输出低电平。</p><p>LED0 接到了 GPIO_3 上，GPIO_3 就是 GPIO1_IO03，当 GPIO1_IO03输出低电平(0)的时候发光二极管 LED0 就会导通点亮，当 GPIO1_IO03 输出高电平(1)的时候发 光二极管 LED0 不会导通，因此 LED0 也就不会点亮。所以 LED0 的亮灭取决于 GPIO1_IO03的输出电平，输出 0 就亮，输出 1 就灭。 </p><h3 id="实验程序编写"><a href="#实验程序编写" class="headerlink" title="实验程序编写"></a>实验程序编写</h3><p>1、使能 GPIO1 时钟<br>GPIO1 的时钟由 CCM_CCGR1 的 bit27 和 bit26 这两个位控制，将这两个位都设置位 11 即可。本教程所有例程已经将 I.MX6U 的所有外设时钟都已经打开了，因此这一步可以不用做。</p><p>2、设置 GPIO1_IO03 的复用功能<br>找到 GPIO1_IO03 的复用寄存器“IOMUXC_SW_MUX_CTL_PAD_GPIO1_IO03”的地址为0X020E0068，然后设置此寄存器，将 GPIO1_IO03 这个 IO 复用为 GPIO 功能，也就是 ALT5。</p><p> 3、配置 GPIO1_IO03<br>找到 GPIO1_IO03 的配置寄存器“IOMUXC_SW_PAD_CTL_PAD_GPIO1_IO03”的地址为0X020E02F4，根据实际使用情况，配置此寄存器.</p><p>4、设置 GPIO</p><p>本实验中 GPIO1_IO03 是作为输出功能的，因此 GPIO1_GDIR 的 bit3 要设置为 1，表示输出。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br></pre></td><td class="code"><pre><span class="line"> &#x2F;&#x2F;led.s 文件源码</span><br><span class="line">.global _start &#x2F;* 全局标号 *&#x2F;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"></span><br><span class="line"> \* 描述： _start函数，程序从此函数开始执行此函数完成时钟使能、</span><br><span class="line"></span><br><span class="line"> \*    GPIO初始化、最终控制GPIO输出低电平来点亮LED灯。</span><br><span class="line"></span><br><span class="line"> *&#x2F;</span><br><span class="line"></span><br><span class="line">_start:</span><br><span class="line"></span><br><span class="line">  &#x2F;* 例程代码 *&#x2F;</span><br><span class="line"></span><br><span class="line">  &#x2F;* 1、使能所有时钟 *&#x2F;</span><br><span class="line"></span><br><span class="line">  ldr r0, &#x3D;0X020C4068   &#x2F;* CCGR0 *&#x2F;</span><br><span class="line"></span><br><span class="line">  ldr r1, &#x3D;0XFFFFFFFF </span><br><span class="line"></span><br><span class="line">  str r1, [r0]    </span><br><span class="line"></span><br><span class="line">  ldr r0, &#x3D;0X020C406C   &#x2F;* CCGR1 *&#x2F;</span><br><span class="line"></span><br><span class="line">  str r1, [r0]</span><br><span class="line"></span><br><span class="line">  ldr r0, &#x3D;0X020C4070   &#x2F;* CCGR2 *&#x2F;</span><br><span class="line"></span><br><span class="line">  str r1, [r0]</span><br><span class="line"></span><br><span class="line">  ldr r0, &#x3D;0X020C4074   &#x2F;* CCGR3 *&#x2F;</span><br><span class="line"></span><br><span class="line">  str r1, [r0]</span><br><span class="line"></span><br><span class="line">  ldr r0, &#x3D;0X020C4078   &#x2F;* CCGR4 *&#x2F;</span><br><span class="line"></span><br><span class="line">  str r1, [r0]</span><br><span class="line"></span><br><span class="line">  ldr r0, &#x3D;0X020C407C   &#x2F;* CCGR5 *&#x2F;</span><br><span class="line"></span><br><span class="line">  str r1, [r0]</span><br><span class="line"></span><br><span class="line">  </span><br><span class="line"></span><br><span class="line">  ldr r0, &#x3D;0X020C4080   &#x2F;* CCGR6 *&#x2F;</span><br><span class="line"></span><br><span class="line">  str r1, [r0]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  &#x2F;* 2、设置GPIO1_IO03复用为GPIO1_IO03 *&#x2F;</span><br><span class="line"></span><br><span class="line">  ldr r0, &#x3D;0X020E0068 &#x2F;* 将寄存器SW_MUX_GPIO1_IO03_BASE加载到r0中 *&#x2F;</span><br><span class="line"></span><br><span class="line">  ldr r1, &#x3D;0X5    &#x2F;* 设置寄存器SW_MUX_GPIO1_IO03_BASE的MUX_MODE为5 *&#x2F;</span><br><span class="line"></span><br><span class="line">  str r1,[r0]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  &#x2F;* 3、配置GPIO1_IO03的IO属性 </span><br><span class="line"></span><br><span class="line">   *bit 16:0 HYS关闭</span><br><span class="line"></span><br><span class="line">   *bit [15:14]: 00 默认下拉</span><br><span class="line"></span><br><span class="line">   *bit [13]: 0 kepper功能</span><br><span class="line"></span><br><span class="line">   *bit [12]: 1 pull&#x2F;keeper使能</span><br><span class="line"></span><br><span class="line">   *bit [11]: 0 关闭开路输出</span><br><span class="line"></span><br><span class="line">   *bit [7:6]: 10 速度100Mhz</span><br><span class="line"></span><br><span class="line">   *bit [5:3]: 110 R0&#x2F;6驱动能力</span><br><span class="line"></span><br><span class="line">   *bit [0]: 0 低转换率</span><br><span class="line"></span><br><span class="line">   *&#x2F;</span><br><span class="line"></span><br><span class="line">  ldr r0, &#x3D;0X020E02F4 &#x2F;*寄存器SW_PAD_GPIO1_IO03_BASE *&#x2F;</span><br><span class="line"></span><br><span class="line">  ldr r1, &#x3D;0X10B0</span><br><span class="line"></span><br><span class="line">  str r1,[r0]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  &#x2F;* 4、设置GPIO1_IO03为输出 *&#x2F;</span><br><span class="line"></span><br><span class="line">  ldr r0, &#x3D;0X0209C004 &#x2F;*寄存器GPIO1_GDIR *&#x2F;</span><br><span class="line"></span><br><span class="line">  ldr r1, &#x3D;0X0000008   </span><br><span class="line"></span><br><span class="line">  str r1,[r0]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  &#x2F;* 5、打开LED0</span><br><span class="line"></span><br><span class="line">   \* 设置GPIO1_IO03输出低电平</span><br><span class="line"></span><br><span class="line">   *&#x2F;</span><br><span class="line"></span><br><span class="line">  ldr r0, &#x3D;0X0209C000 &#x2F;*寄存器GPIO1_DR *&#x2F;</span><br><span class="line"></span><br><span class="line">  ldr r1, &#x3D;0    </span><br><span class="line"></span><br><span class="line">  str r1,[r0]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"></span><br><span class="line"> \* 描述： loop死循环</span><br><span class="line"></span><br><span class="line"> *&#x2F;</span><br><span class="line"></span><br><span class="line">loop:</span><br><span class="line"></span><br><span class="line">  b loop       </span><br></pre></td></tr></table></figure><h3 id="汇编指令"><a href="#汇编指令" class="headerlink" title="汇编指令"></a>汇编指令</h3><p>汇编由一条一条指令构成，指令就涉及到汇编指令。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Int a，b;</span><br><span class="line">a&#x3D;b;</span><br><span class="line">假设a地址为0X20，b地址为0x30</span><br><span class="line"></span><br><span class="line">LDR R0, &#x3D;0X30</span><br><span class="line">LDR R1, [R0]</span><br><span class="line"></span><br><span class="line">LDR R0, &#x3D;0X20</span><br><span class="line">STR R1, [R0]</span><br></pre></td></tr></table></figure>]]></content>
+    
+    
+    <summary type="html">&lt;h1 id=&quot;一、汇编LED原理分析&quot;&gt;&lt;a href=&quot;#一、汇编LED原理分析&quot; class=&quot;headerlink&quot; title=&quot;一、汇编LED原理分析&quot;&gt;&lt;/a&gt;一、汇编LED原理分析&lt;/h1&gt;&lt;p&gt;​    为什么要学习Cortex-A汇编：&lt;/p&gt;
+&lt;p&gt;​    ①、需要用汇编初始化一些SOC外设。&lt;/p&gt;
+&lt;p&gt;​    ②、使用汇编初始化DDR，I.MX6U不需要。&lt;/p&gt;
+&lt;p&gt;​    ③、设置sp指针，一般指向DDR，设置好C语言运行环境。&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="Linux" scheme="https://guoqiang-gump.github.io/categories/Linux/"/>
+    
+    
+    <category term="linux" scheme="https://guoqiang-gump.github.io/tags/linux/"/>
+    
+    <category term="IMX6U" scheme="https://guoqiang-gump.github.io/tags/IMX6U/"/>
+    
+    <category term="汇编" scheme="https://guoqiang-gump.github.io/tags/%E6%B1%87%E7%BC%96/"/>
     
   </entry>
   
@@ -42,16 +151,13 @@
     <link href="https://guoqiang-gump.github.io/2021/03/02/LinuxC%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/"/>
     <id>https://guoqiang-gump.github.io/2021/03/02/LinuxC%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/</id>
     <published>2021-03-02T09:18:20.000Z</published>
-    <updated>2021-03-02T12:27:07.473Z</updated>
+    <updated>2021-03-02T15:38:12.369Z</updated>
     
-    <content type="html"><![CDATA[<h3 id="GCC-编译器"><a href="#GCC-编译器" class="headerlink" title="GCC 编译器"></a>GCC 编译器</h3><p>gcc 命令格式如下： </p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">gcc [选项] [文件名字]</span><br><span class="line"></span><br><span class="line">gcc main.c calcu.c input.c -o main </span><br></pre></td></tr></table></figure><p>-c<strong>：</strong>只编译不链接为可执行文件，编译器将输入的.c 文件编译为.o 的目标文件。 </p><p>-o<strong>：</strong>&lt;输出文件名&gt;用来指定编译结束以后的输出文件名，如果使用这个选项的话 GCC 默认编译出来的可执行文件名字为 a.out。 </p><p>-g<strong>：</strong>添加调试信息，如果要使用调试工具(如 GDB)的话就必须加入此选项，此选项指示编译的时候生成调试所需的符号信息。 </p><p>-O：对程序进行优化编译，如果使用此选项的话整个源代码在编译、链接的的时候都会进行优化，这样产生的可执行文件执行效率就高。 </p><p>-O2<strong>：</strong>比-O 更幅度更大的优化，生成的可执行效率更高，但是整个编译过程会很慢。 </p><h3 id="Makefile-语法"><a href="#Makefile-语法" class="headerlink" title="Makefile 语法"></a>Makefile 语法</h3><h4 id="Makefile-规则格式"><a href="#Makefile-规则格式" class="headerlink" title="Makefile 规则格式"></a>Makefile 规则格式</h4><p>Makefile 里面是由一系列的规则组成的，这些规则格式如下：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">目标…... : 依赖文件集合……</span><br><span class="line">    命令 1</span><br><span class="line">    命令 2</span><br><span class="line">……</span><br></pre></td></tr></table></figure><p>比如下面这条规则： </p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">main : main.o input.o calcu.o</span><br><span class="line">gcc -o main main.o input.o calcu.o</span><br></pre></td></tr></table></figure><p>这条规则的目标是 main，main.o、input.o 和 calcu.o 是生成 main 的依赖文件，如果要更新 目标 main，就必须先更新它的所有依赖文件，如果依赖文件中的任何一个有更新，那么目标也 必须更新，“更新”就是执行一遍规则中的命令列表。 </p><p>命令列表中的每条命令必须以 TAB 键开始，不能使用空格！</p><h4 id="Makefile-变量"><a href="#Makefile-变量" class="headerlink" title="Makefile 变量"></a>Makefile 变量</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">objects &#x3D; main.o input.o calcu.o </span><br><span class="line">main: $(objects) </span><br><span class="line">gcc -o main $(objects) </span><br><span class="line"></span><br><span class="line">%.o : %.c </span><br><span class="line">#命令 </span><br><span class="line"></span><br><span class="line">clean: </span><br><span class="line">rm *.o </span><br><span class="line">rm main</span><br></pre></td></tr></table></figure><p><img src="image%5C1614677709213.png" alt="1614677709213"></p><p><img src="image%5C1614677792948.png" alt="1614677792948"></p>]]></content>
+    <content type="html"><![CDATA[<h3 id="GCC-编译器"><a href="#GCC-编译器" class="headerlink" title="GCC 编译器"></a>GCC 编译器</h3><p>gcc 命令格式如下： </p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">gcc [选项] [文件名字]</span><br><span class="line"></span><br><span class="line">gcc main.c calcu.c input.c -o main </span><br></pre></td></tr></table></figure> <a id="more"></a> <p>-c<strong>：</strong>只编译不链接为可执行文件，编译器将输入的.c 文件编译为.o 的目标文件。 </p><p>-o<strong>：</strong>&lt;输出文件名&gt;用来指定编译结束以后的输出文件名，如果使用这个选项的话 GCC 默认编译出来的可执行文件名字为 a.out。 </p><p>-g<strong>：</strong>添加调试信息，如果要使用调试工具(如 GDB)的话就必须加入此选项，此选项指示编译的时候生成调试所需的符号信息。 </p><p>-O：对程序进行优化编译，如果使用此选项的话整个源代码在编译、链接的的时候都会进行优化，这样产生的可执行文件执行效率就高。 </p><p>-O2<strong>：</strong>比-O 更幅度更大的优化，生成的可执行效率更高，但是整个编译过程会很慢。 </p><h3 id="Makefile-语法"><a href="#Makefile-语法" class="headerlink" title="Makefile 语法"></a>Makefile 语法</h3><h4 id="Makefile-规则格式"><a href="#Makefile-规则格式" class="headerlink" title="Makefile 规则格式"></a>Makefile 规则格式</h4><p>Makefile 里面是由一系列的规则组成的，这些规则格式如下：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">目标…... : 依赖文件集合……</span><br><span class="line">    命令 1</span><br><span class="line">    命令 2</span><br><span class="line">……</span><br></pre></td></tr></table></figure><p>比如下面这条规则： </p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">main : main.o input.o calcu.o</span><br><span class="line">gcc -o main main.o input.o calcu.o</span><br></pre></td></tr></table></figure><p>这条规则的目标是 main，main.o、input.o 和 calcu.o 是生成 main 的依赖文件，如果要更新 目标 main，就必须先更新它的所有依赖文件，如果依赖文件中的任何一个有更新，那么目标也 必须更新，“更新”就是执行一遍规则中的命令列表。 </p><p>命令列表中的每条命令必须以 TAB 键开始，不能使用空格！</p><h4 id="Makefile-变量"><a href="#Makefile-变量" class="headerlink" title="Makefile 变量"></a>Makefile 变量</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">objects &#x3D; main.o input.o calcu.o </span><br><span class="line">main: $(objects) </span><br><span class="line">gcc -o main $(objects) </span><br><span class="line"></span><br><span class="line">%.o : %.c </span><br><span class="line">#命令 </span><br><span class="line"></span><br><span class="line">clean: </span><br><span class="line">rm *.o </span><br><span class="line">rm main</span><br></pre></td></tr></table></figure><p><img src="E:\MYBOKE\Blog\source\image\1614677709213.png" alt="1614677709213"></p><p><img src="E:\MYBOKE\Blog\source\image\1614677792948.png" alt="1614677792948"></p>]]></content>
     
     
-      
-      
     <summary type="html">&lt;h3 id=&quot;GCC-编译器&quot;&gt;&lt;a href=&quot;#GCC-编译器&quot; class=&quot;headerlink&quot; title=&quot;GCC 编译器&quot;&gt;&lt;/a&gt;GCC 编译器&lt;/h3&gt;&lt;p&gt;gcc 命令格式如下： &lt;/p&gt;
-&lt;figure class=&quot;highlight plain&quot;&gt;&lt;</summary>
-      
+&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;gcc [选项] [文件名字]&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;gcc main.c calcu.c input.c -o main &lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;</summary>
     
     
     
@@ -59,8 +165,6 @@
     
     
     <category term="linux" scheme="https://guoqiang-gump.github.io/tags/linux/"/>
-    
-    <category term="shell" scheme="https://guoqiang-gump.github.io/tags/shell/"/>
     
     <category term="gcc" scheme="https://guoqiang-gump.github.io/tags/gcc/"/>
     
@@ -73,15 +177,12 @@
     <link href="https://guoqiang-gump.github.io/2021/03/02/Linux%E7%BB%88%E7%AB%AF%E5%91%BD%E4%BB%A4/"/>
     <id>https://guoqiang-gump.github.io/2021/03/02/Linux%E7%BB%88%E7%AB%AF%E5%91%BD%E4%BB%A4/</id>
     <published>2021-03-02T09:07:04.000Z</published>
-    <updated>2021-03-02T12:05:51.379Z</updated>
+    <updated>2021-03-02T15:37:14.695Z</updated>
     
-    <content type="html"><![CDATA[<h1 id="Shell操作"><a href="#Shell操作" class="headerlink" title="Shell操作"></a>Shell操作</h1><h2 id="Shell-命令的格式如下："><a href="#Shell-命令的格式如下：" class="headerlink" title="Shell 命令的格式如下："></a>Shell 命令的格式如下：</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">command -options [argument] </span><br></pre></td></tr></table></figure><p><strong>command:</strong> Shell 命令名称。 </p><p><strong>options</strong>：选项，同一种命令可能有不同的选项，不同的选项其实现的功能不同。 </p><p><strong>argument</strong>：Shell 命令是可以带参数的，也可以不带参数运行。 </p><h2 id="常用Shell-命令"><a href="#常用Shell-命令" class="headerlink" title="常用Shell 命令"></a>常用Shell <strong>命令</strong></h2><h3 id="1、目录信息查看命令ls"><a href="#1、目录信息查看命令ls" class="headerlink" title="1、目录信息查看命令ls"></a>1、目录信息查看命令ls</h3><p>ls 命令主要用于显示指定目录下的内容，列出指定目录下包含的所有的文件以及子目录， </p><p>它的主要参数有： </p><p><strong>-a</strong> 显示所有的文件以及子目录，包括以“.”开头的隐藏文件。 </p><p><strong>-l</strong> 显示文件的详细信息，比如文件的形态、权限、所有者、大小等信息。 </p><p><strong>-t</strong> 将文件按照创建时间排序列出。 </p><p><strong>-A</strong> 和-a 一样，但是不列出“.”(当前目录)和“..”(父目录)。 </p><p><strong>-R</strong> 递归列出所有文件，包括子目录中的文件。 </p><h3 id="2、目录切换命令cd"><a href="#2、目录切换命令cd" class="headerlink" title="2、目录切换命令cd"></a>2、目录切换命令cd</h3>]]></content>
+    <content type="html"><![CDATA[<h1 id="Shell操作"><a href="#Shell操作" class="headerlink" title="Shell操作"></a>Shell操作</h1><h2 id="Shell-命令的格式如下："><a href="#Shell-命令的格式如下：" class="headerlink" title="Shell 命令的格式如下："></a>Shell 命令的格式如下：</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">command -options [argument] </span><br></pre></td></tr></table></figure> <a id="more"></a> <p><strong>command:</strong> Shell 命令名称。 </p><p><strong>options</strong>：选项，同一种命令可能有不同的选项，不同的选项其实现的功能不同。 </p><p><strong>argument</strong>：Shell 命令是可以带参数的，也可以不带参数运行。 </p><h2 id="常用Shell-命令"><a href="#常用Shell-命令" class="headerlink" title="常用Shell 命令"></a>常用Shell <strong>命令</strong></h2><h3 id="1、目录信息查看命令ls"><a href="#1、目录信息查看命令ls" class="headerlink" title="1、目录信息查看命令ls"></a>1、目录信息查看命令ls</h3><p>ls 命令主要用于显示指定目录下的内容，列出指定目录下包含的所有的文件以及子目录， </p><p>它的主要参数有： </p><p><strong>-a</strong> 显示所有的文件以及子目录，包括以“.”开头的隐藏文件。 </p><p><strong>-l</strong> 显示文件的详细信息，比如文件的形态、权限、所有者、大小等信息。 </p><p><strong>-t</strong> 将文件按照创建时间排序列出。 </p><p><strong>-A</strong> 和-a 一样，但是不列出“.”(当前目录)和“..”(父目录)。 </p><p><strong>-R</strong> 递归列出所有文件，包括子目录中的文件。 </p><h3 id="2、目录切换命令cd"><a href="#2、目录切换命令cd" class="headerlink" title="2、目录切换命令cd"></a>2、目录切换命令cd</h3>]]></content>
     
     
-      
-      
-    <summary type="html">&lt;h1 id=&quot;Shell操作&quot;&gt;&lt;a href=&quot;#Shell操作&quot; class=&quot;headerlink&quot; title=&quot;Shell操作&quot;&gt;&lt;/a&gt;Shell操作&lt;/h1&gt;&lt;h2 id=&quot;Shell-命令的格式如下：&quot;&gt;&lt;a href=&quot;#Shell-命令的格式如下：&quot; cla</summary>
-      
+    <summary type="html">&lt;h1 id=&quot;Shell操作&quot;&gt;&lt;a href=&quot;#Shell操作&quot; class=&quot;headerlink&quot; title=&quot;Shell操作&quot;&gt;&lt;/a&gt;Shell操作&lt;/h1&gt;&lt;h2 id=&quot;Shell-命令的格式如下：&quot;&gt;&lt;a href=&quot;#Shell-命令的格式如下：&quot; class=&quot;headerlink&quot; title=&quot;Shell 命令的格式如下：&quot;&gt;&lt;/a&gt;Shell 命令的格式如下：&lt;/h2&gt;&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;command -options [argument] &lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;</summary>
     
     
     
@@ -97,68 +198,16 @@
   </entry>
   
   <entry>
-    <title>my new post</title>
-    <link href="https://guoqiang-gump.github.io/2021/03/02/my-new-post/"/>
-    <id>https://guoqiang-gump.github.io/2021/03/02/my-new-post/</id>
-    <published>2021-03-02T03:38:02.000Z</published>
-    <updated>2021-03-02T03:44:47.447Z</updated>
-    
-    <content type="html"><![CDATA[<h1 id="This-is-my-hexoblog一"><a href="#This-is-my-hexoblog一" class="headerlink" title="This is my hexoblog一"></a>This is my hexoblog一</h1><h2 id="Now-I-am-writing-new-thing"><a href="#Now-I-am-writing-new-thing" class="headerlink" title="Now I am writing new thing"></a>Now I am writing new thing</h2>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;h1 id=&quot;This-is-my-hexoblog一&quot;&gt;&lt;a href=&quot;#This-is-my-hexoblog一&quot; class=&quot;headerlink&quot; title=&quot;This is my hexoblog一&quot;&gt;&lt;/a&gt;This is my hexoblog一&lt;/h1&gt;&lt;</summary>
-      
-    
-    
-    
-    <category term="test" scheme="https://guoqiang-gump.github.io/categories/test/"/>
-    
-    
-    <category term="test" scheme="https://guoqiang-gump.github.io/tags/test/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>hellowo</title>
-    <link href="https://guoqiang-gump.github.io/2021/02/19/hello/"/>
-    <id>https://guoqiang-gump.github.io/2021/02/19/hello/</id>
-    <published>2021-02-19T06:11:01.000Z</published>
-    <updated>2021-03-02T03:46:19.908Z</updated>
-    
-    <content type="html"><![CDATA[<p>呼叫呼叫，这里是hello文章，收到请回答收到请回答！</p>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;p&gt;呼叫呼叫，这里是hello文章，收到请回答收到请回答！&lt;/p&gt;
-</summary>
-      
-    
-    
-    
-    <category term="test" scheme="https://guoqiang-gump.github.io/categories/test/"/>
-    
-    
-    <category term="test" scheme="https://guoqiang-gump.github.io/tags/test/"/>
-    
-  </entry>
-  
-  <entry>
     <title>Hello World</title>
     <link href="https://guoqiang-gump.github.io/2021/02/05/hello-world/"/>
     <id>https://guoqiang-gump.github.io/2021/02/05/hello-world/</id>
     <published>2021-02-05T14:27:39.710Z</published>
-    <updated>2021-02-05T14:27:39.710Z</updated>
+    <updated>2021-03-02T15:37:00.711Z</updated>
     
-    <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p><h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p><h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p><h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p><h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>]]></content>
+    <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p> <a id="more"></a> <h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p><h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p><h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p><h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>]]></content>
     
     
-      
-      
-    <summary type="html">&lt;p&gt;Welcome to &lt;a href=&quot;https://hexo.io/&quot;&gt;Hexo&lt;/a&gt;! This is your very first post. Check &lt;a href=&quot;https://hexo.io/docs/&quot;&gt;documentation&lt;/a&gt; for</summary>
-      
+    <summary type="html">&lt;p&gt;Welcome to &lt;a href=&quot;https://hexo.io/&quot;&gt;Hexo&lt;/a&gt;! This is your very first post. Check &lt;a href=&quot;https://hexo.io/docs/&quot;&gt;documentation&lt;/a&gt; for more info. If you get any problems when using Hexo, you can find the answer in &lt;a href=&quot;https://hexo.io/docs/troubleshooting.html&quot;&gt;troubleshooting&lt;/a&gt; or you can ask me on &lt;a href=&quot;https://github.com/hexojs/hexo/issues&quot;&gt;GitHub&lt;/a&gt;.&lt;/p&gt;</summary>
     
     
     
