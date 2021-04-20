@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="编译程序​    1、编译程序     ①、使用**arm-linux-gnueabihf-gcc******，****将.c .s文件变为.o">
+  <meta name="description" content="编译程序​    1、编译程序     ①、使用**arm-linux-gnueabihf-gcc******，****将.c .s文件变为.o       ②、将所有的.o文件连接为elf格式的可执行文件。 ③、将elf文件转为bin文件。 ④、将elf文件转为汇编，反汇编。 链接： ​    链接就是将所有.o文件链接在一起，并且链接到指定的地方。本实验链接的时候要指定链接起始地址。链接">
 <meta property="og:type" content="article">
 <meta property="og:title" content="IMX6U编译与烧写">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/03/02/IMX6U%E7%BC%96%E8%AF%91%E4%B8%8E%E7%83%A7%E5%86%99/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="编译程序​    1、编译程序     ①、使用**arm-linux-gnueabihf-gcc******，****将.c .s文件变为.o">
+<meta property="og:description" content="编译程序​    1、编译程序     ①、使用**arm-linux-gnueabihf-gcc******，****将.c .s文件变为.o       ②、将所有的.o文件连接为elf格式的可执行文件。 ③、将elf文件转为bin文件。 ④、将elf文件转为汇编，反汇编。 链接： ​    链接就是将所有.o文件链接在一起，并且链接到指定的地方。本实验链接的时候要指定链接起始地址。链接">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-03-02T15:32:19.000Z">
-<meta property="article:modified_time" content="2021-04-10T14:13:30.670Z">
+<meta property="article:modified_time" content="2021-04-20T09:37:12.692Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="linux">
 <meta property="article:tag" content="IMX6U">
@@ -247,9 +247,11 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="编译程序"><a href="#编译程序" class="headerlink" title="编译程序"></a>编译程序</h1><p>​    1、编译程序    </p>
+     <a id="more"></a>
+
+<h1 id="编译程序"><a href="#编译程序" class="headerlink" title="编译程序"></a>编译程序</h1><p>​    1、编译程序    </p>
 <p>①、使用*<strong>*arm-linux-gnueabihf-gcc*****</strong>*，****将.c .s文件变为.o</p>
-  <a id="more"></a>  
+  <!-- more -->  
 
 <p>②、将所有的.o文件连接为elf格式的可执行文件。</p>
 <p>③、将elf文件转为bin文件。</p>

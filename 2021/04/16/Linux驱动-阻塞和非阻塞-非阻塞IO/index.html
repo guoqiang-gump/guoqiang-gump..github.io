@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="非阻塞 IO对于非阻塞 IO，应用程序对应的线程不会挂起，它要么一直轮询等待，直到设备资源可以使用，要么就直接放弃。当使用非阻塞IO时，应用程序使用非阻塞访问方式从设备读取数据，当设备不可用或数据未准备好的时候会立即向内核返回一个错误码，表示数据读取失败。应用程序会再次重新读取数据，这样一直往复循环，直到数据读取成功。 12345应用程序非阻塞读取数据int fd; int data &#x3D;">
+  <meta name="description" content="非阻塞 IO对于非阻塞 IO，应用程序对应的线程不会挂起，它要么一直轮询等待，直到设备资源可以使用，要么就直接放弃。当使用非阻塞IO时，应用程序使用非阻塞访问方式从设备读取数据，当设备不可用或数据未准备好的时候会立即向内核返回一个错误码，表示数据读取失败。应用程序会再次重新读取数据，这样一直往复循环，直到数据读取成功。 12345应用程序非阻塞读取数据int fd; int data &amp;#x">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux驱动-非阻塞IO">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-%E9%98%BB%E5%A1%9E%E5%92%8C%E9%9D%9E%E9%98%BB%E5%A1%9E-%E9%9D%9E%E9%98%BB%E5%A1%9EIO/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="非阻塞 IO对于非阻塞 IO，应用程序对应的线程不会挂起，它要么一直轮询等待，直到设备资源可以使用，要么就直接放弃。当使用非阻塞IO时，应用程序使用非阻塞访问方式从设备读取数据，当设备不可用或数据未准备好的时候会立即向内核返回一个错误码，表示数据读取失败。应用程序会再次重新读取数据，这样一直往复循环，直到数据读取成功。 12345应用程序非阻塞读取数据int fd; int data &#x3D;">
+<meta property="og:description" content="非阻塞 IO对于非阻塞 IO，应用程序对应的线程不会挂起，它要么一直轮询等待，直到设备资源可以使用，要么就直接放弃。当使用非阻塞IO时，应用程序使用非阻塞访问方式从设备读取数据，当设备不可用或数据未准备好的时候会立即向内核返回一个错误码，表示数据读取失败。应用程序会再次重新读取数据，这样一直往复循环，直到数据读取成功。 12345应用程序非阻塞读取数据int fd; int data &amp;#x">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-16T06:31:11.000Z">
-<meta property="article:modified_time" content="2021-04-16T07:39:46.469Z">
+<meta property="article:modified_time" content="2021-04-20T09:39:23.704Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,7 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="非阻塞-IO"><a href="#非阻塞-IO" class="headerlink" title="非阻塞 IO"></a><strong>非阻塞 IO</strong></h1><p>对于非阻塞 IO，应用程序对应的线程不会挂起，它要么一直轮询等待，直到设备资源可以使用，要么就直接放弃。当使用非阻塞IO时，应用程序使用非阻塞访问方式从设备读取数据，当设备不可用或数据未准备好的时候会立即向内核返回一个错误码，表示数据读取失败。应用程序会再次重新读取数据，这样一直往复循环，直到数据读取成功。</p>
+     <a id="more"></a>
+
+<h1 id="非阻塞-IO"><a href="#非阻塞-IO" class="headerlink" title="非阻塞 IO"></a>非阻塞 IO</h1><p>对于非阻塞 IO，应用程序对应的线程不会挂起，它要么一直轮询等待，直到设备资源可以使用，要么就直接放弃。当使用非阻塞IO时，应用程序使用非阻塞访问方式从设备读取数据，当设备不可用或数据未准备好的时候会立即向内核返回一个错误码，表示数据读取失败。应用程序会再次重新读取数据，这样一直往复循环，直到数据读取成功。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">应用程序非阻塞读取数据</span><br><span class="line">int fd; </span><br><span class="line">int data &#x3D; 0; </span><br><span class="line">fd &#x3D; open(&quot;&#x2F;dev&#x2F;xxx_dev&quot;, O_RDWR | O_NONBLOCK); &#x2F;* 非阻塞方式打开 *&#x2F;</span><br><span class="line">ret &#x3D; read(fd, &amp;data, sizeof(data)); &#x2F;* 读取数据 *&#x2F;</span><br></pre></td></tr></table></figure>
 <p>第 4 行使用 open 函数打开“/dev/xxx_dev”设备文件的时候添加了参数“O_NONBLOCK”，表示以非阻塞方式打开设备，这样从设备中读取数据的时候就是非阻塞方式的了。</p>
 <h2 id="非阻塞机制-轮询"><a href="#非阻塞机制-轮询" class="headerlink" title="非阻塞机制(轮询)"></a><strong>非阻塞机制(轮询)</strong></h2><p>如果用户应用程序以非阻塞的方式访问设备，设备驱动程序就要提供非阻塞的处理方式，也就是轮询。poll、epoll 和 select 可以用于处理轮询，应用程序通过 select、epoll 或 poll 函数来查询设备是否可以操作，如果可以操作的话就从设备读取或者向设备写入数据。当<strong>应用程序调用 select、epoll 或 poll 函数</strong>的时候<strong>设备驱动程序中的 poll 函数</strong>就会执行，因此需要在设备驱动程序中编写 poll 函数。</p>

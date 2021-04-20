@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="一、EPIT简介​    1、EPIT是32位的一个向下计数器。">
+  <meta name="description" content="一、EPIT简介​    1、EPIT是32位的一个向下计数器。 ​    2、EPIT的时钟源可以选择，我们选择ipg_clk&#x3D;66MHz。 ​    3、可以对时钟源进行分频，12位的分频器，04095分别代表14096分频。 ​    4、开启定时器以后，计数寄存器会每个时钟减1，如果和比较寄存器里面的值相等的话就会触发中断。 ​    EPIT有两种工作模式：Set-add-forg">
 <meta property="og:type" content="article">
 <meta property="og:title" content="IMX6U定时">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/03/04/IMX6U%E5%AE%9A%E6%97%B6/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="一、EPIT简介​    1、EPIT是32位的一个向下计数器。">
+<meta property="og:description" content="一、EPIT简介​    1、EPIT是32位的一个向下计数器。 ​    2、EPIT的时钟源可以选择，我们选择ipg_clk&#x3D;66MHz。 ​    3、可以对时钟源进行分频，12位的分频器，04095分别代表14096分频。 ​    4、开启定时器以后，计数寄存器会每个时钟减1，如果和比较寄存器里面的值相等的话就会触发中断。 ​    EPIT有两种工作模式：Set-add-forg">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-03-03T16:00:25.000Z">
-<meta property="article:modified_time" content="2021-03-03T16:24:52.419Z">
+<meta property="article:modified_time" content="2021-04-20T09:37:34.534Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="linux">
 <meta property="article:tag" content="IMX6U">
@@ -246,9 +246,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="一、EPIT简介"><a href="#一、EPIT简介" class="headerlink" title="一、EPIT简介"></a>一、EPIT简介</h1><p>​    1、EPIT是32位的一个向下计数器。</p>
-  <a id="more"></a>  
+     <a id="more"></a>
 
+<h1 id="一、EPIT简介"><a href="#一、EPIT简介" class="headerlink" title="一、EPIT简介"></a>一、EPIT简介</h1><p>​    1、EPIT是32位的一个向下计数器。</p>
 <p>​    2、EPIT的时钟源可以选择，我们选择ipg_clk=66MHz。</p>
 <p>​    3、可以对时钟源进行分频，12位的分频器，0<del>4095分别代表1</del>4096分频。</p>
 <p>​    4、开启定时器以后，计数寄存器会每个时钟减1，如果和比较寄存器里面的值相等的话就会触发中断。</p>

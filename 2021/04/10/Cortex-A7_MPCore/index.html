@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="Cortex-A7 MPCore 简介Cortex-A7 支持在一个处理器上选配 1~4 个内核。Cortex-A7 负责普通应用，因为 Cortex-A7省电。Cortex-A7 本身性能也不弱，不要看它叫做 Cortex-A7 但是它可是比 Cortex-A8 性能要强大，而且更省电。 在 28nm 工艺下，Cortex-A7 可以运行在 1.2~1.6GHz，并且单核面积不大于 0.45mm">
+  <meta name="description" content="Cortex-A7 MPCore 简介Cortex-A7 支持在一个处理器上选配 1~4 个内核。Cortex-A7 负责普通应用，因为 Cortex-A7省电。Cortex-A7 本身性能也不弱，不要看它叫做 Cortex-A7 但是它可是比 Cortex-A8 性能要强大，而且更省电。 在 28nm 工艺下，Cortex-A7 可以运行在 1.2~1.6GHz，并且单核面积不大于 0.">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Cortex-A7架构">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/10/Cortex-A7_MPCore/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="Cortex-A7 MPCore 简介Cortex-A7 支持在一个处理器上选配 1~4 个内核。Cortex-A7 负责普通应用，因为 Cortex-A7省电。Cortex-A7 本身性能也不弱，不要看它叫做 Cortex-A7 但是它可是比 Cortex-A8 性能要强大，而且更省电。 在 28nm 工艺下，Cortex-A7 可以运行在 1.2~1.6GHz，并且单核面积不大于 0.45mm">
+<meta property="og:description" content="Cortex-A7 MPCore 简介Cortex-A7 支持在一个处理器上选配 1~4 个内核。Cortex-A7 负责普通应用，因为 Cortex-A7省电。Cortex-A7 本身性能也不弱，不要看它叫做 Cortex-A7 但是它可是比 Cortex-A8 性能要强大，而且更省电。 在 28nm 工艺下，Cortex-A7 可以运行在 1.2~1.6GHz，并且单核面积不大于 0.">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-10T09:20:48.000Z">
-<meta property="article:modified_time" content="2021-04-11T02:39:51.029Z">
+<meta property="article:modified_time" content="2021-04-20T09:35:35.155Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="linux">
 <meta property="article:tag" content="ARM">
@@ -245,10 +245,10 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="Cortex-A7-MPCore-简介"><a href="#Cortex-A7-MPCore-简介" class="headerlink" title="Cortex-A7 MPCore 简介"></a>Cortex-A7 MPCore 简介</h1><p>Cortex-A7 支持在一个处理器上选配 1~4 个内核。Cortex-A7 负责普通应用，因为 Cortex-A7省电。Cortex-A7 本身性能也不弱，不要看它叫做 Cortex-A7 但是它可是比 Cortex-A8 性能要强大，而且更省电。</p>
-<p>在 28nm 工艺下，Cortex-A7 可以运行在 1.2~1.6GHz，并且单核面积不大于 0.45mm2(含有浮点单元、NEON 和 32KB 的 L1 缓存)，在典型场景下功耗小于 100mW， 这使得它非常适 合对功耗要求严格的移动设备，这意味着 Cortex-A7 在获得与 Cortex-A9 相似性能的情况下，其功耗更低。</p>
- <a id="more"></a> 
+     <a id="more"></a> 
 
+<h1 id="Cortex-A7-MPCore-简介"><a href="#Cortex-A7-MPCore-简介" class="headerlink" title="Cortex-A7 MPCore 简介"></a>Cortex-A7 MPCore 简介</h1><p>Cortex-A7 支持在一个处理器上选配 1~4 个内核。Cortex-A7 负责普通应用，因为 Cortex-A7省电。Cortex-A7 本身性能也不弱，不要看它叫做 Cortex-A7 但是它可是比 Cortex-A8 性能要强大，而且更省电。</p>
+<p>在 28nm 工艺下，Cortex-A7 可以运行在 1.2~1.6GHz，并且单核面积不大于 0.45mm2(含有浮点单元、NEON 和 32KB 的 L1 缓存)，在典型场景下功耗小于 100mW， 这使得它非常适 合对功耗要求严格的移动设备，这意味着 Cortex-A7 在获得与 Cortex-A9 相似性能的情况下，其功耗更低。</p>
 <p><strong>Cortex-A7MPCore 使用 ARMv7-A 架构，主要特性如下：</strong></p>
 <ul>
 <li><p>SIMDv2 扩展整形和浮点向量操作。</p>

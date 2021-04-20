@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="EPIT简介EPIT 的全称是：Enhanced Periodic Interrupt Timer，直译过来就是增强的周期中断定时器， 它主要是完成周期性中断定时的。I.MX6U 的 EPIT 定时器只是完成周期性中断定时的，仅此一项功能！至于输入捕获、PWM 输出等这些功能，I.MX6U 由其它的外设来完成。  EPIT 是一个 32 位定时器，在处理器几乎不用介入的情况下提供精准的定时中断，软">
+  <meta name="description" content="EPIT简介EPIT 的全称是：Enhanced Periodic Interrupt Timer，直译过来就是增强的周期中断定时器， 它主要是完成周期性中断定时的。I.MX6U 的 EPIT 定时器只是完成周期性中断定时的，仅此一项功能！至于输入捕获、PWM 输出等这些功能，I.MX6U 由其它的外设来完成。  EPIT 是一个 32 位定时器，在处理器几乎不用介入的情况下提供精准的定时中">
 <meta property="og:type" content="article">
 <meta property="og:title" content="IMX6U-EPIT定时器">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/11/IMX6U-EPIT%E5%AE%9A%E6%97%B6%E5%99%A8/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="EPIT简介EPIT 的全称是：Enhanced Periodic Interrupt Timer，直译过来就是增强的周期中断定时器， 它主要是完成周期性中断定时的。I.MX6U 的 EPIT 定时器只是完成周期性中断定时的，仅此一项功能！至于输入捕获、PWM 输出等这些功能，I.MX6U 由其它的外设来完成。  EPIT 是一个 32 位定时器，在处理器几乎不用介入的情况下提供精准的定时中断，软">
+<meta property="og:description" content="EPIT简介EPIT 的全称是：Enhanced Periodic Interrupt Timer，直译过来就是增强的周期中断定时器， 它主要是完成周期性中断定时的。I.MX6U 的 EPIT 定时器只是完成周期性中断定时的，仅此一项功能！至于输入捕获、PWM 输出等这些功能，I.MX6U 由其它的外设来完成。  EPIT 是一个 32 位定时器，在处理器几乎不用介入的情况下提供精准的定时中">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-11T08:06:21.000Z">
-<meta property="article:modified_time" content="2021-04-11T08:53:38.860Z">
+<meta property="article:modified_time" content="2021-04-20T09:36:10.695Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,7 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="EPIT简介"><a href="#EPIT简介" class="headerlink" title="EPIT简介"></a>EPIT简介</h1><p>EPIT 的全称是：Enhanced Periodic Interrupt Timer，直译过来就是增强的周期中断定时器， 它主要是完成周期性中断定时的。I.MX6U 的 EPIT 定时器只是完成周期性中断定时的，仅此一项功能！至于输入捕获、PWM 输出等这些功能，I.MX6U 由其它的外设来完成。 </p>
+     <a id="more"></a>
+
+<h1 id="EPIT简介"><a href="#EPIT简介" class="headerlink" title="EPIT简介"></a>EPIT简介</h1><p>EPIT 的全称是：Enhanced Periodic Interrupt Timer，直译过来就是增强的周期中断定时器， 它主要是完成周期性中断定时的。I.MX6U 的 EPIT 定时器只是完成周期性中断定时的，仅此一项功能！至于输入捕获、PWM 输出等这些功能，I.MX6U 由其它的外设来完成。 </p>
 <p>EPIT 是一个 32 位定时器，在处理器几乎不用介入的情况下提供精准的定时中断，软件使能以后 EPIT 就会开始运行，EPIT 定时器有如下特点： </p>
 <p>①、时钟源可选的 32 位向下计数器。 </p>
 <p>②、12 位的分频值。 </p>

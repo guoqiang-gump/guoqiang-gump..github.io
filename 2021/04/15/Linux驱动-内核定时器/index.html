@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="1、内核时间管理简介Linux 要运行，需要一个系统时钟的，至于这个系统时钟是由哪个定时器提供的，这对于我们 Linux 驱动编写者来说，不需要深入研究这些具体的实现，只需要掌握相应的 API 函数即可。  硬件定时器提供时钟源，时钟源的频率可以设置， 设置好以后就周期性的产生定时中断，系统使用定时中断来计时。中断周期性产生的频率就是系统频率， 也叫做节拍率(tick rate)(有的资料也叫系统">
+  <meta name="description" content="1、内核时间管理简介Linux 要运行，需要一个系统时钟的，至于这个系统时钟是由哪个定时器提供的，这对于我们 Linux 驱动编写者来说，不需要深入研究这些具体的实现，只需要掌握相应的 API 函数即可。  硬件定时器提供时钟源，时钟源的频率可以设置， 设置好以后就周期性的产生定时中断，系统使用定时中断来计时。中断周期性产生的频率就是系统频率， 也叫做节拍率(tick rate)(有的资料也">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux驱动-内核定时器">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%86%85%E6%A0%B8%E5%AE%9A%E6%97%B6%E5%99%A8/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="1、内核时间管理简介Linux 要运行，需要一个系统时钟的，至于这个系统时钟是由哪个定时器提供的，这对于我们 Linux 驱动编写者来说，不需要深入研究这些具体的实现，只需要掌握相应的 API 函数即可。  硬件定时器提供时钟源，时钟源的频率可以设置， 设置好以后就周期性的产生定时中断，系统使用定时中断来计时。中断周期性产生的频率就是系统频率， 也叫做节拍率(tick rate)(有的资料也叫系统">
+<meta property="og:description" content="1、内核时间管理简介Linux 要运行，需要一个系统时钟的，至于这个系统时钟是由哪个定时器提供的，这对于我们 Linux 驱动编写者来说，不需要深入研究这些具体的实现，只需要掌握相应的 API 函数即可。  硬件定时器提供时钟源，时钟源的频率可以设置， 设置好以后就周期性的产生定时中断，系统使用定时中断来计时。中断周期性产生的频率就是系统频率， 也叫做节拍率(tick rate)(有的资料也">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-15T12:07:16.000Z">
-<meta property="article:modified_time" content="2021-04-15T13:17:09.213Z">
+<meta property="article:modified_time" content="2021-04-20T09:38:48.428Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,7 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="1、内核时间管理简介"><a href="#1、内核时间管理简介" class="headerlink" title="1、内核时间管理简介"></a><strong>1、内核时间管理简介</strong></h1><p>Linux 要运行，需要一个系统时钟的，至于这个系统时钟是由哪个定时器提供的，这对于我们 Linux 驱动编写者来说，不需要深入研究这些具体的实现，只需要掌握相应的 API 函数即可。 </p>
+     <a id="more"></a>
+
+<h1 id="1、内核时间管理简介"><a href="#1、内核时间管理简介" class="headerlink" title="1、内核时间管理简介"></a>1、内核时间管理简介</h1><p>Linux 要运行，需要一个系统时钟的，至于这个系统时钟是由哪个定时器提供的，这对于我们 Linux 驱动编写者来说，不需要深入研究这些具体的实现，只需要掌握相应的 API 函数即可。 </p>
 <p>硬件定时器提供时钟源，时钟源的频率可以设置， 设置好以后就周期性的产生定时中断，系统使用定时中断来计时。中断周期性产生的频率就是系统频率， 也叫做节拍率(tick rate)(有的资料也叫系统频率)，比如 1000Hz，100Hz 等等说的就是系统节拍率。系统节拍率是可以设置的，单位是 Hz，</p>
 <p>高节拍率和低节拍率的优缺点： </p>
 <p>①、高节拍率会提高系统时间精度，如果采用 100Hz 的节拍率，时间精度就是 10ms，采用1000Hz 的话时间精度就是 1ms，精度提高了 10 倍。高精度时钟的好处有很多，对于那些对时 间要求严格的函数来说，能够以更高的精度运行，时间测量也更加准确。 </p>

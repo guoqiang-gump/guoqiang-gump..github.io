@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="1、互斥体Linux 提供了一个比信号量更专业的机制来进行互斥，它就是互斥体—mutex。互斥访问表示一次只有一个线程可以访问共享资源，不能递归申请互斥体。在编写 Linux 驱动的时候遇到需要互斥访问的地方建议使用 mutex。Linux 内核使用 mutex 结构体表示互斥体，定义如下 12345struct mutex &amp;#123;     &#x2F;* 1: unlocked, 0: l">
+  <meta name="description" content="1、互斥体Linux 提供了一个比信号量更专业的机制来进行互斥，它就是互斥体—mutex。互斥访问表示一次只有一个线程可以访问共享资源，不能递归申请互斥体。在编写 Linux 驱动的时候遇到需要互斥访问的地方建议使用 mutex。Linux 内核使用 mutex 结构体表示互斥体，定义如下 12345struct mutex &amp;#123;     &#x2F;* 1: unlocked, 0">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux驱动-并发与竞争-互斥体">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E4%BA%92%E6%96%A5%E4%BD%93/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="1、互斥体Linux 提供了一个比信号量更专业的机制来进行互斥，它就是互斥体—mutex。互斥访问表示一次只有一个线程可以访问共享资源，不能递归申请互斥体。在编写 Linux 驱动的时候遇到需要互斥访问的地方建议使用 mutex。Linux 内核使用 mutex 结构体表示互斥体，定义如下 12345struct mutex &amp;#123;     &#x2F;* 1: unlocked, 0: l">
+<meta property="og:description" content="1、互斥体Linux 提供了一个比信号量更专业的机制来进行互斥，它就是互斥体—mutex。互斥访问表示一次只有一个线程可以访问共享资源，不能递归申请互斥体。在编写 Linux 驱动的时候遇到需要互斥访问的地方建议使用 mutex。Linux 内核使用 mutex 结构体表示互斥体，定义如下 12345struct mutex &amp;#123;     &#x2F;* 1: unlocked, 0">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-15T10:40:32.000Z">
-<meta property="article:modified_time" content="2021-04-15T11:43:48.073Z">
+<meta property="article:modified_time" content="2021-04-20T09:38:14.109Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,7 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="1、互斥体"><a href="#1、互斥体" class="headerlink" title="1、互斥体"></a>1、互斥体</h1><p>Linux 提供了一个比信号量更专业的机制来进行互斥，它就是互斥体—mutex。互斥访问表示一次只有一个线程可以访问共享资源，不能递归申请互斥体。在编写 Linux 驱动的时候遇到需要互斥访问的地方建议使用 mutex。Linux 内核使用 mutex 结构体表示互斥体，定义如下</p>
+     <a id="more"></a>
+
+<h1 id="1、互斥体"><a href="#1、互斥体" class="headerlink" title="1、互斥体"></a>1、互斥体</h1><p>Linux 提供了一个比信号量更专业的机制来进行互斥，它就是互斥体—mutex。互斥访问表示一次只有一个线程可以访问共享资源，不能递归申请互斥体。在编写 Linux 驱动的时候遇到需要互斥访问的地方建议使用 mutex。Linux 内核使用 mutex 结构体表示互斥体，定义如下</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">struct mutex &#123;</span><br><span class="line">     &#x2F;* 1: unlocked, 0: locked, negative: locked, possible waiters *&#x2F;</span><br><span class="line">     atomic_t count;</span><br><span class="line">     spinlock_t wait_lock;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <p>在使用 mutex 之前要先定义一个 mutex 变量。在使用 mutex 的时候要注意如下几点： </p>
 <p>①、mutex 可以导致休眠，因此不能在中断中使用 mutex，中断中只能使用自旋锁。 </p>

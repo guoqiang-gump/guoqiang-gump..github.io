@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="实时时钟是很常用的一个外设，通过实时时钟我们就可以知道年、月、日和时间等信息。  因此在需要记录时间的场合就需要实时时钟，可以使用专用的实时时钟芯片来完成此功能，I.MX6U 内部的  SNVS 就提供了 RTC 功能。 一、RTC原理详解6U内部自带到了一个RTC外设，确切的说是SNVC。6U的RTC分为LP和HP。LP叫做SRTC，HP是RTC，但是HP的RTC掉电以后数据就丢失了，即使用了纽">
+  <meta name="description" content="实时时钟是很常用的一个外设，通过实时时钟我们就可以知道年、月、日和时间等信息。  因此在需要记录时间的场合就需要实时时钟，可以使用专用的实时时钟芯片来完成此功能，I.MX6U 内部的  SNVS 就提供了 RTC 功能。 一、RTC原理详解6U内部自带到了一个RTC外设，确切的说是SNVC。6U的RTC分为LP和HP。LP叫做SRTC，HP是RTC，但是HP的RTC掉电以后数据就丢失了，即使">
 <meta property="og:type" content="article">
 <meta property="og:title" content="IMX6U-RTC实时时钟">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/11/IMX6U-RTC%E5%AE%9E%E6%97%B6%E6%97%B6%E9%92%9F/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="实时时钟是很常用的一个外设，通过实时时钟我们就可以知道年、月、日和时间等信息。  因此在需要记录时间的场合就需要实时时钟，可以使用专用的实时时钟芯片来完成此功能，I.MX6U 内部的  SNVS 就提供了 RTC 功能。 一、RTC原理详解6U内部自带到了一个RTC外设，确切的说是SNVC。6U的RTC分为LP和HP。LP叫做SRTC，HP是RTC，但是HP的RTC掉电以后数据就丢失了，即使用了纽">
+<meta property="og:description" content="实时时钟是很常用的一个外设，通过实时时钟我们就可以知道年、月、日和时间等信息。  因此在需要记录时间的场合就需要实时时钟，可以使用专用的实时时钟芯片来完成此功能，I.MX6U 内部的  SNVS 就提供了 RTC 功能。 一、RTC原理详解6U内部自带到了一个RTC外设，确切的说是SNVC。6U的RTC分为LP和HP。LP叫做SRTC，HP是RTC，但是HP的RTC掉电以后数据就丢失了，即使">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-11T15:07:12.000Z">
-<meta property="article:modified_time" content="2021-04-11T15:48:28.770Z">
+<meta property="article:modified_time" content="2021-04-20T09:36:56.500Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,7 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <p>实时时钟是很常用的一个外设，通过实时时钟我们就可以知道年、月、日和时间等信息。 </p>
+     <a id="more"></a>
+
+<p>实时时钟是很常用的一个外设，通过实时时钟我们就可以知道年、月、日和时间等信息。 </p>
 <p>因此在需要记录时间的场合就需要实时时钟，可以使用专用的实时时钟芯片来完成此功能，I.MX6U 内部的 </p>
 <p>SNVS 就提供了 RTC 功能。</p>
 <h1 id="一、RTC原理详解"><a href="#一、RTC原理详解" class="headerlink" title="一、RTC原理详解"></a>一、RTC原理详解</h1><p>6U内部自带到了一个RTC外设，确切的说是SNVC。6U的RTC分为LP和HP。LP叫做SRTC，HP是RTC，但是HP的RTC掉电以后数据就丢失了，即使用了纽扣电池也没用。所以必须要使用LP，也就是SRTC。<br>RTC分为SNVS_LP和SNVS_HP，<br>如果做产品，建议使用外置RTC芯片，PCF8563。<br>RTC很类似定时器，外接32.768KHz的晶振，然后就开始计时，RTC使用两个寄存器来保存计数值。</p>

@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="一、多点电容触摸屏简介ATK-7016 这款屏幕其实是由 TFT LCD+触摸屏组合起来的。底下是 LCD 面板，上面是触摸面板，将两个封装到一起就成了带有触摸屏的 LCD 屏幕。电容触摸屏也是需要一个驱动 IC的，驱动 IC一般会提供一个 I2C 接口给主控制器，主控制器可以通过 I2C 接口来读取驱动 IC 里面的触摸坐标数据。 ATK-7016 的电容触摸屏部分有 4 个 IO 用于连接主控">
+  <meta name="description" content="一、多点电容触摸屏简介ATK-7016 这款屏幕其实是由 TFT LCD+触摸屏组合起来的。底下是 LCD 面板，上面是触摸面板，将两个封装到一起就成了带有触摸屏的 LCD 屏幕。电容触摸屏也是需要一个驱动 IC的，驱动 IC一般会提供一个 I2C 接口给主控制器，主控制器可以通过 I2C 接口来读取驱动 IC 里面的触摸坐标数据。 ATK-7016 的电容触摸屏部分有 4 个 IO 用于连">
 <meta property="og:type" content="article">
 <meta property="og:title" content="IMX6U_I2C_触摸屏">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/12/IMX6U-I2C-%E8%A7%A6%E6%91%B8%E5%B1%8F/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="一、多点电容触摸屏简介ATK-7016 这款屏幕其实是由 TFT LCD+触摸屏组合起来的。底下是 LCD 面板，上面是触摸面板，将两个封装到一起就成了带有触摸屏的 LCD 屏幕。电容触摸屏也是需要一个驱动 IC的，驱动 IC一般会提供一个 I2C 接口给主控制器，主控制器可以通过 I2C 接口来读取驱动 IC 里面的触摸坐标数据。 ATK-7016 的电容触摸屏部分有 4 个 IO 用于连接主控">
+<meta property="og:description" content="一、多点电容触摸屏简介ATK-7016 这款屏幕其实是由 TFT LCD+触摸屏组合起来的。底下是 LCD 面板，上面是触摸面板，将两个封装到一起就成了带有触摸屏的 LCD 屏幕。电容触摸屏也是需要一个驱动 IC的，驱动 IC一般会提供一个 I2C 接口给主控制器，主控制器可以通过 I2C 接口来读取驱动 IC 里面的触摸坐标数据。 ATK-7016 的电容触摸屏部分有 4 个 IO 用于连">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-12T08:51:26.000Z">
-<meta property="article:modified_time" content="2021-04-12T09:05:30.207Z">
+<meta property="article:modified_time" content="2021-04-20T09:36:34.548Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,7 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="一、多点电容触摸屏简介"><a href="#一、多点电容触摸屏简介" class="headerlink" title="一、多点电容触摸屏简介"></a>一、多点电容触摸屏简介</h1><p>ATK-7016 这款屏幕其实是由 TFT LCD+触摸屏组合起来的。底下是 LCD 面板，上面是触摸面板，将两个封装到一起就成了带有触摸屏的 LCD 屏幕。电容触摸屏也是需要一个驱动 IC的，驱动 IC一般会提供一个 I2C 接口给主控制器，主控制器可以通过 I2C 接口来读取驱动 IC 里面的触摸坐标数据。</p>
+     <a id="more"></a>
+
+<h1 id="一、多点电容触摸屏简介"><a href="#一、多点电容触摸屏简介" class="headerlink" title="一、多点电容触摸屏简介"></a>一、多点电容触摸屏简介</h1><p>ATK-7016 这款屏幕其实是由 TFT LCD+触摸屏组合起来的。底下是 LCD 面板，上面是触摸面板，将两个封装到一起就成了带有触摸屏的 LCD 屏幕。电容触摸屏也是需要一个驱动 IC的，驱动 IC一般会提供一个 I2C 接口给主控制器，主控制器可以通过 I2C 接口来读取驱动 IC 里面的触摸坐标数据。</p>
 <p>ATK-7016 的电容触摸屏部分有 4 个 IO 用于连接主控制器：SCL、SDA、RST 和 INT，SCL 和 SDA 是 I2C 引脚，RST 是复位引脚，INT 是中断引脚。一般通过 INT 引脚来通知主控制器有触摸点按下，然后在 INT 中断服务函数中读取触摸数据。也可以不使用中断功能，采用轮询的方式不断查询是否有触摸点按下，<br><strong>触摸屏IP:</strong><br>    CT_INT，触摸中断线，连接到了GPIO1_IO09<br>    I2C2_SCL：连接到了UART5_TXD<br>    I2C2_SDA：连接到了UART5_RXD<br>    RESET：连接到了SNVS_TAMPER9</p>
 <p>电容触摸芯片输出的触摸点坐标信息为对应的屏幕像素点信息，因此不需要校准。电阻屏需要校准。</p>
 <h1 id="二、FT54x6电容触摸芯片简介"><a href="#二、FT54x6电容触摸芯片简介" class="headerlink" title="二、FT54x6电容触摸芯片简介"></a>二、FT54x6电容触摸芯片简介</h1><p>1、IIC接口，最大400KHz<br>2、正点原子7寸屏幕FT5426的IIC地址为0X38.<br><strong>寄存器</strong></p>

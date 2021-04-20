@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="Linux是一个多任务操作系统，肯定会存在多个任务共同操作同一段内存或者设备的情况，多个任务甚至中断都能访问的资源叫做共享资源，。在驱动开发中要注意对 共享资源的保护，也就是要处理对共享资源的并发访问。在 Linux 驱动编写过程中对于并发控制的管理非常重要，学习如何在 Linux 驱动中处理并发。 并发与竞争1、并发与竞争简介并发就是多个“用户”同时访问同一个共享资源。 Linux 系统是个多任">
+  <meta name="description" content="Linux是一个多任务操作系统，肯定会存在多个任务共同操作同一段内存或者设备的情况，多个任务甚至中断都能访问的资源叫做共享资源，。在驱动开发中要注意对 共享资源的保护，也就是要处理对共享资源的并发访问。在 Linux 驱动编写过程中对于并发控制的管理非常重要，学习如何在 Linux 驱动中处理并发。 并发与竞争1、并发与竞争简介并发就是多个“用户”同时访问同一个共享资源。 Linux 系统是">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux驱动-并发与竞争简介">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89%E7%AE%80%E4%BB%8B/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="Linux是一个多任务操作系统，肯定会存在多个任务共同操作同一段内存或者设备的情况，多个任务甚至中断都能访问的资源叫做共享资源，。在驱动开发中要注意对 共享资源的保护，也就是要处理对共享资源的并发访问。在 Linux 驱动编写过程中对于并发控制的管理非常重要，学习如何在 Linux 驱动中处理并发。 并发与竞争1、并发与竞争简介并发就是多个“用户”同时访问同一个共享资源。 Linux 系统是个多任">
+<meta property="og:description" content="Linux是一个多任务操作系统，肯定会存在多个任务共同操作同一段内存或者设备的情况，多个任务甚至中断都能访问的资源叫做共享资源，。在驱动开发中要注意对 共享资源的保护，也就是要处理对共享资源的并发访问。在 Linux 驱动编写过程中对于并发控制的管理非常重要，学习如何在 Linux 驱动中处理并发。 并发与竞争1、并发与竞争简介并发就是多个“用户”同时访问同一个共享资源。 Linux 系统是">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-14T14:51:29.000Z">
-<meta property="article:modified_time" content="2021-04-15T10:53:15.112Z">
+<meta property="article:modified_time" content="2021-04-20T09:38:32.565Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,7 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <p>Linux是一个多任务操作系统，肯定会存在多个任务共同操作同一段内存或者设备的情况，多个任务甚至中断都能访问的资源叫做共享资源，。在驱动开发中要注意对 共享资源的保护，也就是要处理对共享资源的并发访问。在 Linux 驱动编写过程中对于并发控制的管理非常重要，学习如何在 Linux 驱动中处理并发。</p>
+     <a id="more"></a>
+
+<p>Linux是一个多任务操作系统，肯定会存在多个任务共同操作同一段内存或者设备的情况，多个任务甚至中断都能访问的资源叫做共享资源，。在驱动开发中要注意对 共享资源的保护，也就是要处理对共享资源的并发访问。在 Linux 驱动编写过程中对于并发控制的管理非常重要，学习如何在 Linux 驱动中处理并发。</p>
 <h1 id="并发与竞争"><a href="#并发与竞争" class="headerlink" title="并发与竞争"></a><strong>并发与竞争</strong></h1><h2 id="1、并发与竞争简介"><a href="#1、并发与竞争简介" class="headerlink" title="1、并发与竞争简介"></a>1、并发与竞争简介</h2><p><strong>并发就是多个“用户”同时访问同一个共享资源。</strong></p>
 <p>Linux 系统是个多任务操作系统，会存在多个任务同时访问同一片内存区域，这些任务可能会相互覆盖这段内存中的数据，造成内存数据混乱。针对这个问题必须要做处理，严重的话可能会导致系统崩溃。现在的 Linux 系统并发产生的原因很复杂，总结一下有下面几个主要原因：</p>
 <p>①、多线程并发访问，Linux 是多任务(线程)的系统，所以多线程访问是最基本的原因。<br>②、抢占式并发访问，，Linux 内核支持抢占，也就是说调度程序可以在任意时刻抢占正在运行的线程，从而运行其他的线程。<br>③、中断程序并发访问，硬件中断的权利可是很大的。<br>④、SMP(多核)核间并发访问，现在 ARM 架构的多核 SOC 很常见，多核 CPU 存在核间并发访问。</p>

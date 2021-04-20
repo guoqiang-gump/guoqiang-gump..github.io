@@ -18,7 +18,7 @@
 <meta property="og:description" content="一、vmlinux.lds简介​    从arch&#x2F;arm&#x2F;kernel&#x2F;vmlinux.lds分析Linux内核第一行启动代码。找到ENTRY(stext)​    入口函数是stext，image和zImage是经过压缩的，Linux内核会先进行解压缩，解压缩完成以后就要运行Linux内核。要求：​    1、MMU关闭​    2、D cache关闭​    3、I cache无所谓​">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-13T07:51:53.000Z">
-<meta property="article:modified_time" content="2021-04-13T08:01:37.253Z">
+<meta property="article:modified_time" content="2021-04-20T09:41:31.903Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,7 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="一、vmlinux-lds简介"><a href="#一、vmlinux-lds简介" class="headerlink" title="一、vmlinux.lds简介"></a>一、vmlinux.lds简介</h1><p>​    从arch/arm/kernel/vmlinux.lds分析Linux内核第一行启动代码。找到<br>ENTRY(stext)<br>​    入口函数是stext，image和zImage是经过压缩的，Linux内核会先进行解压缩，解压缩完成以后就要运行Linux内核。要求：<br>​    1、MMU关闭<br>​    2、D cache关闭<br>​    3、I cache无所谓<br>​    4、r0 = 0。<br>​    5、r1 = machine nr<br>​    6、r2=atags 或设备树</p>
+     <a id="more"></a>
+
+<h1 id="一、vmlinux-lds简介"><a href="#一、vmlinux-lds简介" class="headerlink" title="一、vmlinux.lds简介"></a>一、vmlinux.lds简介</h1><p>​    从arch/arm/kernel/vmlinux.lds分析Linux内核第一行启动代码。找到<br>ENTRY(stext)<br>​    入口函数是stext，image和zImage是经过压缩的，Linux内核会先进行解压缩，解压缩完成以后就要运行Linux内核。要求：<br>​    1、MMU关闭<br>​    2、D cache关闭<br>​    3、I cache无所谓<br>​    4、r0 = 0。<br>​    5、r1 = machine nr<br>​    6、r2=atags 或设备树</p>
 <h1 id="二、Linux入口stext"><a href="#二、Linux入口stext" class="headerlink" title="二、Linux入口stext"></a>二、Linux入口stext</h1><p>​    __vet_atags 函数验证atags或dtb是否有效，如果使用设备树的话就是dtb。<br>     __create_page_tables 创建页表。<br>​    ldr    r13, =__mmap_switched 也就是r13保存__mmap_switched。<br>​    __enable_mmu  使能MMU<br>​        -&gt; __turn_mmu_on<br>​            -&gt;_mmap_switched<br>​                -&gt;start_kernel  启动内核。<br>​    Linux内核第一阶段。</p>
 <h1 id="三、-mmap-switched函数"><a href="#三、-mmap-switched函数" class="headerlink" title="三、__mmap_switched函数"></a>三、__mmap_switched函数</h1><h1 id="四、start-kernel函数"><a href="#四、start-kernel函数" class="headerlink" title="四、start_kernel函数"></a>四、start_kernel函数</h1><p>​    Linux内核第二阶段<br>​    start_kernel<br>​        -&gt; rest_init<br>​            -&gt; kernel_thread(kernel_init, NULL, CLONE_FS);  创建kernel_init进程。也就是<br>init进程，PID=1<br>​            -&gt; kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);  创建kthreadd<br>进程，进程PID为2。<br>​            -&gt; cpu_startup_entry 进入空闲进程，也就是主进程退化为空闲进程，idle。</p>
 <p>启动开发板，输入：ps -A，列出当前系统所有进程。</p>

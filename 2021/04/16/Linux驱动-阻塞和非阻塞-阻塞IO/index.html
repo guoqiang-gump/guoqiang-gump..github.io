@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="这里的“IO”单片机的“GPIO”(也就是引脚)。 这里的 IO 指的是 Input&#x2F;Output，也就是输入&#x2F;输出，是应用程序对驱动设备的输入&#x2F;输出操作。 阻塞IO当应用程序对设备驱动进行操作的时候，如果不能获取到设备资源，那么阻塞式 IO 就会将应用程序对应的线程挂起，直到设备资源可以获取为止。当使用阻塞IO时，应用程序调用 read 函数从设备中读取数据，当设备不可用或数据未准备好的时候就会">
+  <meta name="description" content="这里的“IO”单片机的“GPIO”(也就是引脚)。 这里的 IO 指的是 Input&#x2F;Output，也就是输入&#x2F;输出，是应用程序对驱动设备的输入&#x2F;输出操作。 阻塞IO当应用程序对设备驱动进行操作的时候，如果不能获取到设备资源，那么阻塞式 IO 就会将应用程序对应的线程挂起，直到设备资源可以获取为止。当使用阻塞IO时，应用程序调用 read 函数从设备中读取数据，当设备不可用或数据未准备好的时">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux驱动-阻塞IO">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-%E9%98%BB%E5%A1%9E%E5%92%8C%E9%9D%9E%E9%98%BB%E5%A1%9E-%E9%98%BB%E5%A1%9EIO/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="这里的“IO”单片机的“GPIO”(也就是引脚)。 这里的 IO 指的是 Input&#x2F;Output，也就是输入&#x2F;输出，是应用程序对驱动设备的输入&#x2F;输出操作。 阻塞IO当应用程序对设备驱动进行操作的时候，如果不能获取到设备资源，那么阻塞式 IO 就会将应用程序对应的线程挂起，直到设备资源可以获取为止。当使用阻塞IO时，应用程序调用 read 函数从设备中读取数据，当设备不可用或数据未准备好的时候就会">
+<meta property="og:description" content="这里的“IO”单片机的“GPIO”(也就是引脚)。 这里的 IO 指的是 Input&#x2F;Output，也就是输入&#x2F;输出，是应用程序对驱动设备的输入&#x2F;输出操作。 阻塞IO当应用程序对设备驱动进行操作的时候，如果不能获取到设备资源，那么阻塞式 IO 就会将应用程序对应的线程挂起，直到设备资源可以获取为止。当使用阻塞IO时，应用程序调用 read 函数从设备中读取数据，当设备不可用或数据未准备好的时">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-16T06:31:02.000Z">
-<meta property="article:modified_time" content="2021-04-16T06:57:21.488Z">
+<meta property="article:modified_time" content="2021-04-20T09:39:32.566Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,7 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <p>这里的“IO”单片机的“GPIO”(也就是引脚)。 这里的 IO 指的是 Input/Output，也就是输入/输出，是应用程序对驱动设备的输入/输出操作。</p>
+     <a id="more"></a>
+
+<p>这里的“IO”单片机的“GPIO”(也就是引脚)。 这里的 IO 指的是 Input/Output，也就是输入/输出，是应用程序对驱动设备的输入/输出操作。</p>
 <h2 id="阻塞IO"><a href="#阻塞IO" class="headerlink" title="阻塞IO"></a><strong>阻塞IO</strong></h2><p>当应用程序对设备驱动进行操作的时候，如果不能获取到设备资源，那么阻塞式 IO 就会将应用程序对应的线程挂起，直到设备资源可以获取为止。当使用阻塞IO时，应用程序调用 read 函数从设备中读取数据，当设备不可用或数据未准备好的时候就会进入到休眠态。等设备可用的时候就会从休眠态唤醒，然后从设备中读取数据返回给应用程序。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;应用程序阻塞读取数据</span><br><span class="line">int fd; </span><br><span class="line">int data &#x3D; 0; </span><br><span class="line">fd &#x3D; open(&quot;&#x2F;dev&#x2F;xxx_dev&quot;, O_RDWR); &#x2F;* 阻塞方式打开 *&#x2F;</span><br><span class="line">ret &#x3D; read(fd, &amp;data, sizeof(data)); &#x2F;* 读取数据 *&#x2F;</span><br></pre></td></tr></table></figure>
 <p>可以看出，对于设备驱动文件的默认读取方式就是阻塞式的，所以前面所有的例程测试 APP 都是采用阻塞 IO。 </p>

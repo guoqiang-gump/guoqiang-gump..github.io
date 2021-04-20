@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="设备树下的 platform 驱动platform 驱动框架分为总线、设备和驱动，其中总线不需要我们这些驱动程序员去管理，这  个是 Linux 内核提供的，我们在编写驱动的时候只要关注于设备和驱动的具体实现即可。在没  有设备树的 Linux 内核下，我们需要分别编写并注册 platform_device 和 platform_driver，分别代  表设备和驱动。在使用设备树的时候，设备的描述">
+  <meta name="description" content="设备树下的 platform 驱动platform 驱动框架分为总线、设备和驱动，其中总线不需要我们这些驱动程序员去管理，这  个是 Linux 内核提供的，我们在编写驱动的时候只要关注于设备和驱动的具体实现即可。在没  有设备树的 Linux 内核下，我们需要分别编写并注册 platform_device 和 platform_driver，分别代  表设备和驱动。在使用设备树的时候，设备">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux驱动-platform设备驱动-设备树">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-platform%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-%E8%AE%BE%E5%A4%87%E6%A0%91/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="设备树下的 platform 驱动platform 驱动框架分为总线、设备和驱动，其中总线不需要我们这些驱动程序员去管理，这  个是 Linux 内核提供的，我们在编写驱动的时候只要关注于设备和驱动的具体实现即可。在没  有设备树的 Linux 内核下，我们需要分别编写并注册 platform_device 和 platform_driver，分别代  表设备和驱动。在使用设备树的时候，设备的描述">
+<meta property="og:description" content="设备树下的 platform 驱动platform 驱动框架分为总线、设备和驱动，其中总线不需要我们这些驱动程序员去管理，这  个是 Linux 内核提供的，我们在编写驱动的时候只要关注于设备和驱动的具体实现即可。在没  有设备树的 Linux 内核下，我们需要分别编写并注册 platform_device 和 platform_driver，分别代  表设备和驱动。在使用设备树的时候，设备">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-16T10:24:46.000Z">
-<meta property="article:modified_time" content="2021-04-16T11:04:01.122Z">
+<meta property="article:modified_time" content="2021-04-20T09:41:02.745Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,7 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="设备树下的-platform-驱动"><a href="#设备树下的-platform-驱动" class="headerlink" title="设备树下的 platform 驱动"></a><strong>设备树下的</strong> <strong>platform</strong> <strong>驱动</strong></h1><p>platform 驱动框架分为总线、设备和驱动，其中总线不需要我们这些驱动程序员去管理，这 </p>
+     <a id="more"></a>
+
+<h1 id="设备树下的-platform-驱动"><a href="#设备树下的-platform-驱动" class="headerlink" title="设备树下的 platform 驱动"></a><strong>设备树下的</strong> <strong>platform</strong> <strong>驱动</strong></h1><p>platform 驱动框架分为总线、设备和驱动，其中总线不需要我们这些驱动程序员去管理，这 </p>
 <p>个是 Linux 内核提供的，我们在编写驱动的时候只要关注于设备和驱动的具体实现即可。在没 </p>
 <p>有设备树的 Linux 内核下，我们需要分别编写并注册 platform_device 和 platform_driver，分别代 </p>
 <p>表设备和驱动。在使用设备树的时候，设备的描述被放到了设备树中，因此 platform_device 就 </p>

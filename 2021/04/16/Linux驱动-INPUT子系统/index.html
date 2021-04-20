@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="input 子系统按键、鼠标、键盘、触摸屏等都属于输入(input)设备，Linux 内核为此专门做了一个叫做 input子系统的框架来处理输入事件。输入设备本质上还是字符设备，只是在此基础上套上了 input 框架，用户只需要负责上报输入事件，比如按键值、坐标等信息，input 核心层负责处理这些事件。  input 子系统管理输入的子系统，和 pinctrl 和 gpio 子系统 一样，都是">
+  <meta name="description" content="input 子系统按键、鼠标、键盘、触摸屏等都属于输入(input)设备，Linux 内核为此专门做了一个叫做 input子系统的框架来处理输入事件。输入设备本质上还是字符设备，只是在此基础上套上了 input 框架，用户只需要负责上报输入事件，比如按键值、坐标等信息，input 核心层负责处理这些事件。  input 子系统管理输入的子系统，和 pinctrl 和 gpio 子系统 一样，">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux驱动-INPUT子系统">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-INPUT%E5%AD%90%E7%B3%BB%E7%BB%9F/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="input 子系统按键、鼠标、键盘、触摸屏等都属于输入(input)设备，Linux 内核为此专门做了一个叫做 input子系统的框架来处理输入事件。输入设备本质上还是字符设备，只是在此基础上套上了 input 框架，用户只需要负责上报输入事件，比如按键值、坐标等信息，input 核心层负责处理这些事件。  input 子系统管理输入的子系统，和 pinctrl 和 gpio 子系统 一样，都是">
+<meta property="og:description" content="input 子系统按键、鼠标、键盘、触摸屏等都属于输入(input)设备，Linux 内核为此专门做了一个叫做 input子系统的框架来处理输入事件。输入设备本质上还是字符设备，只是在此基础上套上了 input 框架，用户只需要负责上报输入事件，比如按键值、坐标等信息，input 核心层负责处理这些事件。  input 子系统管理输入的子系统，和 pinctrl 和 gpio 子系统 一样，">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-16T12:58:20.000Z">
-<meta property="article:modified_time" content="2021-04-16T15:55:24.149Z">
+<meta property="article:modified_time" content="2021-04-20T09:39:54.944Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,7 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="input-子系统"><a href="#input-子系统" class="headerlink" title="input 子系统"></a><strong>input</strong> <strong>子系统</strong></h1><p>按键、鼠标、键盘、触摸屏等都属于输入(input)设备，Linux 内核为此专门做了一个叫做 input子系统的框架来处理输入事件。输入设备本质上还是字符设备，只是在此基础上套上了 input 框架，用户只需要负责上报输入事件，比如按键值、坐标等信息，input 核心层负责处理这些事件。</p>
+     <a id="more"></a>
+
+<h1 id="input-子系统"><a href="#input-子系统" class="headerlink" title="input 子系统"></a><strong>input</strong> <strong>子系统</strong></h1><p>按键、鼠标、键盘、触摸屏等都属于输入(input)设备，Linux 内核为此专门做了一个叫做 input子系统的框架来处理输入事件。输入设备本质上还是字符设备，只是在此基础上套上了 input 框架，用户只需要负责上报输入事件，比如按键值、坐标等信息，input 核心层负责处理这些事件。</p>
 <p> input 子系统管理输入的子系统，和 pinctrl 和 gpio 子系统 一样，都是 Linux 内核针对某一类设备而创建的框架。比如按键输入、键盘、鼠标、触摸屏等等这些都属于输入设备，不同的输入设备所代表的含义不同，按键和键盘就是代表按键信息，鼠标和触摸屏代表坐标信息，因此在应用层的处理就不同。</p>
 <p>对于驱动编写者而言不需要去关心应用层的事情，我们只需要按照要求上报这些输入事件即可。为此 input 子系统分为 input 驱动层、input 核心层、input 事件处理层，最终给用户空间提供可访问的设备节点。input 子系统驱动分层模型，编写驱动程序的时候只需要关注中间的驱动层、核心层和事件层，这三个层的分工如下： </p>
 <ul>

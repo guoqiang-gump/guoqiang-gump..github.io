@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="一、PWM简介PWM 全称是 PulseWidth Modulation，也就是脉冲宽度调制， 频率是开关速度，把一次开关算作一个周 期，那么频率就是 1 秒内进行了多少次开关。 占空比是一个周期内高电平时间和低电平时间的比例，一个周期内高电平时间越长占空比就越大，反之占空比就越小。占空比用百分数表示，如果一个周期内全是低电平那么占空比就是 0%，提高占空比就会提高背光亮度，降低占空比就会降低背光">
+  <meta name="description" content="一、PWM简介PWM 全称是 PulseWidth Modulation，也就是脉冲宽度调制， 频率是开关速度，把一次开关算作一个周 期，那么频率就是 1 秒内进行了多少次开关。 占空比是一个周期内高电平时间和低电平时间的比例，一个周期内高电平时间越长占空比就越大，反之占空比就越小。占空比用百分数表示，如果一个周期内全是低电平那么占空比就是 0%，提高占空比就会提高背光亮度，降低占空比就会降">
 <meta property="og:type" content="article">
 <meta property="og:title" content="IMX6U-PWM">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/12/IMX6U-PWM/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="一、PWM简介PWM 全称是 PulseWidth Modulation，也就是脉冲宽度调制， 频率是开关速度，把一次开关算作一个周 期，那么频率就是 1 秒内进行了多少次开关。 占空比是一个周期内高电平时间和低电平时间的比例，一个周期内高电平时间越长占空比就越大，反之占空比就越小。占空比用百分数表示，如果一个周期内全是低电平那么占空比就是 0%，提高占空比就会提高背光亮度，降低占空比就会降低背光">
+<meta property="og:description" content="一、PWM简介PWM 全称是 PulseWidth Modulation，也就是脉冲宽度调制， 频率是开关速度，把一次开关算作一个周 期，那么频率就是 1 秒内进行了多少次开关。 占空比是一个周期内高电平时间和低电平时间的比例，一个周期内高电平时间越长占空比就越大，反之占空比就越小。占空比用百分数表示，如果一个周期内全是低电平那么占空比就是 0%，提高占空比就会提高背光亮度，降低占空比就会降">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-12T09:27:23.000Z">
-<meta property="article:modified_time" content="2021-04-12T13:17:28.549Z">
+<meta property="article:modified_time" content="2021-04-20T09:36:52.336Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,7 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="一、PWM简介"><a href="#一、PWM简介" class="headerlink" title="一、PWM简介"></a>一、PWM简介</h1><p>PWM 全称是 PulseWidth Modulation，也就是脉冲宽度调制，</p>
+     <a id="more"></a>
+
+<h1 id="一、PWM简介"><a href="#一、PWM简介" class="headerlink" title="一、PWM简介"></a>一、PWM简介</h1><p>PWM 全称是 PulseWidth Modulation，也就是脉冲宽度调制，</p>
 <p><strong>频率</strong>是开关速度，把一次开关算作一个周 期，那么频率就是 1 秒内进行了多少次开关。</p>
 <p><strong>占空比</strong>是一个周期内高电平时间和低电平时间的比例，一个周期内高电平时间越长占空比就越大，反之占空比就越小。占空比用百分数表示，如果一个周期内全是低电平那么占空比就是 0%，提高占空比就会提高背光亮度，降低占空比就会降低背光亮度。</p>
 <h1 id="二、I-MX6U的PWM详解"><a href="#二、I-MX6U的PWM详解" class="headerlink" title="二、I.MX6U的PWM详解"></a>二、I.MX6U的PWM详解</h1><p>I.MX6U一共有 8 路 PWM 信号，每个 PWM 包含一个 16 位的计数器和一个 4 x 16 的数据 FIFO。</p>

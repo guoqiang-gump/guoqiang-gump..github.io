@@ -224,7 +224,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="C语言运行环境构建"><a href="#C语言运行环境构建" class="headerlink" title="C语言运行环境构建"></a>C语言运行环境构建</h1><p>在开始部分用汇编来初始化一下 C 语言环境，比如初始化 DDR、 </p>
+     <a id="more"></a>
+
+<h1 id="C语言运行环境构建"><a href="#C语言运行环境构建" class="headerlink" title="C语言运行环境构建"></a>C语言运行环境构建</h1><p>在开始部分用汇编来初始化一下 C 语言环境，比如初始化 DDR、 </p>
 <p>设置堆栈指针 SP 等等，当这些工作都做完以后就可以进入 C 语言环境，也就是运行 C 语言代 </p>
 <p>码，一般都是进入 main 函数。所以我们有两部分文件要做：</p>
 <p>①、汇编文件 </p>
@@ -232,9 +234,45 @@
 <p>②、C 语言文件 </p>
 <p>C 语言文件就是完成我们的业务层代码的，其实就是我们实际例程要完成的功能。 </p>
 <h2 id="设置处理器模式"><a href="#设置处理器模式" class="headerlink" title="设置处理器模式"></a>设置处理器模式</h2><p>​    设置6ULL处于SVC模式 下。设置CPSR寄存器的bit4-0，也就是M[4:0]为10011=0X13。读写状态寄存器需要用到MRS和MSR指令。MRS将CPSR寄存器数据读出到通用寄存器里面，MSR指令将通用寄存器的值写入到CPSR寄存器里面去。</p>
-    
-    <a class="article-more-a" href="/2021/03/03/IMX6U-C%E8%AF%AD%E8%A8%80LED/#more">more >></a>
-    
+ <!-- more --> 
+
+<h2 id="设置sp指针"><a href="#设置sp指针" class="headerlink" title="设置sp指针"></a>设置sp指针</h2><p>​    Sp可以指向内部RAM，也可以指向DDR，我们将其指向DDR。Sp设置到哪里？512MB的范围0x80000000~0x9FFFFFFF。栈大小，0x200000=2MB。处理器栈增长方式，对于A7而言是向下增长的。设置sp指向0x80200000。</p>
+<h3 id="跳转到C语言"><a href="#跳转到C语言" class="headerlink" title="跳转到C语言"></a>跳转到C语言</h3><p>​    使用b指令，跳转到C语言函数，比如main函数。</p>
+<p>汇编文件只是用来完成 C 语言环境搭建。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">.global _start  		&#x2F;* 全局标号 *&#x2F;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * 描述：	_start函数，程序从此函数开始执行，此函数主要功能是设置C</span><br><span class="line"> *		 运行环境。</span><br><span class="line"> *&#x2F;</span><br><span class="line">_start:</span><br><span class="line"></span><br><span class="line">	&#x2F;* 进入SVC模式 *&#x2F;</span><br><span class="line">	mrs r0, cpsr</span><br><span class="line">	bic r0, r0, #0x1f 	&#x2F;* 将r0寄存器中的低5位清零，也就是cpsr的M0~M4 	*&#x2F;</span><br><span class="line">	orr r0, r0, #0x13 	&#x2F;* r0或上0x13,表示使用SVC模式					*&#x2F;</span><br><span class="line">	msr cpsr, r0		&#x2F;* 将r0 的数据写入到cpsr_c中 					*&#x2F;</span><br><span class="line"></span><br><span class="line">	ldr sp, &#x3D;0X80200000	&#x2F;* 设置栈指针			 *&#x2F;</span><br><span class="line">	b main				&#x2F;* 跳转到main函数 		 *&#x2F;</span><br></pre></td></tr></table></figure>
+<p>第 1 行定义了一个全局标号_start。 </p>
+<p>第 7 行就是标号_start 开始的地方，相当于是一个_start 函数，这个_start 就是第一行代码。 </p>
+<p>第 10~13 行就是设置处理器进入 SVC 模式，在 6.2 小节的“Cortex-A 处理器运行模型”中 </p>
+<p>我们说过 Cortex-A 有九个运行模型，这里我们设置处理器运行在 SVC 模式下。处理器模式的 </p>
+<p>设置是通过修改 CPSR(程序状态)寄存器来完成的，在 6.3.2 小节中我们详细的讲解了 CPSR 寄 </p>
+<p>存器，其中 M[4:0](CPSR 的 bit[4:0])就是设置处理器运行模式的，参考表 6.3.2.2，如果要将处 </p>
+<p>理器设置为 SVC 模式，那么 M[4:0]就要等于 0X13。11~13 行代码就是先使用指令 MRS 将 CPSR </p>
+<p>寄存器的值读取到 R0 中，然后修改 R0 中的值，设置 R0 的 bit[4:0]为 0X13，然后再使用指令 </p>
+<p>MSR 将修改后的 R0 重新写入到 CPSR 中。 </p>
+<p>第 15 行通过 ldr 指令设置 SVC 模式下的 SP 指针=0X80200000，因为 I.MX6U-ALPHA 开 </p>
+<p>发 板 上 的 </p>
+<p>DDR3 </p>
+<p>地 址 范 围 是 </p>
+<p>0X80000000~0XA0000000(512MB) 或 者 </p>
+<p>0X80000000~0X90000000(256MB)，不管是 512MB 版本还是 256MB 版本的，其 DDR3 起始地 </p>
+<p>址都是 0X80000000。由于 Cortex-A7 的堆栈是向下增长的，所以将 SP 指针设置为 0X80200000， </p>
+<p>因此 SVC 模式的栈大小 0X80200000-0X80000000=0X200000=2MB，2MB 的栈空间已经很大了， </p>
+<p>如果做裸机开发的话绰绰有余。 </p>
+<p>第 16 行就是跳转到 main 函数，main 函数就是 C 语言代码了。</p>
+<p>几行代码，用来设置处理器运行到 SVC 模式下、然后初始 </p>
+<p>化 SP 指针、最终跳转到 C 文件的 main 函数中。</p>
+<p>start.s 文件中却没有初始化 DDR3 的代码，DDR3 肯定是要初始化的，但是不需要在 start.s 文 </p>
+<p>件中完成。在 9.4.2 小节里面分析 DCD 数据的时候就已经讲过了，DCD 数据包含了 DDR 配置 </p>
+<p>参数，I.MX6U 内部的 Boot ROM 会读取 DCD 数据中的 DDR 配置参数然后完成 DDR 初始化 </p>
+<p>的。 </p>
+<h2 id="C-语言部分实验程序编写"><a href="#C-语言部分实验程序编写" class="headerlink" title="C 语言部分实验程序编写"></a><strong>C</strong> <strong>语言部分实验程序编写</strong></h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;**************************************************************</span><br><span class="line">描述	   : I.MX6U开发板裸机实验2 C语言点灯使用C语言来点亮开发板上的LED灯，学习</span><br><span class="line">			和掌握如何用C语言来完成对I.MX6U处理器的GPIO初始化和控制。</span><br><span class="line">**************************************************************&#x2F;</span><br><span class="line">#include &quot;main.h&quot;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 使能I.MX6U所有外设时钟</span><br><span class="line"> *&#x2F;</span><br><span class="line">void clk_enable(void)</span><br><span class="line">&#123;</span><br><span class="line">	CCM_CCGR0 &#x3D; 0xffffffff;</span><br><span class="line">	CCM_CCGR1 &#x3D; 0xffffffff;</span><br><span class="line">	CCM_CCGR2 &#x3D; 0xffffffff;</span><br><span class="line">	CCM_CCGR3 &#x3D; 0xffffffff;</span><br><span class="line">	CCM_CCGR4 &#x3D; 0xffffffff;</span><br><span class="line">	CCM_CCGR5 &#x3D; 0xffffffff;</span><br><span class="line">	CCM_CCGR6 &#x3D; 0xffffffff;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 初始化LED对应的GPIO</span><br><span class="line"> *&#x2F;</span><br><span class="line">void led_init(void)</span><br><span class="line">&#123;</span><br><span class="line">	&#x2F;* 1、初始化IO复用 *&#x2F;</span><br><span class="line">	SW_MUX_GPIO1_IO03 &#x3D; 0x5;	&#x2F;* 复用为GPIO1_IO03 *&#x2F;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 2、、配置GPIO1_IO03的IO属性	</span><br><span class="line">	 *bit 16:0 HYS关闭</span><br><span class="line">	 *bit [15:14]: 00 默认下拉</span><br><span class="line">     *bit [13]: 0 kepper功能</span><br><span class="line">     *bit [12]: 1 pull&#x2F;keeper使能</span><br><span class="line">     *bit [11]: 0 关闭开路输出</span><br><span class="line">     *bit [7:6]: 10 速度100Mhz</span><br><span class="line">     *bit [5:3]: 110 R0&#x2F;6驱动能力</span><br><span class="line">     *bit [0]: 0 低转换率</span><br><span class="line">     *&#x2F;</span><br><span class="line">	SW_PAD_GPIO1_IO03 &#x3D; 0X10B0;		</span><br><span class="line"></span><br><span class="line">	&#x2F;* 3、初始化GPIO *&#x2F;</span><br><span class="line">	GPIO1_GDIR &#x3D; 0X0000008;	&#x2F;* GPIO1_IO03设置为输出 *&#x2F;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 4、设置GPIO1_IO03输出低电平，打开LED0 *&#x2F;</span><br><span class="line">	GPIO1_DR &#x3D; 0X0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 打开LED灯</span><br><span class="line"> *&#x2F;</span><br><span class="line">void led_on(void)</span><br><span class="line">&#123;</span><br><span class="line">	&#x2F;* </span><br><span class="line">	 * 将GPIO1_DR的bit3清零	 </span><br><span class="line">	 *&#x2F;</span><br><span class="line">	GPIO1_DR &amp;&#x3D; ~(1&lt;&lt;3); </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 关闭LED灯</span><br><span class="line"> *&#x2F;</span><br><span class="line">void led_off(void)</span><br><span class="line">&#123;</span><br><span class="line">	&#x2F;*    </span><br><span class="line">	 * 将GPIO1_DR的bit3置1</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	GPIO1_DR |&#x3D; (1&lt;&lt;3);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h1 id="链接脚本"><a href="#链接脚本" class="headerlink" title="链接脚本"></a>链接脚本</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">SECTIONS&#123;</span><br><span class="line">	. &#x3D; 0X87800000;</span><br><span class="line">	.text :</span><br><span class="line">	&#123;</span><br><span class="line">		start.o </span><br><span class="line">		main.o </span><br><span class="line">		*(.text)</span><br><span class="line">	&#125;</span><br><span class="line">	.rodata ALIGN(4) : &#123;*(.rodata*)&#125;     </span><br><span class="line">	.data ALIGN(4)   : &#123; *(.data) &#125;    </span><br><span class="line">	__bss_start &#x3D; .;    </span><br><span class="line">	.bss ALIGN(4)  : &#123; *(.bss)  *(COMMON) &#125;    </span><br><span class="line">	__bss_end &#x3D; .;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>第 2 行设置定位计数器为0X87800000，因为我们的链接地址就是0X87800000。</p>
+<p>第5行设置链接到开始位置的文件为start.o，因为 start.o 里面包含着第一个要执行的指令，所以一定要链接到最开始的地方。</p>
+<p>第 6 行是 main.o这个文件，其实可以不用写出来，因为 main.o 的位置就无所谓了，可以由编译器自行决定链接 位置。</p>
+<p>在第 11、13 行有“__bss_start”和“__bss_end”这两个东西？这个是什么呢？“__bss_start” 和“__bss_end”是符号，第 11、13 这两行其实就是对这两个符号进行赋值，其值为定位符“.”， 这两个符号用来保存.bss 段的起始地址和结束地址。前面说了.bss 段是定义了但是没有被初始化的变量，我们需要手动对.bss 段的变量清零的，因此我们需要知道.bss 段的起始和结束地址， 这样我们直接对这段内存赋 0 即可完成清零。</p>
+<p>通过第 11、13 行代码，.bss 段的起始地址和结束 地址就保存在了“__bss_start”和“__bss_end”中，我们就可以直接在汇编或者 C 文件里面使 用这两个符号。</p>
+
     
 
     
@@ -338,11 +376,52 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="编译程序"><a href="#编译程序" class="headerlink" title="编译程序"></a>编译程序</h1><p>​    1、编译程序    </p>
+     <a id="more"></a>
+
+<h1 id="编译程序"><a href="#编译程序" class="headerlink" title="编译程序"></a>编译程序</h1><p>​    1、编译程序    </p>
 <p>①、使用*<strong>*arm-linux-gnueabihf-gcc*****</strong>*，****将.c .s文件变为.o</p>
-    
-    <a class="article-more-a" href="/2021/03/02/IMX6U%E7%BC%96%E8%AF%91%E4%B8%8E%E7%83%A7%E5%86%99/#more">more >></a>
-    
+  <!-- more -->  
+
+<p>②、将所有的.o文件连接为elf格式的可执行文件。</p>
+<p>③、将elf文件转为bin文件。</p>
+<p>④、将elf文件转为汇编，反汇编。</p>
+<p>链接：</p>
+<p>​    链接就是将所有.o文件链接在一起，并且链接到指定的地方。本实验链接的时候要指定链接起始地址。链接起始地址就是代码运行的起始地址。</p>
+<p>​    对于6ULL来说，链接起始地址应该指向RAM地址。RAM分为内部RAM和外部RAM，也就是 DDR。6ULL内部RAM地址范围0X900000<del>0X91FFFF。也可以放到外部DDR中，对于I.MX6U-ALPHA开发板，512MB字节DDR版本的核心板，DDR范围就是0X80000000</del>0X9FFFFFFF。对于256MB的DDR来说，那就0X80000000~0X8FFFFFFF。</p>
+<p>​    本系列视频，裸机代码的链接起始地址为0X87800000。要使用DDR，那么必须要初始化DDR，对于I.MX来说bin文件不能直接运行，需要添加一个头部，这个头部信息包含了DDR的初始化参数，I.MX系列SOC内部boot rom会从SD卡，EMMC等外置存储中读取头部信息，然后初始化DDR，并且将bin文件拷贝到指定的地方。</p>
+<p>​    Bin的运行地址一定要和链接起始地址一致。位置无关代码除外。</p>
+<h2 id="编译代码"><a href="#编译代码" class="headerlink" title="编译代码"></a><strong>编译代码</strong></h2><p><strong>arm-linux-gnueabihf-gcc</strong> <strong>编译文件</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">arm-linux-gnueabihf-gcc -g -c led.s -o led.o</span><br></pre></td></tr></table></figure>
+<p>上述命令就是将 led.s 编译为 led.o，其中“-g”选项是产生调试信息，GDB 能够使用这些调试信息进行代码调试。“-c”选项是编译源文件，但是不链接。“-o”选项是指定编译产生的文件名字，这里我们指定 led.s 编译完成以后的文件名字为 led.o。</p>
+<p><strong>arm-linux-gnueabihf-ld</strong> <strong>链接文件</strong></p>
+<p>本试验最终的可执行文件其运行起始地址，也就是链接地址。这里我们要区分“存储地址”和“运行地址”这两个概念，“存储地址”就是可执 行文件存储在哪里，可执行文件的存储地址可以随意选择。“运行地址”就是代码运行的时候所处的地址，这个我们在链接的时候就已经确定好了，代码要运行，那就必须处于运行地址处，否则代码肯定运行出错。比如 I.MX6U 支持 SD 卡、EMMC、NAND 启动，因此代码可以 存储到 SD 卡、EMMC 或者 NAND 中，但是要运行的话就必须将代码从 SD 卡、EMMC 或者NAND 中拷贝到其运行地址(链接地址)处，“存储地址”和“运行地址”可以一样。</p>
+<p>裸机例程都是烧写到 SD 卡中，上电以后 I.MX6U 的内部 boot rom 程序会将 可执行文件拷贝到链接地址处，这个链接地址可以在 I.MX6U 的内部 128KB RAM 中 (0X900000~0X91FFFF)，也可以在外部的 DDR 中。所有裸机例程的链接地址都在 DDR 中，链接起始地址为 0X87800000。之所以选择 0X87800000 这个地址是因为后面要讲的 Uboot 其链接地址就是 0X87800000，这样我们统一使用 0X87800000 这个链接地址，不容易记混。</p>
+<p>确定了链接地址以后就可以使用 arm-linux-gnueabihf-ld 来将前面编译出来的 led.o 文件链接到 0X87800000 这个地址，使用如下命令： </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">arm-linux-gnueabihf-ld -Ttext 0X87800000 led.o -o led.elf</span><br></pre></td></tr></table></figure>
+<p>上述命令中-Ttext 就是指定链接地址，“-o”选项指定链接生成的 elf 文件名，这里我们命名为 led.elf。上述命令执行完以后就会在工程目录下多一个 led.elf 文件，</p>
+<p><strong>arm-linux-gnueabihf-objcopy</strong> <strong>格式转换</strong></p>
+<p>arm-linux-gnueabihf-objcopy 更像一个格式转换工具，我们需要用它将 led.elf 文件转换为led.bin 文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">arm-linux-gnueabihf-objcopy -O binary -S -g led.elf led.bin </span><br></pre></td></tr></table></figure>
+<p>上述命令中，“-O”选项指定以什么格式输出，后面的“binary”表示以二进制格式输出，选项“-S”表示不要复制源文件中的重定位信息和符号信息，“-g”表示不复制源文件中的调试信息。</p>
+<p><strong>arm-linux-gnueabihf-objdump</strong> <strong>反汇编</strong> </p>
+<p>大多数情况下我们都是用 C 语言写试验例程的，有时候需要查看其汇编代码来调试代码，因此就需要进行反汇编，一般可以将 elf 文件反汇编，比如如下命令： </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">arm-linux-gnueabihf-objdump -D led.elf &gt; led.dis </span><br></pre></td></tr></table></figure>
+<p>上述代码中的“-D”选项表示反汇编所有的段。</p>
+<h1 id="烧写bin文件"><a href="#烧写bin文件" class="headerlink" title="烧写bin文件"></a>烧写bin文件</h1><p>6ULL支持SD卡、EMMC、NAND、nor、SPI flash等等启动。裸机例程选择烧写到SD卡里面。</p>
+<p>​    在ubuntu下向SD卡烧写裸机bin文件。烧写不是将bin文件拷贝到SD卡中，而是将bin文件烧写到SD卡绝对地址上。而且对于I.MX而言，不能直接烧写bin文件，比如先在bin文件前面添加头部。完成这个工作，需要使用正点原子提供的imxdownload软件。Imxdownload使用方法，确定要烧写的SD卡文件。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">给予imxdownload可执行权限：</span><br><span class="line">Chmod 777 imxdownload</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">烧写：</span><br><span class="line">.&#x2F;imxdownload led.bin &#x2F;dev&#x2F;sdf</span><br></pre></td></tr></table></figure>
+<p>​    Imxdownlaod会向led.bin添加一个头部，生成新的load.imx文件，这个load.imx文件就是最终烧写到SD卡里面去的。</p>
+<h1 id="链接脚本"><a href="#链接脚本" class="headerlink" title="链接脚本"></a><strong>链接脚本</strong></h1><p>在上面的 Makefile 中我们链接代码的时候使用如下语句： </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">arm-linux-gnueabihf-ld -Ttext 0X87800000 -o ledc.elf $^ </span><br></pre></td></tr></table></figure>
+<p>上面语句中我们是通过“-Ttext”来指定链接地址是 0X87800000 的，这样的话所有的文件都会链接到0X87800000 为起始地址的区域。要完成指定一个文件或者函数应该存放到哪个段里面去这个功能我们就需要使用到链接脚本，链接脚本主要用于链接的，用于描述文件应该如何被链接在一起形成最终的可执行文件。其主要目的是描述输入文件中的段如何被映射到输出文件中，并且控制输出文件中的内存排布。我们一般编译出来的代码都包含在 text、data、bss 和 rodata 这四个段内。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">1 SECTIONS&#123; </span><br><span class="line">2 . &#x3D; 0X10000000; </span><br><span class="line">3 .text : &#123;*(.text)&#125;</span><br><span class="line">4 . &#x3D; 0X30000000; </span><br><span class="line">5 .data ALIGN(4) : &#123; *(.data) &#125; </span><br><span class="line">6 .bss ALIGN(4) : &#123; *(.bss) &#125; </span><br><span class="line">7 &#125;</span><br></pre></td></tr></table></figure>
+<p>第 1 行我们先写了一个关键字“SECTIONS”，后面跟了一个大括号，这个大括号和第 7 行的大括号是一对，这是必须的。看起来就跟 C 语言里面的函数一样。第 2 行对一个特殊符号“.”进行赋值，“.”在链接脚本里面叫做定位计数器，默认的定位计数器为0。我们要求代码链接到以 0X10000000 为起始地址的地方，因此这一行给“.”赋值0X10000000，表示以 0X10000000 开始，后面的文件或者段都会以 0X10000000 为起始地址开始链接。 </p>
+<p>第 3 行的“.text”是段名，后面的冒号是语法要求，冒号后面的大括号里面可以填上要链接到“.text”这个段里面的所有文件，“*(.text)”中的“*”是通配符，表示所有输入文件的.text段都放到“.text”中。 </p>
+<p>第 4 行，我们的要求是数据放到 0X30000000 开始的地方，所以我们需要重新设置定位计数器“.”，将其改为 0X30000000。</p>
+<p>第 5 行定义了一个名为“.data”的段，然后所有文件的“.data”段都放到这里面。但是这一行多了一个“ALIGN(4)”用来对“.data”这个段的起 始地址做字节对齐的，ALIGN(4)表示 4 字节对齐。也就是说段“.data”的起始地址要能被 4 整 除，一般常见的都是 ALIGN(4)或者 ALIGN(8)，也就是 4 字节或者 8 字节对齐。 </p>
+<p>第 6 行定义了一个“.bss”段，所有文件中的“.bss”数据都会被放到这个里面，“.bss”数据就是那些定义了但是没有被初始化的变量。</p>
+
     
 
     
@@ -450,11 +529,34 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="一、汇编LED原理分析"><a href="#一、汇编LED原理分析" class="headerlink" title="一、汇编LED原理分析"></a>一、汇编LED原理分析</h1><p>​    为什么要学习Cortex-A汇编：</p>
+     <a id="more"></a>
+
+<h1 id="一、汇编LED原理分析"><a href="#一、汇编LED原理分析" class="headerlink" title="一、汇编LED原理分析"></a>一、汇编LED原理分析</h1><p>​    为什么要学习Cortex-A汇编：</p>
 <p>​    ①、需要用汇编初始化一些SOC外设。</p>
-    
-    <a class="article-more-a" href="/2021/03/02/IMX6U%E6%B1%87%E7%BC%96LED/#more">more >></a>
-    
+<p>​    ②、使用汇编初始化DDR，I.MX6U不需要。</p>
+<p>​    ③、设置sp指针，一般指向DDR，设置好C语言运行环境。</p>
+<h3 id="1、ALPHA开发板LED灯硬件原理分析："><a href="#1、ALPHA开发板LED灯硬件原理分析：" class="headerlink" title="1、ALPHA开发板LED灯硬件原理分析："></a>1、ALPHA开发板LED灯硬件原理分析：</h3><h3 id="I-MX6ULL-IO初始化："><a href="#I-MX6ULL-IO初始化：" class="headerlink" title="I.MX6ULL IO初始化："></a>I.MX6ULL IO初始化：</h3><p>​    LED0 接到了 GPIO_3 上，GPIO_3 就是 GPIO1_IO03，当 GPIO1_IO03输出低电平(0)的时候发光二极管 LED0 就会导通点亮，当 GPIO1_IO03 输出高电平(1)的时候发 光二极管 LED0 不会导通，因此 LED0 也就不会点亮。所以 LED0 的亮灭取决于 GPIO1_IO03的输出电平，输出 0 就亮，输出 1 就灭。 </p>
+<p>①、<strong>使能</strong> <strong>GPIO1</strong> <strong>时钟</strong>，GPIO1 的时钟由 CCM_CCGR1 的 bit27 和 bit26 这两个位控制，将这两个位都设置位 11 即可。将 I.MX6U 的所有外设时钟都已经打开了，因此这一步可以不用做。</p>
+<p>​    ②、<strong>设置</strong> <strong>GPIO1_IO03</strong> <strong>的复用功能</strong>，将寄存器IOMUXC_SW_MUX_CTL_PAD_GPIO1_IO03的bit3~0设置为0101=5，这样GPIO1_IO03就复用为GPIO。</p>
+<p>​    ③、寄存器IOMUXC_SW_PAD_CTL_PAD_GPIO1_IO03是设置GPIO1_IO03的电气属性。包括压摆率、速度、驱动能力、开漏、上下拉等。</p>
+<p>​    ④、配置GPIO功能，设置输入输出。设置GPIO1_DR寄存器bit3为1，也就是设置为输出模式。设置GPIO1_DR寄存器的bit3，为1表示输出高电平，为0表示输出低电平。</p>
+<p>LED0 接到了 GPIO_3 上，GPIO_3 就是 GPIO1_IO03，当 GPIO1_IO03输出低电平(0)的时候发光二极管 LED0 就会导通点亮，当 GPIO1_IO03 输出高电平(1)的时候发 光二极管 LED0 不会导通，因此 LED0 也就不会点亮。所以 LED0 的亮灭取决于 GPIO1_IO03的输出电平，输出 0 就亮，输出 1 就灭。 </p>
+<h3 id="实验程序编写"><a href="#实验程序编写" class="headerlink" title="实验程序编写"></a>实验程序编写</h3><p>1、使能 GPIO1 时钟<br>GPIO1 的时钟由 CCM_CCGR1 的 bit27 和 bit26 这两个位控制，将这两个位都设置位 11 即可。本教程所有例程已经将 I.MX6U 的所有外设时钟都已经打开了，因此这一步可以不用做。</p>
+<p>2、设置 GPIO1_IO03 的复用功能<br>找到 GPIO1_IO03 的复用寄存器“IOMUXC_SW_MUX_CTL_PAD_GPIO1_IO03”的地址为0X020E0068，然后设置此寄存器，将 GPIO1_IO03 这个 IO 复用为 GPIO 功能，也就是 ALT5。</p>
+<p> 3、配置 GPIO1_IO03<br>找到 GPIO1_IO03 的配置寄存器“IOMUXC_SW_PAD_CTL_PAD_GPIO1_IO03”的地址为0X020E02F4，根据实际使用情况，配置此寄存器.</p>
+<p>4、设置 GPIO</p>
+<p>本实验中 GPIO1_IO03 是作为输出功能的，因此 GPIO1_GDIR 的 bit3 要设置为 1，表示输出。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"> &#x2F;&#x2F;led.s 文件源码</span><br><span class="line">.global _start &#x2F;* 全局标号 *&#x2F;</span><br><span class="line">&#x2F;*</span><br><span class="line"> 描述： _start函数，程序从此函数开始执行此函数完成时钟使能、GPIO初始化、最终控制GPIO输出低电平来点亮LED灯。</span><br><span class="line"> *&#x2F;</span><br><span class="line"></span><br><span class="line">_start:</span><br><span class="line"></span><br><span class="line">  &#x2F;* 例程代码 *&#x2F;</span><br><span class="line">  &#x2F;* 1、使能所有时钟 *&#x2F;</span><br><span class="line">  ldr r0, &#x3D;0X020C4068   &#x2F;* CCGR0 *&#x2F;</span><br><span class="line">  ldr r1, &#x3D;0XFFFFFFFF </span><br><span class="line">  str r1, [r0]    </span><br><span class="line">  ldr r0, &#x3D;0X020C406C   &#x2F;* CCGR1 *&#x2F;</span><br><span class="line">  str r1, [r0]</span><br><span class="line">  ldr r0, &#x3D;0X020C4070   &#x2F;* CCGR2 *&#x2F;</span><br><span class="line">  str r1, [r0]</span><br><span class="line">  ldr r0, &#x3D;0X020C4074   &#x2F;* CCGR3 *&#x2F;</span><br><span class="line">  str r1, [r0]</span><br><span class="line">  ldr r0, &#x3D;0X020C4078   &#x2F;* CCGR4 *&#x2F;</span><br><span class="line">  str r1, [r0]</span><br><span class="line">  ldr r0, &#x3D;0X020C407C   &#x2F;* CCGR5 *&#x2F;</span><br><span class="line">  str r1, [r0]</span><br><span class="line">  </span><br><span class="line">  ldr r0, &#x3D;0X020C4080   &#x2F;* CCGR6 *&#x2F;</span><br><span class="line">  str r1, [r0]</span><br><span class="line"></span><br><span class="line">  &#x2F;* 2、设置GPIO1_IO03复用为GPIO1_IO03 *&#x2F;</span><br><span class="line">  ldr r0, &#x3D;0X020E0068 &#x2F;* 将寄存器SW_MUX_GPIO1_IO03_BASE加载到r0中 *&#x2F;</span><br><span class="line">  ldr r1, &#x3D;0X5    &#x2F;* 设置寄存器SW_MUX_GPIO1_IO03_BASE的MUX_MODE为5 *&#x2F;</span><br><span class="line">  str r1,[r0]</span><br><span class="line"></span><br><span class="line">  &#x2F;* 3、配置GPIO1_IO03的IO属性 </span><br><span class="line">   *bit 16:0 HYS关闭</span><br><span class="line">   *bit [15:14]: 00 默认下拉</span><br><span class="line">   *bit [13]: 0 kepper功能</span><br><span class="line">   *bit [12]: 1 pull&#x2F;keeper使能</span><br><span class="line">   *bit [11]: 0 关闭开路输出</span><br><span class="line">   *bit [7:6]: 10 速度100Mhz</span><br><span class="line">   *bit [5:3]: 110 R0&#x2F;6驱动能力</span><br><span class="line">   *bit [0]: 0 低转换率</span><br><span class="line">   *&#x2F;</span><br><span class="line">  ldr r0, &#x3D;0X020E02F4 &#x2F;*寄存器SW_PAD_GPIO1_IO03_BASE *&#x2F;</span><br><span class="line">  ldr r1, &#x3D;0X10B0</span><br><span class="line">  str r1,[r0]</span><br><span class="line"></span><br><span class="line">  &#x2F;* 4、设置GPIO1_IO03为输出 *&#x2F;</span><br><span class="line">  ldr r0, &#x3D;0X0209C004 &#x2F;*寄存器GPIO1_GDIR *&#x2F;</span><br><span class="line">  ldr r1, &#x3D;0X0000008   </span><br><span class="line">  str r1,[r0]</span><br><span class="line">  </span><br><span class="line">  &#x2F;* 5、打开LED0</span><br><span class="line">   \* 设置GPIO1_IO03输出低电平</span><br><span class="line">   *&#x2F;</span><br><span class="line">  ldr r0, &#x3D;0X0209C000 &#x2F;*寄存器GPIO1_DR *&#x2F;</span><br><span class="line">  ldr r1, &#x3D;0    </span><br><span class="line">  str r1,[r0]</span><br><span class="line">&#x2F;*</span><br><span class="line"> \* 描述： loop死循环</span><br><span class="line"> *&#x2F;</span><br><span class="line">loop:</span><br><span class="line">  b loop       </span><br></pre></td></tr></table></figure>
+<p>第 2 行定义了一个全局标号_start，代码就是从_start 这个标号开始顺序往下执行的。第 11 行使用 ldr 指令向寄存器 r0 写入 0X020C4068，也就是 r0=0X020C4068，这个是CCM_CCGR0 寄存器的地址。 </p>
+<p>第 12 行使用 ldr 指令向寄存器 r1 写入 0XFFFFFFFF，也就是 r1=0XFFFFFFFF。因为我们要开启所有的外设时钟，因此 CCM_CCGR0~CCM_CCGR6 所有寄存器的 32 位都要置 1，也就是写入 0XFFFFFFFF。 </p>
+<p>第 13 行使用 str 将 r1 中的值写入到 r0 所保存的地址中去，也就是给 0X020C4068 这个地址写入 0XFFFFFFFF，相当于 CCM_CCGR0=0XFFFFFFFF，就是打开 CCM_CCGR0 寄存器所 控制的所有外设时钟。 </p>
+<p>第 15<del>31 行都是向 CCM_CCGRX(X=1</del>6)寄存器写入 0XFFFFFFFF。这样我就通过汇编代码使能了 I.MX6U 的所有外设时钟。 </p>
+<p>第35~37行是设置GPIO1_IO03的复用功能，GPIO1_IO03的复用寄存器地址为0X020E0068, 寄 存 器 IOMUXC_SW_MUX_CTL_PAD_GPIO1_IO03 的 MUX_MODE 设置为 5 就 是 将 GPIO1_IO03 设置为 GPIO。 </p>
+<p>第 49~51 行 是 设 置 GPIO1_IO03 的 配 置 寄 存 器 ， 也 就 是 寄 存 器 IOMUX_SW_PAD_CTL_PAD_GPIO1_IO03 的值，此寄存器地址为 0X020E02F4，代码里面已经 给出了这个寄存器详细的位设置。 </p>
+<p>第 54<del>63 行是设置 GPIO 功能，经过上面几步操作，GPIO1_IO03 这个 IO 已经被配置为了 GPIO 功能，所以还需要设置跟 GPIO 有关的寄存器。第 54</del>56 行是设置 GPIO1-&gt;GDIR 寄存器， 将 GPIO1_IO03 设置为输出模式，也就是寄存器的 GPIO1_GDIR 的 bit3 置 1。 </p>
+<p>第 61~63 行设置 GPIO1-&gt;DR 寄存器，也就是设置 GPIO1_IO03 的输出，我们要点亮开发板上的 LED0，那么 GPIO1_IO03 就必须输出低电平，所以这里设置 GPIO1_DR 寄存器为 0。 </p>
+<p>第 68~69 行是死循环，通过 b 指令，CPU 重复不断的跳到 loop 函数执行，进入一个死循 环。</p>
+
     
 
     
@@ -558,11 +660,25 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h3 id="GCC-编译器"><a href="#GCC-编译器" class="headerlink" title="GCC 编译器"></a>GCC 编译器</h3><p>gcc 命令格式如下： </p>
+     <a id="more"></a>
+
+<h3 id="GCC-编译器"><a href="#GCC-编译器" class="headerlink" title="GCC 编译器"></a>GCC 编译器</h3><p>gcc 命令格式如下： </p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">gcc [选项] [文件名字]</span><br><span class="line"></span><br><span class="line">gcc main.c calcu.c input.c -o main </span><br></pre></td></tr></table></figure>
-    
-    <a class="article-more-a" href="/2021/03/02/Linux%E5%85%A5%E9%97%A8-linuxc/#more">more >></a>
-    
+<p>-c<strong>：</strong>只编译不链接为可执行文件，编译器将输入的.c 文件编译为.o 的目标文件。 </p>
+<p>-o<strong>：</strong>&lt;输出文件名&gt;用来指定编译结束以后的输出文件名，如果使用这个选项的话 GCC 默认编译出来的可执行文件名字为 a.out。 </p>
+<p>-g<strong>：</strong>添加调试信息，如果要使用调试工具(如 GDB)的话就必须加入此选项，此选项指示编译的时候生成调试所需的符号信息。 </p>
+<p>-O：对程序进行优化编译，如果使用此选项的话整个源代码在编译、链接的的时候都会进行优化，这样产生的可执行文件执行效率就高。 </p>
+<p>-O2<strong>：</strong>比-O 更幅度更大的优化，生成的可执行效率更高，但是整个编译过程会很慢。 </p>
+<h3 id="Makefile-语法"><a href="#Makefile-语法" class="headerlink" title="Makefile 语法"></a>Makefile 语法</h3><h4 id="Makefile-规则格式"><a href="#Makefile-规则格式" class="headerlink" title="Makefile 规则格式"></a>Makefile 规则格式</h4><p>Makefile 里面是由一系列的规则组成的，这些规则格式如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">目标…... : 依赖文件集合……</span><br><span class="line">    命令 1</span><br><span class="line">    命令 2</span><br><span class="line">……</span><br></pre></td></tr></table></figure>
+<p>比如下面这条规则： </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">main : main.o input.o calcu.o</span><br><span class="line">	gcc -o main main.o input.o calcu.o</span><br></pre></td></tr></table></figure>
+<p>这条规则的目标是 main，main.o、input.o 和 calcu.o 是生成 main 的依赖文件，如果要更新 目标 main，就必须先更新它的所有依赖文件，如果依赖文件中的任何一个有更新，那么目标也 必须更新，“更新”就是执行一遍规则中的命令列表。 </p>
+<p>命令列表中的每条命令必须以 TAB 键开始，不能使用空格！</p>
+<h4 id="Makefile-变量"><a href="#Makefile-变量" class="headerlink" title="Makefile 变量"></a>Makefile 变量</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">objects &#x3D; main.o input.o calcu.o </span><br><span class="line">main: $(objects) </span><br><span class="line">	gcc -o main $(objects) </span><br><span class="line">	</span><br><span class="line">%.o : %.c </span><br><span class="line">	#命令 </span><br><span class="line">	</span><br><span class="line">clean: </span><br><span class="line">	rm *.o </span><br><span class="line">	rm main</span><br></pre></td></tr></table></figure>
+<p><img src="E:\MYBOKE\Blog\source\image\1614677709213.png" alt="1614677709213"></p>
+<p><img src="E:\MYBOKE\Blog\source\image\1614677792948.png" alt="1614677792948"></p>
+
     
 
     
@@ -666,10 +782,20 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="Shell操作"><a href="#Shell操作" class="headerlink" title="Shell操作"></a>Shell操作</h1><h2 id="Shell-命令的格式如下："><a href="#Shell-命令的格式如下：" class="headerlink" title="Shell 命令的格式如下："></a>Shell 命令的格式如下：</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">command -options [argument] </span><br></pre></td></tr></table></figure>
-    
-    <a class="article-more-a" href="/2021/03/02/Linux%E5%85%A5%E9%97%A8-%E7%BB%88%E7%AB%AF%E5%91%BD%E4%BB%A4/#more">more >></a>
-    
+     <a id="more"></a>
+
+<h1 id="Shell操作"><a href="#Shell操作" class="headerlink" title="Shell操作"></a>Shell操作</h1><h2 id="Shell-命令的格式如下："><a href="#Shell-命令的格式如下：" class="headerlink" title="Shell 命令的格式如下："></a>Shell 命令的格式如下：</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">command -options [argument] </span><br></pre></td></tr></table></figure>
+<p><strong>command:</strong> Shell 命令名称。 </p>
+<p><strong>options</strong>：选项，同一种命令可能有不同的选项，不同的选项其实现的功能不同。 </p>
+<p><strong>argument</strong>：Shell 命令是可以带参数的，也可以不带参数运行。 </p>
+<h2 id="常用Shell-命令"><a href="#常用Shell-命令" class="headerlink" title="常用Shell 命令"></a>常用Shell <strong>命令</strong></h2><h3 id="1、目录信息查看命令ls"><a href="#1、目录信息查看命令ls" class="headerlink" title="1、目录信息查看命令ls"></a>1、目录信息查看命令ls</h3><p>ls 命令主要用于显示指定目录下的内容，列出指定目录下包含的所有的文件以及子目录， </p>
+<p>它的主要参数有： </p>
+<p><strong>-a</strong> 显示所有的文件以及子目录，包括以“.”开头的隐藏文件。 </p>
+<p><strong>-l</strong> 显示文件的详细信息，比如文件的形态、权限、所有者、大小等信息。 </p>
+<p><strong>-t</strong> 将文件按照创建时间排序列出。 </p>
+<p><strong>-A</strong> 和-a 一样，但是不列出“.”(当前目录)和“..”(父目录)。 </p>
+<p><strong>-R</strong> 递归列出所有文件，包括子目录中的文件。 </p>
+<h3 id="2、目录切换命令cd"><a href="#2、目录切换命令cd" class="headerlink" title="2、目录切换命令cd"></a>2、目录切换命令cd</h3>
     
 
     
@@ -773,10 +899,18 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-    
-    <a class="article-more-a" href="/2021/02/05/hello-world/#more">more >></a>
-    
+     <a id="more"></a>
+
+<p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+
     
 
     

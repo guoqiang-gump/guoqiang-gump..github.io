@@ -224,7 +224,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="1-数据结构理论"><a href="#1-数据结构理论" class="headerlink" title="1. 数据结构理论"></a>1. <strong>数据结构理论</strong></h1><p>数据：是描述客观事物的符号，是计算机中可以操作的对象，是能被计算机识别，并输入给计算机处理的符号集</p>
+     <a id="more"></a> 
+
+<h1 id="1-数据结构理论"><a href="#1-数据结构理论" class="headerlink" title="1. 数据结构理论"></a>1. <strong>数据结构理论</strong></h1><p>数据：是描述客观事物的符号，是计算机中可以操作的对象，是能被计算机识别，并输入给计算机处理的符号集</p>
 <p>数据项:一个数据元素可以由若干个数据项组成。数据项是数据不可分割的最小单位。（耳、鼻、嘴、手、脚）</p>
 <p>数据元素:是组成数据的、有一定意义的基本单位,在计算机中通常作为整体处理。也被称为记录。（人）</p>
 <p>数据对象:是性质相同的数据元素的集合,是数据的子集。既然数据对象是数据的子集,在实际应用中,处理的数据元素通常具有相同性质,在不产生混淆的情况下,我们都将数据对象简称为<strong>数据</strong>。</p>
@@ -331,7 +333,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <p>①、电容触摸屏是 IIC 接口的，需要触摸 IC，所谓的电容触摸驱动就是 IIC 设备驱动。<br>②、触摸 IC 提供了中断信号引脚(INT)，可以通过中断来获取触摸信息。<br>③、电容触摸屏得到的是触摸位置绝对信息以及触摸屏是否有按下。<br>④、电容触摸屏不需要校准，</p>
+     <a id="more"></a>
+
+<p>①、电容触摸屏是 IIC 接口的，需要触摸 IC，所谓的电容触摸驱动就是 IIC 设备驱动。<br>②、触摸 IC 提供了中断信号引脚(INT)，可以通过中断来获取触摸信息。<br>③、电容触摸屏得到的是触摸位置绝对信息以及触摸屏是否有按下。<br>④、电容触摸屏不需要校准，</p>
 <p>电容触摸屏驱动其实就是以下几种 linux 驱动框架的组合：<br>①、IIC 设备驱动，因为电容触摸 IC 基本都是 IIC 接口的，因此大框架就是 IIC 设备驱动。<br>②、通过中断引脚(INT)向 linux 内核上报触摸信息，因此需要用到 linux 中断驱动框架。坐标的上报在中断服务函数中完成。<br>③、触摸屏的坐标信息、屏幕按下和抬起信息都属于 linux 的 input 子系统，因此向 linux 内核上报触摸屏坐标信息就得使用 input 子系统。只是，我们得按照 linux 内核规定的规则来上报坐标信息。</p>
 <h1 id="多点触摸-MT-协议详解"><a href="#多点触摸-MT-协议详解" class="headerlink" title="多点触摸(MT)协议详解"></a>多点触摸(MT)协议详解</h1><p>多点电容触摸的(Multi-touch，简称 MT)，MT 协议被分为两种类型，TypeA 和 TypeB，这两种类型的区别如下：<br>TypeA：适用于触摸点不能被区分或者追踪，此类型的设备上报原始数据(此类型在实际使用中非常少！)。 Type B：适用于有硬件追踪并能区分触摸点的触摸设备，此类型设备通过 slot 更新某一个触摸点的信息，FT5426 就属于此类型，一般的多点电容触摸屏 IC 都有此能力。</p>
 <p>触摸点的信息通过一系列的 ABS_MT 事件(有的资料也叫消息)上报给 linux 内核，只有ABS_MT 事件是用于多点触摸的，ABS_MT 事件定义在文件 linux/input.h 中，</p>
@@ -470,7 +474,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <p>根据电平的不同，串口分为 TTL 和 RS232。不管是什么样的接口电平，其驱动程序都是一样的，通过外接 RS485 这样的芯片就可以将串口转换为 RS485 信号，正点原子的 I.MX6U-ALPHA 开发板就是这么做的。对于正点原子的 I.MX6U-ALPHA 开发板而言， RS232、RS485 以及 GPS 模 块接口通通连接到了 I.MX6U 的 UART3 接口上，因此这些外设最终都归结为 UART3 的串口驱动。学习一下如何驱动 I.MX6U-ALPHA 开发板上的 UART3 串口，进而实现 RS232、RS485 以及 GSP 驱动。</p>
+     <a id="more"></a>
+
+<p>根据电平的不同，串口分为 TTL 和 RS232。不管是什么样的接口电平，其驱动程序都是一样的，通过外接 RS485 这样的芯片就可以将串口转换为 RS485 信号，正点原子的 I.MX6U-ALPHA 开发板就是这么做的。对于正点原子的 I.MX6U-ALPHA 开发板而言， RS232、RS485 以及 GPS 模 块接口通通连接到了 I.MX6U 的 UART3 接口上，因此这些外设最终都归结为 UART3 的串口驱动。学习一下如何驱动 I.MX6U-ALPHA 开发板上的 UART3 串口，进而实现 RS232、RS485 以及 GSP 驱动。</p>
 <h1 id="Linux-下-UART-驱动框架"><a href="#Linux-下-UART-驱动框架" class="headerlink" title="Linux 下 UART 驱动框架"></a><strong>Linux</strong> <strong>下</strong> <strong>UART</strong> <strong>驱动框架</strong></h1><h2 id="1、uart-driver-注册与注销"><a href="#1、uart-driver-注册与注销" class="headerlink" title="1、uart_driver 注册与注销"></a>1、uart_driver 注册与注销</h2><p>同 I2C、SPI 一样，Linux 也提供了串口驱动框架，我们只需要按照相应的串口框架编写驱动程序即可。串口驱动没有什么主机端和设备端之分，就只有一个串口驱动，而且这个驱动已经由 NXP 官方已经编写好了，我们真正要做的就是在设备树中添加所要使用的串口节点信息。当系统启动以后串口驱动和设备匹配成功，相应的串口就会被驱动起来，生成/dev/ttymxcX(X=0….n)文件。</p>
 <p>uart_driver 结构体表示 UART 驱动，uart_driver 定义在 include/linux/serial_core.h 文件中，内容如下：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">struct uart_driver &#123;</span><br><span class="line">    struct module *owner; &#x2F;* 模块所属者 *&#x2F;</span><br><span class="line">    const char *driver_name; &#x2F;* 驱动名字 *&#x2F;</span><br><span class="line">    const char *dev_name; &#x2F;* 设备名字 *&#x2F;</span><br><span class="line">    int major; &#x2F;* 主设备号 *&#x2F;</span><br><span class="line">    int minor; &#x2F;* 次设备号 *&#x2F;</span><br><span class="line">    int nr; &#x2F;* 设备数 *&#x2F;</span><br><span class="line">    struct console *cons; &#x2F;* 控制台 *&#x2F;</span><br><span class="line">    struct uart_state *state; </span><br><span class="line">    struct tty_driver *tty_driver;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
@@ -561,7 +567,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="Linux-下-SPI-驱动框架"><a href="#Linux-下-SPI-驱动框架" class="headerlink" title="Linux 下 SPI 驱动框架"></a><strong>Linux</strong> <strong>下</strong> <strong>SPI</strong> <strong>驱动框架</strong></h1><h2 id="SPI-主机驱动"><a href="#SPI-主机驱动" class="headerlink" title="SPI 主机驱动"></a><strong>SPI</strong> <strong>主机驱动</strong></h2><p>SPI 主机驱动就是 SOC 的 SPI 控制器驱动，类似 I2C 驱动里面的适配器驱动。Linux 内核使用 spi_master表示 SPI 主机驱动，spi_master 是个结构体，定义在 include/linux/spi/spi.h 文件中，内容如下(有缩减)：</p>
+     <a id="more"></a>
+
+<h1 id="Linux-下-SPI-驱动框架"><a href="#Linux-下-SPI-驱动框架" class="headerlink" title="Linux 下 SPI 驱动框架"></a><strong>Linux</strong> <strong>下</strong> <strong>SPI</strong> <strong>驱动框架</strong></h1><h2 id="SPI-主机驱动"><a href="#SPI-主机驱动" class="headerlink" title="SPI 主机驱动"></a><strong>SPI</strong> <strong>主机驱动</strong></h2><p>SPI 主机驱动就是 SOC 的 SPI 控制器驱动，类似 I2C 驱动里面的适配器驱动。Linux 内核使用 spi_master表示 SPI 主机驱动，spi_master 是个结构体，定义在 include/linux/spi/spi.h 文件中，内容如下(有缩减)：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">struct spi_master &#123;</span><br><span class="line">    struct device dev;</span><br><span class="line">    struct list_head list;</span><br><span class="line">    ......</span><br><span class="line">    (*transfer)(struct spi_device *spi, struct spi_message *mesg);</span><br><span class="line">    ......</span><br><span class="line">    int (*transfer_one_message)(struct spi_master *master, struct spi_message *mesg);</span><br><span class="line">    ......</span><br><span class="line">&#125;;</span><br><span class="line">&#x2F;&#x2F;transfer函数，和 i2c_algorithm 中的 master_xfer 函数一样，控制器数据传输函数。</span><br><span class="line">&#x2F;&#x2F;transfer_one_message函数，也用于 SPI 数据发送，用于发送一个spi_message，SPI的数据会打包成 spi_message，然后以队列方式发送出去。</span><br></pre></td></tr></table></figure>
 <p>SPI 主机端最终会通过 transfer 函数与 SPI 设备进行通信，因此对于 SPI 主机控制器的驱动编写者而言 transfer 函数是需要实现的，因为不同的 SOC 其 SPI 控制器不同，寄存器都不一样。SPI 主机驱动一般都是 SOC 厂商去编写的。</p>
 <p>SPI 主机驱动的核心就是申请 spi_master，然后初始化 spi_master，最后向 Linux 内核注册 spi_master。 </p>
@@ -686,7 +694,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="Linux-I2C-驱动框架"><a href="#Linux-I2C-驱动框架" class="headerlink" title="Linux I2C 驱动框架"></a><strong>Linux I2C</strong> <strong>驱动框架</strong></h1><p>裸机篇中编写 AP3216C 驱动的四个文件：bsp_i2c.c、bsp_i2c.h、bsp_ap3216c.c 和 bsp_ap3216c.h。其中前两个是 I.MX6U 的 IIC 接口驱动，后两个文 件是 AP3216C 这个 I2C 设备驱动文件。相当于有两部分驱动： I2C 主机驱动、I2C 设备驱动。 </p>
+     <a id="more"></a>
+
+<h1 id="Linux-I2C驱动框架"><a href="#Linux-I2C驱动框架" class="headerlink" title="Linux I2C驱动框架"></a>Linux I2C驱动框架</h1><p>裸机篇中编写 AP3216C 驱动的四个文件：bsp_i2c.c、bsp_i2c.h、bsp_ap3216c.c 和 bsp_ap3216c.h。其中前两个是 I.MX6U 的 IIC 接口驱动，后两个文 件是 AP3216C 这个 I2C 设备驱动文件。相当于有两部分驱动： I2C 主机驱动、I2C 设备驱动。 </p>
 <p>对于 I2C 主机驱动，一旦编写完成就不需要再做修改，其他的 I2C 设备直接调用主机驱动提供的 API 函数完成读写操作即可。这个正好符合 Linux 的驱动分离与分层的思想，因此 Linux内核也将 I2C 驱动分为两部分：<br>①、I2C 总线驱动，I2C 总线驱动就是 SOC 的 I2C 控制器驱动，也叫做 I2C 适配器驱动。<br>②、I2C 设备驱动，I2C 设备驱动就是针对具体的 I2C 设备而编写的驱动。</p>
 <h2 id="I2C-总线驱动"><a href="#I2C-总线驱动" class="headerlink" title="I2C 总线驱动"></a><strong>I2C</strong> <strong>总线驱动</strong></h2><p>platform 是虚拟出来的一条总线，目的是为了实现总线、设备、驱动框架。。对于 I2C 而言，不需要虚拟出一条总线，直接使用 I2C 总线即可。I2C 总线驱动重点是 I2C 适配器(也就是 SOC 的 I2C 接口控制器)驱动，这里要用到 两个重要的数据结构：i2c_adapter 和 i2c_algorithm，Linux 内核将 SOC 的 I2C 适配器(控制器) 抽象成 i2c_adapter，i2c_adapter 结构体定义在 include/linux/i2c.h 文件中，结构体内容如下：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">struct i2c_adapter &#123;</span><br><span class="line">    struct module *owner;</span><br><span class="line">    unsigned int class; &#x2F;* classes to allow probing for *&#x2F;</span><br><span class="line">    const struct i2c_algorithm *algo; &#x2F;* 总线访问算法 *&#x2F;</span><br><span class="line">    void *algo_data;</span><br><span class="line">	………………</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
@@ -834,7 +844,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="Linux-内核-RTC-驱动"><a href="#Linux-内核-RTC-驱动" class="headerlink" title="Linux 内核 RTC 驱动"></a><strong>Linux</strong> <strong>内核</strong> <strong>RTC</strong> <strong>驱动</strong></h1><p>RTC 设备驱动是一个标准的字符设备驱动，应用程序通过 open、release、read、write 和 ioctl等函数完成对 RTC 设备的操作。Linux 内核将 RTC 设备抽象为 rtc_device 结构体，因此 RTC 设备驱动就是申请并初始化<br>rtc_device，最后将 rtc_device 注册到 Linux 内核里面，这样 Linux 内核就有一个 RTC 设备的。<br> rtc_device 结构体，此结构体定义在 include/linux/rtc.h 文件中，结构体内容如下(删除条件编译)：</p>
+     <a id="more"></a>
+
+<h1 id="Linux-内核-RTC-驱动"><a href="#Linux-内核-RTC-驱动" class="headerlink" title="Linux 内核 RTC 驱动"></a><strong>Linux</strong> <strong>内核</strong> <strong>RTC</strong> <strong>驱动</strong></h1><p>RTC 设备驱动是一个标准的字符设备驱动，应用程序通过 open、release、read、write 和 ioctl等函数完成对 RTC 设备的操作。Linux 内核将 RTC 设备抽象为 rtc_device 结构体，因此 RTC 设备驱动就是申请并初始化<br>rtc_device，最后将 rtc_device 注册到 Linux 内核里面，这样 Linux 内核就有一个 RTC 设备的。<br> rtc_device 结构体，此结构体定义在 include/linux/rtc.h 文件中，结构体内容如下(删除条件编译)：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">struct rtc_device</span><br><span class="line">&#123;</span><br><span class="line">    struct device dev; &#x2F;* 设备 *&#x2F;</span><br><span class="line">    struct module *owner;</span><br><span class="line"></span><br><span class="line">    int id; &#x2F;* ID *&#x2F; </span><br><span class="line">    char name[RTC_DEVICE_NAME_SIZE]; &#x2F;* 名字 *&#x2F;</span><br><span class="line"></span><br><span class="line">    const struct rtc_class_ops *ops; &#x2F;* RTC 设备底层操作函数 *&#x2F;</span><br><span class="line">    struct mutex ops_lock;</span><br><span class="line"></span><br><span class="line">    struct cdev char_dev; &#x2F;* 字符设备 *&#x2F;</span><br><span class="line">    unsigned long flags;</span><br><span class="line">	………………</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <p>RTC 设备的操作是用一个 rtc_class_ops 类型的操作集合(结构体)来表示的，就是是 ops 成员变量，这是一个 rtc_class_ops 类型的指针变量。rtc_class_ops为 RTC 设备的最底层操作函数集合，包括从 RTC 设备中读取时间、向 RTC 设备写入新的时间值等。因此，rtc_class_ops 是需要用户根据所使用的 RTC 设备编写的</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">struct rtc_class_ops &#123;</span><br><span class="line">    int (*open)(struct device *);</span><br><span class="line">    void (*release)(struct device *);</span><br><span class="line">    int (*ioctl)(struct device *, unsigned int, unsigned long);</span><br><span class="line">    int (*read_time)(struct device *, struct rtc_time *);</span><br><span class="line">    int (*set_time)(struct device *, struct rtc_time *);</span><br><span class="line">    int (*read_alarm)(struct device *, struct rtc_wkalrm *);</span><br><span class="line">    int (*set_alarm)(struct device *, struct rtc_wkalrm *);</span><br><span class="line">    int (*proc)(struct device *, struct seq_file *);</span><br><span class="line">    int (*set_mmss64)(struct device *, time64_t secs);</span><br><span class="line">    int (*set_mmss)(struct device *, unsigned long secs);</span><br><span class="line">    int (*read_callback)(struct device *, int data);</span><br><span class="line">    int (*alarm_irq_enable)(struct device *, unsigned int enabled);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
@@ -932,7 +944,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="Framebuffer-设备"><a href="#Framebuffer-设备" class="headerlink" title="Framebuffer 设备"></a><strong>Framebuffer</strong> <strong>设备</strong></h1><p>裸机 LCD 驱动编写流程如下：<br>①、初始化 I.MX6U 的 eLCDIF 控制器，重点是 LCD 屏幕宽(width)、高(height)、hspw、hbp、hfp、vspw、vbp 和 vfp 等信息。<br>②、初始化 LCD 像素时钟。<br>③、设置 RGBLCD 显存。<br>④、应用程序直接通过操作显存来操作 LCD，实现在 LCD 上显示字符、图片等信息。</p>
+     <a id="more"></a>
+
+<h1 id="Framebuffer-设备"><a href="#Framebuffer-设备" class="headerlink" title="Framebuffer 设备"></a><strong>Framebuffer</strong> <strong>设备</strong></h1><p>裸机 LCD 驱动编写流程如下：<br>①、初始化 I.MX6U 的 eLCDIF 控制器，重点是 LCD 屏幕宽(width)、高(height)、hspw、hbp、hfp、vspw、vbp 和 vfp 等信息。<br>②、初始化 LCD 像素时钟。<br>③、设置 RGBLCD 显存。<br>④、应用程序直接通过操作显存来操作 LCD，实现在 LCD 上显示字符、图片等信息。</p>
 <p>在 Linux 中应用程序最终也是通过操作 RGB LCD 的显存来实现在 LCD 上显示字符、图片<br>等信息。在裸机中我们可以随意的分配显存，但是在 Linux 系统中内存的管理很严格，显存是<br>需要申请的，不是你想用就能用的。而且因为虚拟内存的存在，驱动程序设置的显存和应用程<br>序访问的显存要是同一片物理内存。</p>
 <p>为了解决上述问题，Framebuffer 诞生了， Framebuffer 翻译过来就是帧缓冲，简称 fb，以后的 Linux 学习中见到“Framebuffer”或者“fb”的话第一反应应该想到 RGBLCD或者显示设备。fb 是一种机制，将系统中所有跟显示有关的硬件以及软件集合起来，虚拟出一个 fb 设备，当编写好 LCD 驱动以后会生成一个名为/dev/fbX(X=0~n)的设备，应用程序通过访问/dev/fbX 这个设备就可以访问 LCD。</p>
 <p>/dev/fbX是个字符设备，因此肯定有file_operations 操作集，fb 的 file_operations 操作集定义在 drivers/video/fbdev/core/fbmem.c 文件中。</p>
@@ -1038,7 +1052,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="input-子系统"><a href="#input-子系统" class="headerlink" title="input 子系统"></a><strong>input</strong> <strong>子系统</strong></h1><p>按键、鼠标、键盘、触摸屏等都属于输入(input)设备，Linux 内核为此专门做了一个叫做 input子系统的框架来处理输入事件。输入设备本质上还是字符设备，只是在此基础上套上了 input 框架，用户只需要负责上报输入事件，比如按键值、坐标等信息，input 核心层负责处理这些事件。</p>
+     <a id="more"></a>
+
+<h1 id="input-子系统"><a href="#input-子系统" class="headerlink" title="input 子系统"></a><strong>input</strong> <strong>子系统</strong></h1><p>按键、鼠标、键盘、触摸屏等都属于输入(input)设备，Linux 内核为此专门做了一个叫做 input子系统的框架来处理输入事件。输入设备本质上还是字符设备，只是在此基础上套上了 input 框架，用户只需要负责上报输入事件，比如按键值、坐标等信息，input 核心层负责处理这些事件。</p>
 <p> input 子系统管理输入的子系统，和 pinctrl 和 gpio 子系统 一样，都是 Linux 内核针对某一类设备而创建的框架。比如按键输入、键盘、鼠标、触摸屏等等这些都属于输入设备，不同的输入设备所代表的含义不同，按键和键盘就是代表按键信息，鼠标和触摸屏代表坐标信息，因此在应用层的处理就不同。</p>
 <p>对于驱动编写者而言不需要去关心应用层的事情，我们只需要按照要求上报这些输入事件即可。为此 input 子系统分为 input 驱动层、input 核心层、input 事件处理层，最终给用户空间提供可访问的设备节点。input 子系统驱动分层模型，编写驱动程序的时候只需要关注中间的驱动层、核心层和事件层，这三个层的分工如下： </p>
 <ul>
@@ -1167,7 +1183,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="MISC-设备驱动"><a href="#MISC-设备驱动" class="headerlink" title="MISC 设备驱动"></a><strong>MISC</strong> <strong>设备驱动</strong></h1><p>misc 的意思是混合、杂项的，因此 MISC 驱动也叫做杂项驱动，当某些外设无法进行分类的时候就可以使用 MISC 驱动。MISC 驱动其实就是最简单的字符设备驱动，通常嵌套在 platform 总线驱动中，实现复杂的驱动。</p>
+     <a id="more"></a>
+
+<h1 id="MISC-设备驱动"><a href="#MISC-设备驱动" class="headerlink" title="MISC 设备驱动"></a><strong>MISC</strong> <strong>设备驱动</strong></h1><p>misc 的意思是混合、杂项的，因此 MISC 驱动也叫做杂项驱动，当某些外设无法进行分类的时候就可以使用 MISC 驱动。MISC 驱动其实就是最简单的字符设备驱动，通常嵌套在 platform 总线驱动中，实现复杂的驱动。</p>
 <p>所有的 MISC 设备驱动的主设备号都为 10，不同的设备使用不同的从设备号。随着 Linux字符设备驱动的不断增加，设备号变得越来越紧张，尤其是主设备号，MISC 设备驱动就用于解决此问题。MISC 设备会自动创建 cdev，不需要像我们以前那样手动创建，因此采用 MISC 设备驱动可以简化字符设备驱动的编写。</p>
 <p>需要向 Linux 注册一个 miscdevice 设备，miscdevice是一个结构体，定义在文件 include/linux/miscdevice.h 中，内容如下：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">struct miscdevice &#123;</span><br><span class="line">    int minor; &#x2F;* 子设备号 *&#x2F;</span><br><span class="line">    const char *name; &#x2F;* 设备名字 *&#x2F; </span><br><span class="line">    const struct file_operations *fops; &#x2F;* 设备操作集 *&#x2F;</span><br><span class="line">    struct list_head list;</span><br><span class="line">    struct device *parent;</span><br><span class="line">    struct device *this_device;</span><br><span class="line">    const struct attribute_group **groups;</span><br><span class="line">    const char *nodename;</span><br><span class="line">    umode_t mode;</span><br><span class="line">&#125;;</span><br><span class="line">&#x2F;*minor 表示子设备号，MISC 设备的主设备号为 10，这个是固定的，需要用户指定子设备号，Linux系统已经预定义了一些MISC设备的子设备号，在使用时可以从这些预定义的子设备号中挑选一个，当然也可以自己定义，只要这个子设备号没有被其他设备使用接口。*&#x2F; </span><br><span class="line">&#x2F;&#x2F;name 就是此 MISC 设备名字，当此设备注册成功以后就会在&#x2F;dev 目录下生成一个名为 name的设备文件。</span><br><span class="line">&#x2F;&#x2F;fops 就是字符设备的操作集合，MISC 设备驱动最终是需要使用用户提供的 fops 操作集合。</span><br></pre></td></tr></table></figure>
@@ -1258,7 +1276,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="设备树下的-platform-驱动"><a href="#设备树下的-platform-驱动" class="headerlink" title="设备树下的 platform 驱动"></a><strong>设备树下的</strong> <strong>platform</strong> <strong>驱动</strong></h1><p>platform 驱动框架分为总线、设备和驱动，其中总线不需要我们这些驱动程序员去管理，这 </p>
+     <a id="more"></a>
+
+<h1 id="设备树下的-platform-驱动"><a href="#设备树下的-platform-驱动" class="headerlink" title="设备树下的 platform 驱动"></a><strong>设备树下的</strong> <strong>platform</strong> <strong>驱动</strong></h1><p>platform 驱动框架分为总线、设备和驱动，其中总线不需要我们这些驱动程序员去管理，这 </p>
 <p>个是 Linux 内核提供的，我们在编写驱动的时候只要关注于设备和驱动的具体实现即可。在没 </p>
 <p>有设备树的 Linux 内核下，我们需要分别编写并注册 platform_device 和 platform_driver，分别代 </p>
 <p>表设备和驱动。在使用设备树的时候，设备的描述被放到了设备树中，因此 platform_device 就 </p>

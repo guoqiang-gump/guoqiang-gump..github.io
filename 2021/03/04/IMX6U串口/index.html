@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="一、串口协议简介">
+  <meta name="description" content="一、串口协议简介UART 通信格式 串口全称叫做串行接口，通常也叫做 COM接口，串行接口指的是数据一个一个的顺序传输，通信线路简单。使用两条线即可实现双向通信，一条用于发送，一条用于接收。串口通信 距离远，但是速度相对会低，UART 全称是 UniversalAsynchronous Receiver&#x2F;Trasmitter，也就是异步串行收发器。  UART 作为串口的一种，其工作原理也是">
 <meta property="og:type" content="article">
 <meta property="og:title" content="IMX6U串口">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/03/04/IMX6U%E4%B8%B2%E5%8F%A3/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="一、串口协议简介">
+<meta property="og:description" content="一、串口协议简介UART 通信格式 串口全称叫做串行接口，通常也叫做 COM接口，串行接口指的是数据一个一个的顺序传输，通信线路简单。使用两条线即可实现双向通信，一条用于发送，一条用于接收。串口通信 距离远，但是速度相对会低，UART 全称是 UniversalAsynchronous Receiver&#x2F;Trasmitter，也就是异步串行收发器。  UART 作为串口的一种，其工作原理也是">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-03-03T16:10:18.000Z">
-<meta property="article:modified_time" content="2021-04-11T09:34:17.855Z">
+<meta property="article:modified_time" content="2021-04-20T09:37:19.616Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="linux">
 <meta property="article:tag" content="IMX6U">
@@ -246,9 +246,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="一、串口协议简介"><a href="#一、串口协议简介" class="headerlink" title="一、串口协议简介"></a>一、串口协议简介</h1>  <a id="more"></a>  
+     <a id="more"></a>
 
-<p><strong>UART</strong> <strong>通信格式</strong></p>
+<h1 id="一、串口协议简介"><a href="#一、串口协议简介" class="headerlink" title="一、串口协议简介"></a>一、串口协议简介</h1><p><strong>UART</strong> <strong>通信格式</strong></p>
 <p>串口全称叫做串行接口，通常也叫做 COM接口，串行接口指的是数据一个一个的顺序传输，通信线路简单。使用两条线即可实现双向通信，一条用于发送，一条用于接收。串口通信 距离远，但是速度相对会低，UART 全称是 UniversalAsynchronous Receiver/Trasmitter，也就是异步串行收发器。 </p>
 <p>UART 作为串口的一种，其工作原理也是将数据一位一位的进行传输，发送和接收各用一条线，因此通过 UART 接口与外界相连最少只需要三条线：TXD(发送)、RXD(接收)和 GND(地 线)。 UART 的通信格式：</p>
 <ul>

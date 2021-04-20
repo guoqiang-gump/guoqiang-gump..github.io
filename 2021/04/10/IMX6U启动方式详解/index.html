@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="启动方式选择BOOT 的处理过程是发生在 I.MX6U 芯片上电以后，芯片会根据 BOOT_MODE[1:0]的设置 来选择 BOOT 方式。BOOT_MODE[1:0]的值是可以改变的，有两种方式，一种是改写 eFUSE(熔 丝)，一种是修改相应的 GPIO 高低电平。第一种修改 eFUSE 的方式只能修改一次，后面就不能再修改了，所以我们不使用。我们使用的是通过修改 BOOT_MODE[1:0">
+  <meta name="description" content="启动方式选择BOOT 的处理过程是发生在 I.MX6U 芯片上电以后，芯片会根据 BOOT_MODE[1:0]的设置 来选择 BOOT 方式。BOOT_MODE[1:0]的值是可以改变的，有两种方式，一种是改写 eFUSE(熔 丝)，一种是修改相应的 GPIO 高低电平。第一种修改 eFUSE 的方式只能修改一次，后面就不能再修改了，所以我们不使用。我们使用的是通过修改 BOOT_MODE[">
 <meta property="og:type" content="article">
 <meta property="og:title" content="I.MX6U启动方式详解">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/10/IMX6U%E5%90%AF%E5%8A%A8%E6%96%B9%E5%BC%8F%E8%AF%A6%E8%A7%A3/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="启动方式选择BOOT 的处理过程是发生在 I.MX6U 芯片上电以后，芯片会根据 BOOT_MODE[1:0]的设置 来选择 BOOT 方式。BOOT_MODE[1:0]的值是可以改变的，有两种方式，一种是改写 eFUSE(熔 丝)，一种是修改相应的 GPIO 高低电平。第一种修改 eFUSE 的方式只能修改一次，后面就不能再修改了，所以我们不使用。我们使用的是通过修改 BOOT_MODE[1:0">
+<meta property="og:description" content="启动方式选择BOOT 的处理过程是发生在 I.MX6U 芯片上电以后，芯片会根据 BOOT_MODE[1:0]的设置 来选择 BOOT 方式。BOOT_MODE[1:0]的值是可以改变的，有两种方式，一种是改写 eFUSE(熔 丝)，一种是修改相应的 GPIO 高低电平。第一种修改 eFUSE 的方式只能修改一次，后面就不能再修改了，所以我们不使用。我们使用的是通过修改 BOOT_MODE[">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-10T13:09:13.000Z">
-<meta property="article:modified_time" content="2021-04-10T13:16:29.016Z">
+<meta property="article:modified_time" content="2021-04-20T09:37:57.735Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,7 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="启动方式选择"><a href="#启动方式选择" class="headerlink" title="启动方式选择"></a><strong>启动方式选择</strong></h1><p>BOOT 的处理过程是发生在 I.MX6U 芯片上电以后，芯片会根据 BOOT_MODE[1:0]的设置 来选择 BOOT 方式。BOOT_MODE[1:0]的值是可以改变的，有两种方式，一种是改写 eFUSE(熔 丝)，一种是修改相应的 GPIO 高低电平。第一种修改 eFUSE 的方式只能修改一次，后面就不能再修改了，所以我们不使用。我们使用的是通过修改 BOOT_MODE[1:0]对应的 GPIO 高低电平来选择启动方式，所有的开发板都使用的这种方式。</p>
+     <a id="more"></a>
+
+<h1 id="启动方式选择"><a href="#启动方式选择" class="headerlink" title="启动方式选择"></a>启动方式选择</h1><p>BOOT 的处理过程是发生在 I.MX6U 芯片上电以后，芯片会根据 BOOT_MODE[1:0]的设置 来选择 BOOT 方式。BOOT_MODE[1:0]的值是可以改变的，有两种方式，一种是改写 eFUSE(熔 丝)，一种是修改相应的 GPIO 高低电平。第一种修改 eFUSE 的方式只能修改一次，后面就不能再修改了，所以我们不使用。我们使用的是通过修改 BOOT_MODE[1:0]对应的 GPIO 高低电平来选择启动方式，所有的开发板都使用的这种方式。</p>
 <p>I.MX6U 有四个 BOOT 模式，这四个 BOOT 模式由 BOOT_MODE[1:0]来控制，也就是BOOT_MODE1 和 BOOT_MODE0 这两 IO，BOOT 模式配置如表 9.1.1 所示：</p>
 <table>
 <thead>

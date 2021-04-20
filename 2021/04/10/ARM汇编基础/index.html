@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="对于 Cortex-A 芯片来讲，大部分芯片在上电以后 C 语言环境还没准备好，所以第一行程序肯定是汇编的，至于要写多少汇编程序，那就看你能在哪一步把 C 语言环境准备好。所谓的C语言环境就是保证 C 语言能够正常运行。C 语言中的函数调用涉及到出栈入栈，出栈入栈就要对堆栈进行操作，所谓的堆栈其实就是一段内存，这段内存比较特殊，由 SP 指针访问，SP 指针指向栈顶。芯片一上电 SP 指针还没有初">
+  <meta name="description" content="对于 Cortex-A 芯片来讲，大部分芯片在上电以后 C 语言环境还没准备好，所以第一行程序肯定是汇编的，至于要写多少汇编程序，那就看你能在哪一步把 C 语言环境准备好。所谓的C语言环境就是保证 C 语言能够正常运行。C 语言中的函数调用涉及到出栈入栈，出栈入栈就要对堆栈进行操作，所谓的堆栈其实就是一段内存，这段内存比较特殊，由 SP 指针访问，SP 指针指向栈顶。芯片一上电 SP 指针还">
 <meta property="og:type" content="article">
 <meta property="og:title" content="ARM汇编基础">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/10/ARM%E6%B1%87%E7%BC%96%E5%9F%BA%E7%A1%80/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="对于 Cortex-A 芯片来讲，大部分芯片在上电以后 C 语言环境还没准备好，所以第一行程序肯定是汇编的，至于要写多少汇编程序，那就看你能在哪一步把 C 语言环境准备好。所谓的C语言环境就是保证 C 语言能够正常运行。C 语言中的函数调用涉及到出栈入栈，出栈入栈就要对堆栈进行操作，所谓的堆栈其实就是一段内存，这段内存比较特殊，由 SP 指针访问，SP 指针指向栈顶。芯片一上电 SP 指针还没有初">
+<meta property="og:description" content="对于 Cortex-A 芯片来讲，大部分芯片在上电以后 C 语言环境还没准备好，所以第一行程序肯定是汇编的，至于要写多少汇编程序，那就看你能在哪一步把 C 语言环境准备好。所谓的C语言环境就是保证 C 语言能够正常运行。C 语言中的函数调用涉及到出栈入栈，出栈入栈就要对堆栈进行操作，所谓的堆栈其实就是一段内存，这段内存比较特殊，由 SP 指针访问，SP 指针指向栈顶。芯片一上电 SP 指针还">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-10T09:47:50.000Z">
-<meta property="article:modified_time" content="2021-04-11T02:39:42.363Z">
+<meta property="article:modified_time" content="2021-04-20T09:33:14.369Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,7 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <p>对于 Cortex-A 芯片来讲，大部分芯片在上电以后 C 语言环境还没准备好，所以第一行程序肯定是汇编的，至于要写多少汇编程序，那就看你能在哪一步把 C 语言环境准备好。所谓的C语言环境就是保证 C 语言能够正常运行。C 语言中的函数调用涉及到出栈入栈，出栈入栈就要对堆栈进行操作，所谓的堆栈其实就是一段内存，这段内存比较特殊，由 SP 指针访问，SP 指针指向栈顶。芯片一上电 SP 指针还没有初始化，所以 C 语言没法运行，对于有些芯片还需要初始化 DDR，因为芯片本身没有 RAM，或者内部 RAM 不开放给用户使用，用户代码需要在DDR 中行，因此一开始要用汇编来初始化 DDR 控制器。</p>
+     <a id="more"></a>
+
+<p>对于 Cortex-A 芯片来讲，大部分芯片在上电以后 C 语言环境还没准备好，所以第一行程序肯定是汇编的，至于要写多少汇编程序，那就看你能在哪一步把 C 语言环境准备好。所谓的C语言环境就是保证 C 语言能够正常运行。C 语言中的函数调用涉及到出栈入栈，出栈入栈就要对堆栈进行操作，所谓的堆栈其实就是一段内存，这段内存比较特殊，由 SP 指针访问，SP 指针指向栈顶。芯片一上电 SP 指针还没有初始化，所以 C 语言没法运行，对于有些芯片还需要初始化 DDR，因为芯片本身没有 RAM，或者内部 RAM 不开放给用户使用，用户代码需要在DDR 中行，因此一开始要用汇编来初始化 DDR 控制器。</p>
 <h1 id="GNU-汇编语法"><a href="#GNU-汇编语法" class="headerlink" title="GNU 汇编语法"></a><strong>GNU</strong> <strong>汇编语法</strong></h1><p>我们要编写的是 ARM汇编，编译使用的 GCC 交叉编译器，所以我们的汇编代码要符合 GNU 语法。GNU 汇编语法适用于所有的架构，并不是 ARM 独享的，GNU 汇编由一系列的语句组成，每行一条语句，每条语句有三个可选部分，如下：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">label：instruction @ comment</span><br></pre></td></tr></table></figure>
 <p><strong>label</strong> 即标号，表示地址位置，有些指令前面可能会有标号，这样就可以通过这个标号得到指令的地址，标号也可以用来表示数据地址。注意 label 后面的“：”，任何以“：”结尾的标识符都会被识别为一个标号。 </p>

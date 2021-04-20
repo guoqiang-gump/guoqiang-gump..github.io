@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="GPT 定时器简介I.MX6U 的 GPT 定时器全称为 General Purpose Timer，可实现高精度延时。GPT 定时器是一个 32 位向上定时器(也就是从 0X00000000 开始向上递增计数)，GPT 定时器也可以跟一个值进行比较，当计数器值和这个值相等的话就发生比较事件，产生比较中断。GPT 定时器有一个 12 位的分频器，可以对 GPT 定时器的时钟源进行分频，GPT 定时">
+  <meta name="description" content="GPT 定时器简介I.MX6U 的 GPT 定时器全称为 General Purpose Timer，可实现高精度延时。GPT 定时器是一个 32 位向上定时器(也就是从 0X00000000 开始向上递增计数)，GPT 定时器也可以跟一个值进行比较，当计数器值和这个值相等的话就发生比较事件，产生比较中断。GPT 定时器有一个 12 位的分频器，可以对 GPT 定时器的时钟源进行分频，GPT">
 <meta property="og:type" content="article">
 <meta property="og:title" content="IMX6U-GPT定时器">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/11/IMX6U-GPT%E5%AE%9A%E6%97%B6%E5%99%A8/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="GPT 定时器简介I.MX6U 的 GPT 定时器全称为 General Purpose Timer，可实现高精度延时。GPT 定时器是一个 32 位向上定时器(也就是从 0X00000000 开始向上递增计数)，GPT 定时器也可以跟一个值进行比较，当计数器值和这个值相等的话就发生比较事件，产生比较中断。GPT 定时器有一个 12 位的分频器，可以对 GPT 定时器的时钟源进行分频，GPT 定时">
+<meta property="og:description" content="GPT 定时器简介I.MX6U 的 GPT 定时器全称为 General Purpose Timer，可实现高精度延时。GPT 定时器是一个 32 位向上定时器(也就是从 0X00000000 开始向上递增计数)，GPT 定时器也可以跟一个值进行比较，当计数器值和这个值相等的话就发生比较事件，产生比较中断。GPT 定时器有一个 12 位的分频器，可以对 GPT 定时器的时钟源进行分频，GPT">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-11T08:46:40.000Z">
-<meta property="article:modified_time" content="2021-04-11T09:13:00.501Z">
+<meta property="article:modified_time" content="2021-04-20T09:36:28.964Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,7 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="GPT-定时器简介"><a href="#GPT-定时器简介" class="headerlink" title="GPT 定时器简介"></a>GPT 定时器简介</h1><p>I.MX6U 的 GPT 定时器全称为 General Purpose Timer，可实现高精度延时。GPT 定时器是一个 32 位向上定时器(也就是从 0X00000000 开始向上递增计数)，GPT 定时器也可以跟一个值进行比较，当计数器值和这个值相等的话就发生比较事件，产生比较中断。GPT 定时器有一个 12 位的分频器，可以对 GPT 定时器的时钟源进行分频，GPT 定时器特性如下： </p>
+     <a id="more"></a>
+
+<h1 id="GPT-定时器简介"><a href="#GPT-定时器简介" class="headerlink" title="GPT 定时器简介"></a>GPT 定时器简介</h1><p>I.MX6U 的 GPT 定时器全称为 General Purpose Timer，可实现高精度延时。GPT 定时器是一个 32 位向上定时器(也就是从 0X00000000 开始向上递增计数)，GPT 定时器也可以跟一个值进行比较，当计数器值和这个值相等的话就发生比较事件，产生比较中断。GPT 定时器有一个 12 位的分频器，可以对 GPT 定时器的时钟源进行分频，GPT 定时器特性如下： </p>
 <p>①、一个可选时钟源的 32 位向上计数器。 </p>
 <p>②、两个输入捕获通道，可以设置触发方式。 </p>
 <p>③、三个输出比较通道，可以设置输出模式。 </p>

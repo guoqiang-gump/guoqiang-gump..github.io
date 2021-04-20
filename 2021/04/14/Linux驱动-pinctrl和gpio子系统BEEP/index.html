@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="编写蜂鸣器驱动需要做：  ①、在设备树中添加 SNVS_TAMPER1 引脚的 pinctrl 信息。  ②、在设备树中创建蜂鸣器节点，在蜂鸣器节点中加入 GPIO 信息。  ③、编写驱动程序和测试 APP，和第四十五章的 LED 驱动程序和测试 APP 基本一样。  修改设备树文件1、添加 pinctrl 节点I.MX6U-ALPHA开发板上的BEEP使用了SNVS_TAMPER1这个PIN，打">
+  <meta name="description" content="编写蜂鸣器驱动需要做：  ①、在设备树中添加 SNVS_TAMPER1 引脚的 pinctrl 信息。  ②、在设备树中创建蜂鸣器节点，在蜂鸣器节点中加入 GPIO 信息。  ③、编写驱动程序和测试 APP，和第四十五章的 LED 驱动程序和测试 APP 基本一样。  修改设备树文件1、添加 pinctrl 节点I.MX6U-ALPHA开发板上的BEEP使用了SNVS_TAMPER1这个PI">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux驱动-pinctrl和gpio子系统BEEP">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-pinctrl%E5%92%8Cgpio%E5%AD%90%E7%B3%BB%E7%BB%9FBEEP/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="编写蜂鸣器驱动需要做：  ①、在设备树中添加 SNVS_TAMPER1 引脚的 pinctrl 信息。  ②、在设备树中创建蜂鸣器节点，在蜂鸣器节点中加入 GPIO 信息。  ③、编写驱动程序和测试 APP，和第四十五章的 LED 驱动程序和测试 APP 基本一样。  修改设备树文件1、添加 pinctrl 节点I.MX6U-ALPHA开发板上的BEEP使用了SNVS_TAMPER1这个PIN，打">
+<meta property="og:description" content="编写蜂鸣器驱动需要做：  ①、在设备树中添加 SNVS_TAMPER1 引脚的 pinctrl 信息。  ②、在设备树中创建蜂鸣器节点，在蜂鸣器节点中加入 GPIO 信息。  ③、编写驱动程序和测试 APP，和第四十五章的 LED 驱动程序和测试 APP 基本一样。  修改设备树文件1、添加 pinctrl 节点I.MX6U-ALPHA开发板上的BEEP使用了SNVS_TAMPER1这个PI">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-14T14:36:06.000Z">
-<meta property="article:modified_time" content="2021-04-14T14:50:42.006Z">
+<meta property="article:modified_time" content="2021-04-20T09:40:46.431Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,7 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <p>编写蜂鸣器驱动需要做： </p>
+     <a id="more"></a>
+
+<p>编写蜂鸣器驱动需要做： </p>
 <p>①、在设备树中添加 SNVS_TAMPER1 引脚的 pinctrl 信息。 </p>
 <p>②、在设备树中创建蜂鸣器节点，在蜂鸣器节点中加入 GPIO 信息。 </p>
 <p>③、编写驱动程序和测试 APP，和第四十五章的 LED 驱动程序和测试 APP 基本一样。 </p>

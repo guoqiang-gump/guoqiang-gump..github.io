@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="一、SPI协议详解​    1、SPI相比I2C最大的优势有两点：一个是速度快，最高可以大几十M，甚至上百MHz，第二个就是SPI是个全双工。​    2、SPI接口和I2C一样，一个SPI接口可以连接多个SPI外设，SPI通过CS引脚&#x2F;数据线，片选引脚来选择和哪个SPI外设通信。SPI通信前先将指定的SPI外设对应的CS引脚拉低来选中此设备。一般 SPI 需要4 根线，但是也可以使用三根线(单向">
+  <meta name="description" content="一、SPI协议详解​    1、SPI相比I2C最大的优势有两点：一个是速度快，最高可以大几十M，甚至上百MHz，第二个就是SPI是个全双工。​    2、SPI接口和I2C一样，一个SPI接口可以连接多个SPI外设，SPI通过CS引脚&#x2F;数据线，片选引脚来选择和哪个SPI外设通信。SPI通信前先将指定的SPI外设对应的CS引脚拉低来选中此设备。一般 SPI 需要4 根线，但是也可以使用三根线">
 <meta property="og:type" content="article">
 <meta property="og:title" content="IMX6U-SPI">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/12/IMX6U-SPI/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="一、SPI协议详解​    1、SPI相比I2C最大的优势有两点：一个是速度快，最高可以大几十M，甚至上百MHz，第二个就是SPI是个全双工。​    2、SPI接口和I2C一样，一个SPI接口可以连接多个SPI外设，SPI通过CS引脚&#x2F;数据线，片选引脚来选择和哪个SPI外设通信。SPI通信前先将指定的SPI外设对应的CS引脚拉低来选中此设备。一般 SPI 需要4 根线，但是也可以使用三根线(单向">
+<meta property="og:description" content="一、SPI协议详解​    1、SPI相比I2C最大的优势有两点：一个是速度快，最高可以大几十M，甚至上百MHz，第二个就是SPI是个全双工。​    2、SPI接口和I2C一样，一个SPI接口可以连接多个SPI外设，SPI通过CS引脚&#x2F;数据线，片选引脚来选择和哪个SPI外设通信。SPI通信前先将指定的SPI外设对应的CS引脚拉低来选中此设备。一般 SPI 需要4 根线，但是也可以使用三根线">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-12T07:06:28.000Z">
-<meta property="article:modified_time" content="2021-04-12T08:17:11.048Z">
+<meta property="article:modified_time" content="2021-04-20T09:37:00.932Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,7 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="一、SPI协议详解"><a href="#一、SPI协议详解" class="headerlink" title="一、SPI协议详解"></a>一、SPI协议详解</h1><p>​    1、SPI相比I2C最大的优势有两点：一个是速度快，最高可以大几十M，甚至上百MHz，第二个就是SPI是个全双工。<br>​    2、SPI接口和I2C一样，一个SPI接口可以连接多个SPI外设，SPI通过CS引脚/数据线，片选引脚来选择和哪个SPI外设通信。SPI通信前先将指定的SPI外设对应的CS引脚拉低来选中此设备。一般 SPI 需要4 根线，但是也可以使用三根线(单向传输).</p>
+     <a id="more"></a>
+
+<h1 id="一、SPI协议详解"><a href="#一、SPI协议详解" class="headerlink" title="一、SPI协议详解"></a>一、SPI协议详解</h1><p>​    1、SPI相比I2C最大的优势有两点：一个是速度快，最高可以大几十M，甚至上百MHz，第二个就是SPI是个全双工。<br>​    2、SPI接口和I2C一样，一个SPI接口可以连接多个SPI外设，SPI通过CS引脚/数据线，片选引脚来选择和哪个SPI外设通信。SPI通信前先将指定的SPI外设对应的CS引脚拉低来选中此设备。一般 SPI 需要4 根线，但是也可以使用三根线(单向传输).</p>
 <p><strong>标准的 4 线 SPI</strong></p>
 <p>①、CS/SS，Slave Select/Chip Select，这个是片选信号线，用于选择需要进行通信的从设备。I2C 主机是通过发送从机设备地址来选择需要进行通信的从机设备的，SPI 主机不需要发送从机 设备，直接将相应的从机设备片选信号拉低即可。 </p>
 <p>②、SCK，Serial Clock，串行时钟，和 I2C 的 SCL 一样，为 SPI 通信提供时钟。 </p>

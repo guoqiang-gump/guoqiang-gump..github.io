@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="使用platform 驱动框架来编写一个 LED 灯驱动，不使用设备树来描述设备信息，我们采用自定义platform_device这种“古老”方式来编写LED的设备信息。 需要编写一个驱动模块和一个设备模块，其中驱动模块是 platform 驱动程序，  设备模块是 platform 的设备信息。当这两个模块都加载成功以后就会匹配成功，然后 platform  驱动模块中的 probe 函数就会执">
+  <meta name="description" content="使用platform 驱动框架来编写一个 LED 灯驱动，不使用设备树来描述设备信息，我们采用自定义platform_device这种“古老”方式来编写LED的设备信息。 需要编写一个驱动模块和一个设备模块，其中驱动模块是 platform 驱动程序，  设备模块是 platform 的设备信息。当这两个模块都加载成功以后就会匹配成功，然后 platform  驱动模块中的 probe 函数">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux驱动-platform设备驱动-非设备树">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-platform%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-%E9%9D%9E%E8%AE%BE%E5%A4%87%E6%A0%91/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="使用platform 驱动框架来编写一个 LED 灯驱动，不使用设备树来描述设备信息，我们采用自定义platform_device这种“古老”方式来编写LED的设备信息。 需要编写一个驱动模块和一个设备模块，其中驱动模块是 platform 驱动程序，  设备模块是 platform 的设备信息。当这两个模块都加载成功以后就会匹配成功，然后 platform  驱动模块中的 probe 函数就会执">
+<meta property="og:description" content="使用platform 驱动框架来编写一个 LED 灯驱动，不使用设备树来描述设备信息，我们采用自定义platform_device这种“古老”方式来编写LED的设备信息。 需要编写一个驱动模块和一个设备模块，其中驱动模块是 platform 驱动程序，  设备模块是 platform 的设备信息。当这两个模块都加载成功以后就会匹配成功，然后 platform  驱动模块中的 probe 函数">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-16T09:31:45.000Z">
-<meta property="article:modified_time" content="2021-04-16T09:43:10.344Z">
+<meta property="article:modified_time" content="2021-04-20T09:40:58.539Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,7 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <p>使用platform 驱动框架来编写一个 LED 灯驱动，不使用设备树来描述设备信息，我们采用自定义platform_device这种“古老”方式来编写LED的设备信息。</p>
+     <a id="more"></a>
+
+<p>使用platform 驱动框架来编写一个 LED 灯驱动，不使用设备树来描述设备信息，我们采用自定义platform_device这种“古老”方式来编写LED的设备信息。</p>
 <p>需要编写一个驱动模块和一个设备模块，其中驱动模块是 platform 驱动程序， </p>
 <p>设备模块是 platform 的设备信息。当这两个模块都加载成功以后就会匹配成功，然后 platform </p>
 <p>驱动模块中的 probe 函数就会执行，probe 函数中就是传统的字符设备驱动那一套。 </p>

@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="一、IIC协议详解I2C 使用两条线在主控制器和从机之间进行数据通信。一条是 SCL(串行时钟线)，另外一条是 SDA(串行数据线)，这两条数据线需要接上拉电阻，总线空闲的时候 SCL 和 SDA 处于高电平。I2C总线支持多从机，通过从机地址来区分访问哪个从机。">
+  <meta name="description" content="一、IIC协议详解I2C 使用两条线在主控制器和从机之间进行数据通信。一条是 SCL(串行时钟线)，另外一条是 SDA(串行数据线)，这两条数据线需要接上拉电阻，总线空闲的时候 SCL 和 SDA 处于高电平。I2C总线支持多从机，通过从机地址来区分访问哪个从机。 起始位  I2C 通信起始标志，通过这个起始位告诉 I2C 从机开始 进行 I2C 通信了。在 SCL 为高电平的时候，SDA">
 <meta property="og:type" content="article">
 <meta property="og:title" content="IMX6U_I2C_ap3216c">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/03/04/IMX6U-I2C-ap3216c/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="一、IIC协议详解I2C 使用两条线在主控制器和从机之间进行数据通信。一条是 SCL(串行时钟线)，另外一条是 SDA(串行数据线)，这两条数据线需要接上拉电阻，总线空闲的时候 SCL 和 SDA 处于高电平。I2C总线支持多从机，通过从机地址来区分访问哪个从机。">
+<meta property="og:description" content="一、IIC协议详解I2C 使用两条线在主控制器和从机之间进行数据通信。一条是 SCL(串行时钟线)，另外一条是 SDA(串行数据线)，这两条数据线需要接上拉电阻，总线空闲的时候 SCL 和 SDA 处于高电平。I2C总线支持多从机，通过从机地址来区分访问哪个从机。 起始位  I2C 通信起始标志，通过这个起始位告诉 I2C 从机开始 进行 I2C 通信了。在 SCL 为高电平的时候，SDA">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-03-03T16:22:32.000Z">
-<meta property="article:modified_time" content="2021-04-12T08:56:27.002Z">
+<meta property="article:modified_time" content="2021-04-20T09:36:43.878Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="linux">
 <meta property="article:tag" content="IMX6U">
@@ -246,9 +246,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="一、IIC协议详解"><a href="#一、IIC协议详解" class="headerlink" title="一、IIC协议详解"></a>一、IIC协议详解</h1><p>I2C 使用两条线在主控制器和从机之间进行数据通信。一条是 SCL(串行时钟线)，另外一条是 SDA(串行数据线)，这两条数据线需要接上拉电阻，总线空闲的时候 SCL 和 SDA 处于高电平。I2C总线支持多从机，通过从机地址来区分访问哪个从机。</p>
-  <a id="more"></a>  
+     <a id="more"></a>
 
+<h1 id="一、IIC协议详解"><a href="#一、IIC协议详解" class="headerlink" title="一、IIC协议详解"></a>一、IIC协议详解</h1><p>I2C 使用两条线在主控制器和从机之间进行数据通信。一条是 SCL(串行时钟线)，另外一条是 SDA(串行数据线)，这两条数据线需要接上拉电阻，总线空闲的时候 SCL 和 SDA 处于高电平。I2C总线支持多从机，通过从机地址来区分访问哪个从机。</p>
 <p><strong>起始位</strong> </p>
 <p>I2C 通信起始标志，通过这个起始位告诉 I2C 从机开始 进行 I2C 通信了。在 SCL 为高电平的时候，SDA 出现下降沿就表示为起始位。</p>
 <p><strong>停止位</strong> </p>
