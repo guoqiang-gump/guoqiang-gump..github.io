@@ -195,6 +195,102 @@
             
 
   
+    <article id="post-Linux驱动-并发与竞争-原子操作" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+  
+  
+    <h1 itemprop="name">
+	
+	  <a class="article-title" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C/" target="_blank">Linux驱动-并发与竞争-原子操作</a>
+  
+    </h1>
+  
+
+
+  
+  
+<a href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C/" class="archive-article-date">
+        <time datetime="2021-04-15T10:40:54.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-15</time>
+</a>
+
+  
+  
+    
+
+  
+  </header>
+  
+  <div class="article-entry" itemprop="articleBody">
+    
+     <a id="more"></a>
+
+<h2 id="1、原子操作"><a href="#1、原子操作" class="headerlink" title="1、原子操作"></a>1、原子操作</h2><p>原子操作就是指不能再进一步分割的操作，一般原子操作用于变量或者位操作。原子操作只能对整形变量或者位进行保护。C 语言里面简简单单的一句“a=3”，编译成汇编文件以后变成了 3 句，那么程 序在执行的时候肯定汇编语句一条一条的执行。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ldr r0, &#x3D;0X30000000 &#x2F;* 变量 a 地址 *&#x2F;</span><br><span class="line">ldr r1, &#x3D; 3 &#x2F;* 要写入的值 *&#x2F;</span><br><span class="line">str r1, [r0] &#x2F;* 将 3 写入到 a 变量中 *&#x2F;</span><br></pre></td></tr></table></figure>
+<p>假设现在线程 A要向 a 变量写入 10 这个值，而线程 B 也要向 a 变量写入 20 这个值，结果线程 A 最终将变量 a 设置为了 20。这就是一个最简单的设置变量值的并发与竞争的例子。要解决并发与竞争问题就要保证三行汇编指令作为一个整体运行，也就是作为一个原子存在。</p>
+<p>Linux 内核 提供了一组原子操作 API 函数来完成此功能，Linux 内核提供了两组原子操作 API 函数，一组是对整形变量进行操作的，一组是对位进行操作的，</p>
+<p><strong>原子整形操作 API 函数</strong></p>
+<p>Linux 内核定义了叫做 atomic_t 的结构体来完成整形数据的原子操作，在使用中用原子变量来代替整形变量，</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">typedef struct &#123;</span><br><span class="line">	int counter;</span><br><span class="line">&#125; atomic_t;</span><br></pre></td></tr></table></figure>
+<p>在定义原子变量的时候给原子变量赋初值</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">atomic_t b &#x3D; ATOMIC_INIT(0); &#x2F;&#x2F;定义原子变量 b 并赋初值为 0</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">MIC_INIT(int i) &#x2F;&#x2F;定义原子变量的时候对其初始化。</span><br><span class="line">int atomic_read(atomic_t *v)&#x2F;&#x2F;读取 v 的值，并且返回。</span><br><span class="line">void atomic_set(atomic_t *v, int i)&#x2F;&#x2F;向 v 写入 i 值。</span><br><span class="line">void atomic_add(int i, atomic_t *v) &#x2F;&#x2F;给 v 加上 i 值。</span><br><span class="line">void atomic_sub(int i, atomic_t *v) &#x2F;&#x2F;从 v 减去 i 值。</span><br><span class="line">void atomic_inc(atomic_t *v) &#x2F;&#x2F;给 v 加 1，也就是自增。</span><br><span class="line">void atomic_dec(atomic_t *v) &#x2F;&#x2F;从 v 减 1，也就是自减</span><br><span class="line">int atomic_dec_return(atomic_t *v) &#x2F;&#x2F;从 v 减 1，并且返回 v 的值。</span><br><span class="line">int atomic_inc_return(atomic_t *v) &#x2F;&#x2F;给 v 加 1，并且返回 v 的值。</span><br><span class="line">int atomic_sub_and_test(int i, atomic_t *v) &#x2F;&#x2F;从 v 减 i，如果结果为 0 就返回真，否则返回假</span><br><span class="line">int atomic_dec_and_test(atomic_t *v) &#x2F;&#x2F;从 v 减 1，如果结果为 0 就返回真，否则返回假</span><br><span class="line">int atomic_inc_and_test(atomic_t *v) &#x2F;&#x2F;给 v 加 1，如果结果为 0 就返回真，否则返回假</span><br><span class="line">int atomic_add_negative(int i, atomic_t *v) &#x2F;&#x2F;给 v 加 i，如果结果为负就返回真，否则返回假</span><br></pre></td></tr></table></figure>
+<p><strong>原子位操作 API 函数</strong></p>
+<p>位操作也是很常用的操作，Linux 内核也提供了一系列的原子位操作 API 函数，只不过原子位操作不像原子整形变量那样有个 atomic_t 的数据结构，原子位操作是直接对内存进行操作，API 函数所示：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">void set_bit(int nr, void *p) &#x2F;&#x2F;将 p 地址的第 nr 位置 1。</span><br><span class="line">void clear_bit(int nr,void *p) &#x2F;&#x2F;将 p 地址的第 nr 位清零。</span><br><span class="line">void change_bit(int nr, void *p) &#x2F;&#x2F;将 p 地址的第 nr 位进行翻转。</span><br><span class="line">int test_bit(int nr, void *p) 获取 p &#x2F;&#x2F;地址的第 nr 位的值。</span><br><span class="line">int test_and_set_bit(int nr, void *p) &#x2F;&#x2F;将 p 地址的第 nr 位置 1，并且返回 nr 位原来的值。</span><br><span class="line">int test_and_clear_bit(int nr, void *p) &#x2F;&#x2F;将 p 地址的第 nr 位清零，并且返回 nr 位原来的值。</span><br><span class="line">int test_and_change_bit(int nr, void *p) &#x2F;&#x2F;将 p 地址的第 nr 位翻转，并且返回 nr 位原来的值。</span><br></pre></td></tr></table></figure>
+<h2 id="2、实验程序编写"><a href="#2、实验程序编写" class="headerlink" title="2、实验程序编写"></a>2、<strong>实验程序编写</strong></h2><p>使用原子操作来 </p>
+<p>实现对 LED 这个设备的互斥访问，也就是一次只允许一个应用程序可以使用 LED 灯。 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;***************************************************************</span><br><span class="line">文件名		: atomic.c</span><br><span class="line">描述	   	: 原子操作实验，使用原子变量来实现对实现设备的互斥访问</span><br><span class="line">***************************************************************&#x2F;</span><br><span class="line">&#x2F;* gpioled设备结构体 *&#x2F;</span><br><span class="line">struct gpioled_dev&#123;</span><br><span class="line">	atomic_t lock;			&#x2F;* 原子变量 *&#x2F;</span><br><span class="line">&#125;;</span><br><span class="line">struct gpioled_dev gpioled;	&#x2F;* led设备 *&#x2F;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: 打开设备</span><br><span class="line"> * @param - inode 	: 传递给驱动的inode</span><br><span class="line"> * @param - filp 	: 设备文件，file结构体有个叫做private_data的成员变量</span><br><span class="line"> * 					  一般在open的时候将private_data指向设备结构体。</span><br><span class="line"> * @return 			: 0 成功;其他 失败</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int led_open(struct inode *inode, struct file *filp)</span><br><span class="line">&#123;</span><br><span class="line">	&#x2F;* 通过判断原子变量的值来检查LED有没有被别的应用使用 *&#x2F;</span><br><span class="line">	if (!atomic_dec_and_test(&amp;gpioled.lock)) &#123;</span><br><span class="line">		atomic_inc(&amp;gpioled.lock);	&#x2F;* 小于0的话就加1,使其原子变量等于0 *&#x2F;</span><br><span class="line">		return -EBUSY;				&#x2F;* LED被使用，返回忙 *&#x2F;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	filp-&gt;private_data &#x3D; &amp;gpioled; &#x2F;* 设置私有数据 *&#x2F;</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: 关闭&#x2F;释放设备</span><br><span class="line"> * @param - filp 	: 要关闭的设备文件(文件描述符)</span><br><span class="line"> * @return 			: 0 成功;其他 失败</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int led_release(struct inode *inode, struct file *filp)</span><br><span class="line">&#123;</span><br><span class="line">	struct gpioled_dev *dev &#x3D; filp-&gt;private_data;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 关闭驱动文件的时候释放原子变量 *&#x2F;</span><br><span class="line">	atomic_inc(&amp;dev-&gt;lock);</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 驱动出口函数</span><br><span class="line"> * @param 		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int __init led_init(void)</span><br><span class="line">&#123;</span><br><span class="line">	int ret &#x3D; 0;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 初始化原子变量 *&#x2F;</span><br><span class="line">	atomic_set(&amp;gpioled.lock, 1);	&#x2F;* 原子变量初始值为1 *&#x2F;</span><br><span class="line"></span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>第 42 行，原子变量 lock，用来实现一次只能允许一个应用访问 LED 灯，led_init 驱动入口函数会将 lock 的值设置为 1。 </p>
+<p>第 57~60 行，每次调用 open 函数打开驱动设备的时候先申请 lock，如果申请成功的话就表示LED灯还没有被其他的应用使用，如果申请失败就表示LED灯正在被其他的应用程序使用。每次打开驱动设备的时候先使用 atomic_dec_and_test 函数将 lock 减 1，如果 atomic_dec_and_test函数返回值为真就表示 lock 当前值为 0，说明设备可以使用。如果 atomic_dec_and_test 函数返回值为假，就表示 lock 当前值为负数(lock 值默认是 1)，lock 值为负数的可能性只有一个，那就是其他设备正在使用 LED。其他设备正在使用 LED 灯，那么就只能退出了，在退出之前调用函数 atomic_inc 将 lock 加 1，因为此时 lock 的值被减成了负数，必须要对其加 1，将 lock 的值变为 0。</p>
+<p>第 120 行，LED 灯使用完毕，应用程序调用 close 函数关闭的驱动文件，led_release 函数执行，调用 atomic_inc 释放 lcok，也就是将 lock 加 1。 </p>
+<p>第 143 行，初始化原子变量 lock，初始值设置为 1，这样每次就只允许一个应用使用 LED灯。</p>
+
+    
+
+    
+
+    
+
+  </div>
+  <div class="article-info article-info-index">
+    
+    
+    
+
+    
+    <p class="article-more-link">
+      <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C/">展开 >></a>
+    </p>
+    
+
+    
+    <div class="clearfix"></div>
+  </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-Linux驱动-并发与竞争-互斥体" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -1307,107 +1403,6 @@
 
 
   
-    <article id="post-Linux移植-内核MfgTool烧写" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-  
-  
-    <h1 itemprop="name">
-	
-	  <a class="article-title" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8MfgTool%E7%83%A7%E5%86%99/" target="_blank">Linux移植-内核MfgTool烧写</a>
-  
-    </h1>
-  
-
-
-  
-  
-<a href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8MfgTool%E7%83%A7%E5%86%99/" class="archive-article-date">
-        <time datetime="2021-04-13T11:21:56.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-13</time>
-</a>
-
-  
-  
-    
-
-  
-  </header>
-  
-  <div class="article-entry" itemprop="articleBody">
-    
-     <a id="more"></a>
-
-<p>前面移植好了 uboot 、 linux kernle、根文件系统。都是通过网络来测试的。在实际的产品开发中肯定不可能通过网络来运行，因此我们需要将 uboot、linux kernel、.dtb(设备树)和 rootfs 这四个文件烧写到板子上的 EMMC、NAND 或 QSPI Flash 等其他存储设备上，这样不管有没有网络我们的产品都可以正常运行。以下为如何使用 NXP 官方提供的 MfgTool 工具通过 USB OTG 口来烧写系统。</p>
-<h1 id="一、MfgTool工具简介"><a href="#一、MfgTool工具简介" class="headerlink" title="一、MfgTool工具简介"></a>一、MfgTool工具简介</h1><p>mfgtool是NXP官方做的向I.MX系列烧写系统的软件，运行在windows下。可以烧写uboot.imx、zImage、dtb，rootfs。通过USB烧写。Mfgtool里面默认存放了NXP官方开发板的系统文件。</p>
-<p><strong>基本原理</strong> </p>
-<p>MfgTool 其实是先通过 USB OTG 先将 uboot、kernel 和.dtb(设备树)这是三个文件下载到开发板的 DDR 中，注意不需要下载 rootfs。就相当于直接在开发板的 DDR上启动 Linux 系统，等 Linux 系统启动以后再向 EMMC 中烧写完整的系统，包括 uboot、linuxkernel、.dtb(设备树)和 rootfs，因此 MfgTool 工作过程主要分两个阶段：</p>
-<p>①、将 firmware 目录中的 uboot、linux kernel 和.dtb(设备树)，然后通过 USB OTG 将这个文件下载到开发板的 DDR 中，目的就是在 DDR 中启动 Linux 系统，为后面的烧写做准备。 </p>
-<p>②、经过第①步的操作，此时 Linux 系统已经运行起来了，系统运行起来以后就可以很方 便的完成对 EMMC 的格式化、分区等操作。EMMC 分区建立好以后就可以从 files 中读取要烧写的 uboot、linux kernel、.dtb(设备树)和 rootfs 这 4 个文件，然后将其烧写到 EMMC 中。</p>
-<p>mfgtools-with-rootfs\mfgtools\Profiles\Linux\OS Firmware下有：<strong>files和firmware两个文件夹</strong>。</p>
-<p>Firmware里面保存着第一步的uboot.imx、zImage、dtb。</p>
-<p>files里面保存着最终烧写到开发板中的uboo.imx、zImage、dtb以及rootfs。</p>
-<p><strong>烧写脚本就是各种.vbs文件</strong><br>在L4.1.15_2.0.0-ga_mfg-tools\mfgtools-with-rootfs\mfgtools下有很多.vbs文件。<br>.vbs脚本其实本质上是打开mfgtool2.exe，然后跟一堆的参数，linux，eMMc，board=sabresd、mmc=1、6uluboot=14x14evk、6uldtb=14x14-evk。</p>
-<p><strong>ucl2.xml文件</strong></p>
-<p>路径L4.1.15_2.0.0-ga_mfg-tools\mfgtools-with-rootfs\mfgtools\Profiles\Linux\OS Firmware。<br>ucl2.xml文件负责在files和firmware里面挑选合适的文件。</p>
-<p>如果是MX6ULL的话，根据：%lite% = l ，%6uluboot% = 14x14evk</p>
-<p>uboot就是：firmware/u-boot-imx6ul%lite%%6uluboot%_sd.imx展开以后就是firmware/u-boot-imx6ull14x14evk_sd.imx<br>firmware/zImage-imx6ul%lite%-%6ulldtb%%ldo%.dtb展开以后就是firmware/zImage-imx6ull-14x14-evk.dtb。    </p>
-<h1 id="二、烧写自己的系统"><a href="#二、烧写自己的系统" class="headerlink" title="二、烧写自己的系统"></a>二、烧写自己的系统</h1><p>烧写自己的系统。<br><strong>1、firmare下的文件名</strong><br>    u-boot-imx6ull14x14evk_emmc.imx      uboot<br>    zImage                                                        kernel<br>    zImage-imx6ull-14x14-evk-emmc.dtb   dtb</p>
-<p><strong>2、files下的文件名</strong></p>
-<p>u-boot-imx6ull14x14evk_emmc.imx        uboot<br>zImage                                                            kernel<br>zImage-imx6ull-14x14-evk -emmc.dtb        dtb<br>rootfs_nogpu.tar.bz2                                    rootfs</p>
-<h1 id="三、改造自己的烧写工具"><a href="#三、改造自己的烧写工具" class="headerlink" title="三、改造自己的烧写工具"></a>三、改造自己的烧写工具</h1><p>1、确定自己的系统文件命名</p>
-<p>2、创建自己的.vbs</p>
-<p>3、改造ucl2.xml文件</p>
-<p>4、启动测试<br>经过测试，uboot可以运行，但是Linux内核没启动。</p>
-<p>可以看出，uboot读取的dtb文件名为imx6ull-14x14-evk.dtb。实际的dtb文件名为：Imx6ull-alientek-emmc.dtb。所以要修改bootcmd命令。内容如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">setenv bootcmd &#39;mmc dev 1;fatload mmc 1:1 80800000 zImage;fatload mmc 1:1 83000000</span><br><span class="line">imx6ull-alientek-emmc.dtb;bootz 80800000 - 83000000&#39; </span><br></pre></td></tr></table></figure>
-<p>设置好以后可以启动系统，但是根文件系统加载错误，原因是bootargs设置错误，重新设置bootargs:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">setenv bootargs &#39;console&#x3D;ttymxc0,115200 root&#x3D;&#x2F;dev&#x2F;mmcblk1p2 rootwait rw&#39; </span><br></pre></td></tr></table></figure>
-
-    
-
-    
-
-    
-
-  </div>
-  <div class="article-info article-info-index">
-    
-    
-    
-
-    
-    <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8MfgTool%E7%83%A7%E5%86%99/">展开 >></a>
-    </p>
-    
-
-    
-    <div class="clearfix"></div>
-  </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
       <a class="extend prev" rel="prev" href="/page/2/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/4/">Next &amp;raquo;</a>
@@ -1541,6 +1536,10 @@
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">ARM</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">IMX6U</a>
               </li>
              
@@ -1549,11 +1548,11 @@
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">ARM</a>
+                <a href="javascript:void(0)" class="js-tag color4">C语言</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">C语言</a>
+                <a href="javascript:void(0)" class="js-tag color4">蜂鸣器</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1565,7 +1564,7 @@
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">蜂鸣器</a>
+                <a href="javascript:void(0)" class="js-tag color3">汇编</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1574,10 +1573,6 @@
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">烧写</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">汇编</a>
               </li>
              
               <li class="article-tag-list-item">

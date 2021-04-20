@@ -195,6 +195,155 @@
             
 
   
+    <article id="post-IMX6U-GPIO详解" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+  
+  
+    <h1 itemprop="name">
+	
+	  <a class="article-title" href="/2021/04/10/IMX6U-GPIO%E8%AF%A6%E8%A7%A3/" target="_blank">I.MX6U的GPIO详解</a>
+  
+    </h1>
+  
+
+
+  
+  
+<a href="/2021/04/10/IMX6U-GPIO%E8%AF%A6%E8%A7%A3/" class="archive-article-date">
+        <time datetime="2021-04-10T12:00:19.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-10</time>
+</a>
+
+  
+  
+    
+
+  
+  </header>
+  
+  <div class="article-entry" itemprop="articleBody">
+    
+     <a id="more"></a>
+
+<h1 id="I-MX6U-IO-命名"><a href="#I-MX6U-IO-命名" class="headerlink" title="I.MX6U IO 命名"></a><strong>I.MX6U IO</strong> <strong>命名</strong></h1><p>“IOMUXC_SW_MUC_CTL_PAD_GPIO1_IO00”的就是 GPIO 命名，命名形式就是“IOMUXC_SW_MUC_CTL_PAD_XX_XX”，后面的“XX_XX”就是 GPIO 命名， 比如：GPIO1_IO01、UART1_TX_DATA、JTAG_MOD、SNVS_TAMPER1 等等。</p>
+<p>I.MX6U 的 GPIO 并不像 STM32 一样以 PA0~15 这样命名，他是根据某个 IO 所拥有的功能来命名的。 GPIO1_IO01，这个肯定能做 GPIO， UART1_TX_DATA 肯定这个 IO 肯定能做为 UART1 的发送引脚。</p>
+<p>I.MX6U 的其它 IO 也是可以复用为 GPIO 功能。同样的，GPIO1_IO00~GPIO_IO09 也是可以复用为其它外设引脚的。</p>
+<h2 id="I-MX6U-IO-复用"><a href="#I-MX6U-IO-复用" class="headerlink" title="I.MX6U IO 复用"></a><strong>I.MX6U IO</strong> <strong>复用</strong></h2><p>IOMUXC_SW_MUX_CTL_PAD_GPIO1_IO00的寄存器，寄存器地址为 0X020E005C，这个寄存器是 32 位的，但是只用到了最低 5位，其中bit0<del>bit3(MUX_MODE)就是设置 GPIO1_IO00 的复用功能的。GPIO1_IO00 一共可以复用为 9 种功能 IO，分别对应 ALT0</del>ALT8，其中 ALT5 就是作为 GPIO1_IO00。GPIO1_IO00 还可以作 为 I2C2_SCL、GPT1_CAPTURE1、ANATOP_OTG1_ID 等。这个就是 I.MX6U 的 IO 复用。</p>
+<p>由此可见，I.MX6U 的 GPIO 不止 GPIO1_IO00~GPIO1_IO09 这 10 个，其它的 IO 都可以复用为 GPIO 来使用。I.MX6U 的 GPIO 一共有 5 组：GPIO1、GPIO2、GPIO3、GPIO4 和 GPIO5，其中 GPIO1 有 32 个 IO，GPIO2 有22 个 IO，GPIO3 有 29 个 IO、GPIO4 有 29 个 IO，GPIO5 最少，只有 12 个 IO，这样一共有 124 个 GPIO。</p>
+<h2 id="I-MX6U-IO-配置"><a href="#I-MX6U-IO-配置" class="headerlink" title="I.MX6U IO 配置"></a><strong>I.MX6U IO</strong> <strong>配置</strong></h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">IOMUXC_SW_MUX_CTL_PAD_GPIO1_IO00 </span><br><span class="line">IOMUXC_SW_PAD_CTL_PAD_GPIO1_IO00</span><br></pre></td></tr></table></figure>
+<p>上面两个都是跟 GPIO_IO00 有关的寄存器，名字上的区别就是红色部分，一个是“MUX”， 一个是“PAD”。</p>
+<p>IOMUXC_SW_MUX_CTL_PAD_XX_XX 和 IOMUXC_SW_PAD_CTL_PAD_XX_XX 这两种寄存器都是配置 IO 的，注意是 IO！IOMUXC_SW_MUX_CTL_PAD_XX_XX配置GPIO1_IO00 复用功能的，IOMUXC_SW_PAD_CTL_PAD_XX_XX是用来配置 GPIO1_IO00 的IO 属性，包括速度设置、驱动能力设置、压摆率设置等等。</p>
+<p><strong>当 IO 用作 GPIO 的时候需要设置的寄存器，一共有八个：DR、GDIR、PSR、ICR1、ICR2、EDGE_SEL、IMR 和 ISR。</strong></p>
+<p>DR 寄存器，数据寄存器。此寄存器是 32 位的，一个 GPIO 组最大只有 32 个 IO，因此 DR 寄存器中的每个位都对应一个 GPIO。当 GPIO 被配置为输出功能以后，向DR寄存器指定的位写入数据那么相应的 IO 就会输出相应的高低电平，当 GPIO被配置为输入模式以后，此DR寄存器就保存着对应 IO 的电平值。</p>
+<p>GDIR 寄存器，方向寄存器。用来设置某个 GPIO 的工作方向的，即输入/输出，GDIR 寄存器也是 32 位的，此寄存器用来设置某个 IO 的工作方向，是输入还是输出。同样的，每个 IO 对应一个位，如果要设置 GPIO 为输入的话就设置相应的位为 0，如果要设置为输出的话就设置为 1。</p>
+<p>PSR 寄存器， GPIO 状态寄存器，同样的 PSR 寄存器也是一个 GPIO 对应一个位，读取相应的位即可获取对应的 GPIO 的状态，也就是 GPIO 的高低电平值。功能和输入状态下的 DR 寄存器一样。 </p>
+<p>ICR1和ICR2这两个寄存器，都是中断控制寄存器，ICR1用于配置低16个GPIO， ICR2 用于配置高 16 个 GPIO，ICR1 用于 IO0<del>15 的配置， ICR2 用于 IO16</del>31 的配置。ICR1 寄存器中一个 GPIO 用两个位，这两个位用来配置中断的触发方式。</p>
+<table>
+<thead>
+<tr>
+<th><strong>位设置</strong></th>
+<th>触发方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>00</td>
+<td>低电平触发</td>
+</tr>
+<tr>
+<td>01</td>
+<td>高电平触发</td>
+</tr>
+<tr>
+<td>10</td>
+<td>上升沿触发</td>
+</tr>
+<tr>
+<td>11</td>
+<td>下降沿触发</td>
+</tr>
+</tbody></table>
+<p>以GPIO1_IO15为例，如果要设置GPIO1_IO15为上升沿触发中断，那么GPIO1.ICR1=2&lt;&lt;30，如果要设置 GPIO1 的 IO16~31 的话就需要设置 ICR2 寄存器了。</p>
+<p>IMR 寄存器，中断屏蔽寄存器。IMR 寄存器也是一个 GPIO 对应一个位，IMR 寄存器用来控制 GPIO 的中断禁止和使能，如果使能某个 GPIO 的中断，那么设置相应的位为 1 即可，反之，如果要禁止中断，那么就设 置相应的位为 0 即可。</p>
+<p>寄存器 ISR，中断状态寄存器。ISR 寄存器也是 32 位寄存器，一个 GPIO 对应一个位，只要某个 GPIO 的中断发生，那么 ISR 中相应的位就会被置 1。所以，我们可以通过读取 ISR 寄存器来判断 GPIO 中断是否发生， 相当于 ISR 中的这些位就是中断标志位。当我们处理完中断以后，必须清除中断标志位，清除 方法就是向 ISR 中相应的位写 1，也就是写 1 清零。 </p>
+<p>EDGE_SEL 寄存器，边沿选择寄存器。EDGE_SEL 寄存器用来设置边沿中断，这个寄存器会覆盖 ICR1 和 ICR2 的设置，同样是一 个 GPIO 对应一个位。如果相应的位被置 1，那么就相当与设置了对应的 GPIO 是上升沿和下降 沿(双边沿)触发。例如，我们设置 GPIO1.EDGE_SEL=1，那么就表示 GPIO1_IO01 是双边沿触发中断，无论 GFPIO1_CR1 的设置为多少，都是双边沿触发。</p>
+<h2 id="I-MX6U-GPIO-时钟使能"><a href="#I-MX6U-GPIO-时钟使能" class="headerlink" title="I.MX6U GPIO 时钟使能"></a><strong>I.MX6U GPIO</strong> <strong>时钟使能</strong></h2><p>I.MX6U每个外设的时钟都可以独立的使能或禁止，这样可以关闭掉不使用的外设时钟，起到 省电的目的。如果要使用某个外设的话必须要先使能其时钟。CCM 里面 的外设时钟使能寄存器CMM 有 CCM_CCGR0~CCM_CCGR6 这 7 个寄存器，这 7 个寄存器控制着 I.MX6U 的所有外设时钟开关。</p>
+<p>CCM_CCGR0 是个 32 为寄存器，其中每 2 位控制一个外设的时钟，比如 bit31:30 控制着GPIO2 的外设时钟，两个位就有 4 中操作方式。</p>
+<table>
+<thead>
+<tr>
+<th><strong>位设置</strong></th>
+<th><strong>时钟控制</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>00</td>
+<td>所有模式下都关闭外设时钟。</td>
+</tr>
+<tr>
+<td>01</td>
+<td>只有在运行模式下打开外设时钟，等待模式和停止模式下均关闭外设时钟。</td>
+</tr>
+<tr>
+<td>10</td>
+<td>未使用(保留)。</td>
+</tr>
+<tr>
+<td>11</td>
+<td>除了停止模式以外，其他所有模式下时钟都打开。</td>
+</tr>
+</tbody></table>
+<p>要打开 GPIO2 的外设时钟，那么只需要设置CCM_CCGR0 的 bit31 和 bit30 都为 1 即可，也就是 CCM_CCGR0=3 &lt;&lt; 30。反之，如果要关闭GPIO2 的 外设时钟 ，CCM_CCGR0 的 bit31 和 bit30 都 为0 即 可 。</p>
+<p>要将 I.MX6U 的 IO 作为 GPIO 使用，我们需要一下 几步： </p>
+<p>①、使能 GPIO 对应的时钟。 </p>
+<p>②、设置寄存器 IOMUXC_SW_MUX_CTL_PAD_XX_XX，设置 IO 的复用功能，使其复用 GPIO 功能。 </p>
+<p>③、设置寄存器 IOMUXC_SW_PAD_CTL_PAD_XX_XX，设置 IO 的上下拉、速度等等。 </p>
+<p>④、第②步已经将 IO 复用为了 GPIO 功能，所以需要配置 GPIO，设置输入/输出、是否使用中断、默认输出电平等。</p>
+
+    
+
+    
+
+    
+
+  </div>
+  <div class="article-info article-info-index">
+    
+    
+    
+
+    
+    <p class="article-more-link">
+      <a class="article-more-a" href="/2021/04/10/IMX6U-GPIO%E8%AF%A6%E8%A7%A3/">展开 >></a>
+    </p>
+    
+
+    
+    <div class="clearfix"></div>
+  </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-ARM汇编基础" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -1533,158 +1682,6 @@
 
 
   
-    <article id="post-IMX6U-C语言LED" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-  
-  
-    <h1 itemprop="name">
-	
-	  <a class="article-title" href="/2021/03/03/IMX6U-C%E8%AF%AD%E8%A8%80LED/" target="_blank">IMX6U_C语言LED</a>
-  
-    </h1>
-  
-
-
-  
-  
-<a href="/2021/03/03/IMX6U-C%E8%AF%AD%E8%A8%80LED/" class="archive-article-date">
-        <time datetime="2021-03-02T16:00:05.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-03-03</time>
-</a>
-
-  
-  
-    
-
-  
-  </header>
-  
-  <div class="article-entry" itemprop="articleBody">
-    
-     <a id="more"></a>
-
-<h1 id="C语言运行环境构建"><a href="#C语言运行环境构建" class="headerlink" title="C语言运行环境构建"></a>C语言运行环境构建</h1><p>在开始部分用汇编来初始化一下 C 语言环境，比如初始化 DDR、 </p>
-<p>设置堆栈指针 SP 等等，当这些工作都做完以后就可以进入 C 语言环境，也就是运行 C 语言代 </p>
-<p>码，一般都是进入 main 函数。所以我们有两部分文件要做：</p>
-<p>①、汇编文件 </p>
-<p>汇编文件只是用来完成 C 语言环境搭建。 </p>
-<p>②、C 语言文件 </p>
-<p>C 语言文件就是完成我们的业务层代码的，其实就是我们实际例程要完成的功能。 </p>
-<h2 id="设置处理器模式"><a href="#设置处理器模式" class="headerlink" title="设置处理器模式"></a>设置处理器模式</h2><p>​    设置6ULL处于SVC模式 下。设置CPSR寄存器的bit4-0，也就是M[4:0]为10011=0X13。读写状态寄存器需要用到MRS和MSR指令。MRS将CPSR寄存器数据读出到通用寄存器里面，MSR指令将通用寄存器的值写入到CPSR寄存器里面去。</p>
- <!-- more --> 
-
-<h2 id="设置sp指针"><a href="#设置sp指针" class="headerlink" title="设置sp指针"></a>设置sp指针</h2><p>​    Sp可以指向内部RAM，也可以指向DDR，我们将其指向DDR。Sp设置到哪里？512MB的范围0x80000000~0x9FFFFFFF。栈大小，0x200000=2MB。处理器栈增长方式，对于A7而言是向下增长的。设置sp指向0x80200000。</p>
-<h3 id="跳转到C语言"><a href="#跳转到C语言" class="headerlink" title="跳转到C语言"></a>跳转到C语言</h3><p>​    使用b指令，跳转到C语言函数，比如main函数。</p>
-<p>汇编文件只是用来完成 C 语言环境搭建。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">.global _start  		&#x2F;* 全局标号 *&#x2F;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * 描述：	_start函数，程序从此函数开始执行，此函数主要功能是设置C</span><br><span class="line"> *		 运行环境。</span><br><span class="line"> *&#x2F;</span><br><span class="line">_start:</span><br><span class="line"></span><br><span class="line">	&#x2F;* 进入SVC模式 *&#x2F;</span><br><span class="line">	mrs r0, cpsr</span><br><span class="line">	bic r0, r0, #0x1f 	&#x2F;* 将r0寄存器中的低5位清零，也就是cpsr的M0~M4 	*&#x2F;</span><br><span class="line">	orr r0, r0, #0x13 	&#x2F;* r0或上0x13,表示使用SVC模式					*&#x2F;</span><br><span class="line">	msr cpsr, r0		&#x2F;* 将r0 的数据写入到cpsr_c中 					*&#x2F;</span><br><span class="line"></span><br><span class="line">	ldr sp, &#x3D;0X80200000	&#x2F;* 设置栈指针			 *&#x2F;</span><br><span class="line">	b main				&#x2F;* 跳转到main函数 		 *&#x2F;</span><br></pre></td></tr></table></figure>
-<p>第 1 行定义了一个全局标号_start。 </p>
-<p>第 7 行就是标号_start 开始的地方，相当于是一个_start 函数，这个_start 就是第一行代码。 </p>
-<p>第 10~13 行就是设置处理器进入 SVC 模式，在 6.2 小节的“Cortex-A 处理器运行模型”中 </p>
-<p>我们说过 Cortex-A 有九个运行模型，这里我们设置处理器运行在 SVC 模式下。处理器模式的 </p>
-<p>设置是通过修改 CPSR(程序状态)寄存器来完成的，在 6.3.2 小节中我们详细的讲解了 CPSR 寄 </p>
-<p>存器，其中 M[4:0](CPSR 的 bit[4:0])就是设置处理器运行模式的，参考表 6.3.2.2，如果要将处 </p>
-<p>理器设置为 SVC 模式，那么 M[4:0]就要等于 0X13。11~13 行代码就是先使用指令 MRS 将 CPSR </p>
-<p>寄存器的值读取到 R0 中，然后修改 R0 中的值，设置 R0 的 bit[4:0]为 0X13，然后再使用指令 </p>
-<p>MSR 将修改后的 R0 重新写入到 CPSR 中。 </p>
-<p>第 15 行通过 ldr 指令设置 SVC 模式下的 SP 指针=0X80200000，因为 I.MX6U-ALPHA 开 </p>
-<p>发 板 上 的 </p>
-<p>DDR3 </p>
-<p>地 址 范 围 是 </p>
-<p>0X80000000~0XA0000000(512MB) 或 者 </p>
-<p>0X80000000~0X90000000(256MB)，不管是 512MB 版本还是 256MB 版本的，其 DDR3 起始地 </p>
-<p>址都是 0X80000000。由于 Cortex-A7 的堆栈是向下增长的，所以将 SP 指针设置为 0X80200000， </p>
-<p>因此 SVC 模式的栈大小 0X80200000-0X80000000=0X200000=2MB，2MB 的栈空间已经很大了， </p>
-<p>如果做裸机开发的话绰绰有余。 </p>
-<p>第 16 行就是跳转到 main 函数，main 函数就是 C 语言代码了。</p>
-<p>几行代码，用来设置处理器运行到 SVC 模式下、然后初始 </p>
-<p>化 SP 指针、最终跳转到 C 文件的 main 函数中。</p>
-<p>start.s 文件中却没有初始化 DDR3 的代码，DDR3 肯定是要初始化的，但是不需要在 start.s 文 </p>
-<p>件中完成。在 9.4.2 小节里面分析 DCD 数据的时候就已经讲过了，DCD 数据包含了 DDR 配置 </p>
-<p>参数，I.MX6U 内部的 Boot ROM 会读取 DCD 数据中的 DDR 配置参数然后完成 DDR 初始化 </p>
-<p>的。 </p>
-<h2 id="C-语言部分实验程序编写"><a href="#C-语言部分实验程序编写" class="headerlink" title="C 语言部分实验程序编写"></a><strong>C</strong> <strong>语言部分实验程序编写</strong></h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;**************************************************************</span><br><span class="line">描述	   : I.MX6U开发板裸机实验2 C语言点灯使用C语言来点亮开发板上的LED灯，学习</span><br><span class="line">			和掌握如何用C语言来完成对I.MX6U处理器的GPIO初始化和控制。</span><br><span class="line">**************************************************************&#x2F;</span><br><span class="line">#include &quot;main.h&quot;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 使能I.MX6U所有外设时钟</span><br><span class="line"> *&#x2F;</span><br><span class="line">void clk_enable(void)</span><br><span class="line">&#123;</span><br><span class="line">	CCM_CCGR0 &#x3D; 0xffffffff;</span><br><span class="line">	CCM_CCGR1 &#x3D; 0xffffffff;</span><br><span class="line">	CCM_CCGR2 &#x3D; 0xffffffff;</span><br><span class="line">	CCM_CCGR3 &#x3D; 0xffffffff;</span><br><span class="line">	CCM_CCGR4 &#x3D; 0xffffffff;</span><br><span class="line">	CCM_CCGR5 &#x3D; 0xffffffff;</span><br><span class="line">	CCM_CCGR6 &#x3D; 0xffffffff;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 初始化LED对应的GPIO</span><br><span class="line"> *&#x2F;</span><br><span class="line">void led_init(void)</span><br><span class="line">&#123;</span><br><span class="line">	&#x2F;* 1、初始化IO复用 *&#x2F;</span><br><span class="line">	SW_MUX_GPIO1_IO03 &#x3D; 0x5;	&#x2F;* 复用为GPIO1_IO03 *&#x2F;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 2、、配置GPIO1_IO03的IO属性	</span><br><span class="line">	 *bit 16:0 HYS关闭</span><br><span class="line">	 *bit [15:14]: 00 默认下拉</span><br><span class="line">     *bit [13]: 0 kepper功能</span><br><span class="line">     *bit [12]: 1 pull&#x2F;keeper使能</span><br><span class="line">     *bit [11]: 0 关闭开路输出</span><br><span class="line">     *bit [7:6]: 10 速度100Mhz</span><br><span class="line">     *bit [5:3]: 110 R0&#x2F;6驱动能力</span><br><span class="line">     *bit [0]: 0 低转换率</span><br><span class="line">     *&#x2F;</span><br><span class="line">	SW_PAD_GPIO1_IO03 &#x3D; 0X10B0;		</span><br><span class="line"></span><br><span class="line">	&#x2F;* 3、初始化GPIO *&#x2F;</span><br><span class="line">	GPIO1_GDIR &#x3D; 0X0000008;	&#x2F;* GPIO1_IO03设置为输出 *&#x2F;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 4、设置GPIO1_IO03输出低电平，打开LED0 *&#x2F;</span><br><span class="line">	GPIO1_DR &#x3D; 0X0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 打开LED灯</span><br><span class="line"> *&#x2F;</span><br><span class="line">void led_on(void)</span><br><span class="line">&#123;</span><br><span class="line">	&#x2F;* </span><br><span class="line">	 * 将GPIO1_DR的bit3清零	 </span><br><span class="line">	 *&#x2F;</span><br><span class="line">	GPIO1_DR &amp;&#x3D; ~(1&lt;&lt;3); </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 关闭LED灯</span><br><span class="line"> *&#x2F;</span><br><span class="line">void led_off(void)</span><br><span class="line">&#123;</span><br><span class="line">	&#x2F;*    </span><br><span class="line">	 * 将GPIO1_DR的bit3置1</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	GPIO1_DR |&#x3D; (1&lt;&lt;3);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<h1 id="链接脚本"><a href="#链接脚本" class="headerlink" title="链接脚本"></a>链接脚本</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">SECTIONS&#123;</span><br><span class="line">	. &#x3D; 0X87800000;</span><br><span class="line">	.text :</span><br><span class="line">	&#123;</span><br><span class="line">		start.o </span><br><span class="line">		main.o </span><br><span class="line">		*(.text)</span><br><span class="line">	&#125;</span><br><span class="line">	.rodata ALIGN(4) : &#123;*(.rodata*)&#125;     </span><br><span class="line">	.data ALIGN(4)   : &#123; *(.data) &#125;    </span><br><span class="line">	__bss_start &#x3D; .;    </span><br><span class="line">	.bss ALIGN(4)  : &#123; *(.bss)  *(COMMON) &#125;    </span><br><span class="line">	__bss_end &#x3D; .;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>第 2 行设置定位计数器为0X87800000，因为我们的链接地址就是0X87800000。</p>
-<p>第5行设置链接到开始位置的文件为start.o，因为 start.o 里面包含着第一个要执行的指令，所以一定要链接到最开始的地方。</p>
-<p>第 6 行是 main.o这个文件，其实可以不用写出来，因为 main.o 的位置就无所谓了，可以由编译器自行决定链接 位置。</p>
-<p>在第 11、13 行有“__bss_start”和“__bss_end”这两个东西？这个是什么呢？“__bss_start” 和“__bss_end”是符号，第 11、13 这两行其实就是对这两个符号进行赋值，其值为定位符“.”， 这两个符号用来保存.bss 段的起始地址和结束地址。前面说了.bss 段是定义了但是没有被初始化的变量，我们需要手动对.bss 段的变量清零的，因此我们需要知道.bss 段的起始和结束地址， 这样我们直接对这段内存赋 0 即可完成清零。</p>
-<p>通过第 11、13 行代码，.bss 段的起始地址和结束 地址就保存在了“__bss_start”和“__bss_end”中，我们就可以直接在汇编或者 C 文件里面使 用这两个符号。</p>
-
-    
-
-    
-
-    
-
-  </div>
-  <div class="article-info article-info-index">
-    
-    
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">linux</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">IMX6U</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">C语言</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-    
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/Linux//" class="article-tag-list-link color1">Linux</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-    
-    <p class="article-more-link">
-      <a class="article-more-a" href="/2021/03/03/IMX6U-C%E8%AF%AD%E8%A8%80LED/">展开 >></a>
-    </p>
-    
-
-    
-    <div class="clearfix"></div>
-  </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
       <a class="extend prev" rel="prev" href="/page/5/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/7/">Next &amp;raquo;</a>
@@ -1818,6 +1815,10 @@
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">ARM</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">IMX6U</a>
               </li>
              
@@ -1826,11 +1827,11 @@
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">ARM</a>
+                <a href="javascript:void(0)" class="js-tag color4">C语言</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">C语言</a>
+                <a href="javascript:void(0)" class="js-tag color4">蜂鸣器</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1842,7 +1843,7 @@
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">蜂鸣器</a>
+                <a href="javascript:void(0)" class="js-tag color3">汇编</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1851,10 +1852,6 @@
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">烧写</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">汇编</a>
               </li>
              
               <li class="article-tag-list-item">
