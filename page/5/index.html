@@ -195,97 +195,6 @@
             
 
   
-    <article id="post-IMX6U-I2C-触摸屏" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-  
-  
-    <h1 itemprop="name">
-	
-	  <a class="article-title" href="/2021/04/12/IMX6U-I2C-%E8%A7%A6%E6%91%B8%E5%B1%8F/" target="_blank">IMX6U_I2C_触摸屏</a>
-  
-    </h1>
-  
-
-
-  
-  
-<a href="/2021/04/12/IMX6U-I2C-%E8%A7%A6%E6%91%B8%E5%B1%8F/" class="archive-article-date">
-        <time datetime="2021-04-12T08:51:26.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-12</time>
-</a>
-
-  
-  
-    
-
-  
-  </header>
-  
-  <div class="article-entry" itemprop="articleBody">
-    
-     <a id="more"></a>
-
-<h1 id="一、多点电容触摸屏简介"><a href="#一、多点电容触摸屏简介" class="headerlink" title="一、多点电容触摸屏简介"></a>一、多点电容触摸屏简介</h1><p>ATK-7016 这款屏幕其实是由 TFT LCD+触摸屏组合起来的。底下是 LCD 面板，上面是触摸面板，将两个封装到一起就成了带有触摸屏的 LCD 屏幕。电容触摸屏也是需要一个驱动 IC的，驱动 IC一般会提供一个 I2C 接口给主控制器，主控制器可以通过 I2C 接口来读取驱动 IC 里面的触摸坐标数据。</p>
-<p>ATK-7016 的电容触摸屏部分有 4 个 IO 用于连接主控制器：SCL、SDA、RST 和 INT，SCL 和 SDA 是 I2C 引脚，RST 是复位引脚，INT 是中断引脚。一般通过 INT 引脚来通知主控制器有触摸点按下，然后在 INT 中断服务函数中读取触摸数据。也可以不使用中断功能，采用轮询的方式不断查询是否有触摸点按下，<br><strong>触摸屏IP:</strong><br>    CT_INT，触摸中断线，连接到了GPIO1_IO09<br>    I2C2_SCL：连接到了UART5_TXD<br>    I2C2_SDA：连接到了UART5_RXD<br>    RESET：连接到了SNVS_TAMPER9</p>
-<p>电容触摸芯片输出的触摸点坐标信息为对应的屏幕像素点信息，因此不需要校准。电阻屏需要校准。</p>
-<h1 id="二、FT54x6电容触摸芯片简介"><a href="#二、FT54x6电容触摸芯片简介" class="headerlink" title="二、FT54x6电容触摸芯片简介"></a>二、FT54x6电容触摸芯片简介</h1><p>1、IIC接口，最大400KHz<br>2、正点原子7寸屏幕FT5426的IIC地址为0X38.<br><strong>寄存器</strong></p>
-<ul>
-<li>DEVICE_MODE 0X00，需要设置为0X0，表示正常运行模式。</li>
-<li>ID_G_LIB_VERSION_H以及ID_G_LIB_VERSION_L 0XA1和0XA2。表示固件版本号。</li>
-<li>ID_G_MODE 0XA4，设置为1，表示采用中断方式上报触摸信息。</li>
-<li>TD_STATUS 0X02，当前触摸点的个数，1~5。</li>
-<li>TOUCH1_XH 0X03开始记录着触摸屏的触摸点坐标信息，一个触摸点6个寄存器，一共需要5*6=30个寄存器。一直读取到0X20</li>
-</ul>
-<p>一个触摸点坐标信息用12bit表示，其中H寄存器的bit3:0这4个bit为高4位，L寄存器的bit7:0为低8位。<br>对于XH寄存器，bit7:6表示事件，很重要。<br>YH寄存器的bit7:4表示触摸ID，</p>
-<h1 id="三、实验程序编写"><a href="#三、实验程序编写" class="headerlink" title="三、实验程序编写"></a>三、实验程序编写</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;***************************************************************</span><br><span class="line">文件名	: 	 bsp_touchscreen.h</span><br><span class="line">描述	   : 触摸屏驱动头文件,触摸芯片为FT5426</span><br><span class="line">***************************************************************&#x2F;</span><br><span class="line">&#x2F;* 宏定义 *&#x2F;</span><br><span class="line">#define FT5426_ADDR		0X38			&#x2F;* FT5426设备地址 		*&#x2F;</span><br><span class="line"></span><br><span class="line">#define FT5426_DEVICE_MODE		0X00 	&#x2F;* 模式寄存器 			*&#x2F;</span><br><span class="line">#define FT5426_IDGLIB_VERSION	0XA1 	&#x2F;* 固件版本寄存器 			*&#x2F;</span><br><span class="line">#define FT5426_IDG_MODE			0XA4	&#x2F;* 模式寄存器 			*&#x2F;</span><br><span class="line">#define FT5426_TD_STATUS		0X02	&#x2F;* 触摸状态寄存器 			*&#x2F;</span><br><span class="line">#define FT5426_TOUCH1_XH		0X03	&#x2F;* 触摸点坐标寄存器,一个触摸点用6个寄存器存储坐标数据*&#x2F;</span><br><span class="line">										 </span><br><span class="line">#define FT5426_XYCOORDREG_NUM	30		&#x2F;* 触摸点坐标寄存器数量 *&#x2F;</span><br><span class="line">#define FT5426_INIT_FINISHED	1		&#x2F;* 触摸屏初始化完成 			*&#x2F;</span><br><span class="line">#define FT5426_INIT_NOTFINISHED	0		&#x2F;* 触摸屏初始化未完成 			*&#x2F;</span><br><span class="line"></span><br><span class="line">#define FT5426_TOUCH_EVENT_DOWN			0x00	&#x2F;* 按下 		*&#x2F;</span><br><span class="line">#define FT5426_TOUCH_EVENT_UP			0x01	&#x2F;* 释放 		*&#x2F;</span><br><span class="line">#define FT5426_TOUCH_EVENT_ON			0x02	&#x2F;* 接触 		*&#x2F;</span><br><span class="line">#define FT5426_TOUCH_EVENT_RESERVED		0x03	&#x2F;* 没有事件 *&#x2F;</span><br><span class="line"></span><br><span class="line">&#x2F;* 触摸屏结构体 *&#x2F;</span><br><span class="line">struct ft5426_dev_struc</span><br><span class="line">&#123;	</span><br><span class="line">	unsigned char initfalg;		&#x2F;* 触摸屏初始化状态 *&#x2F;</span><br><span class="line">	unsigned char intflag;		&#x2F;* 标记中断有没有发生 *&#x2F;</span><br><span class="line">	unsigned char point_num;	&#x2F;* 触摸点 		*&#x2F;</span><br><span class="line">	unsigned short x[5];		&#x2F;* X轴坐标 	*&#x2F;</span><br><span class="line">	unsigned short y[5];		&#x2F;* Y轴坐标 	*&#x2F;</span><br><span class="line"></span><br><span class="line">&#125;;</span><br><span class="line">extern struct ft5426_dev_struc ft5426_dev;</span><br></pre></td></tr></table></figure>
-<p>​    </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;***************************************************************</span><br><span class="line">文件名	: 	 bsp_touchscreen.c</span><br><span class="line">描述	   : 触摸屏驱动文件，触摸芯片为FT5426</span><br><span class="line">***************************************************************&#x2F;</span><br><span class="line">struct ft5426_dev_struc ft5426_dev;</span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 初始化触摸屏，其实就是初始化FT5426</span><br><span class="line"> * @param		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void touchscreen_init(void)</span><br><span class="line">&#123;</span><br><span class="line">	unsigned char reg_value[2];</span><br><span class="line"></span><br><span class="line">	ft5426_dev.initfalg &#x3D; FT5426_INIT_NOTFINISHED;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 1、初始化IIC2 IO</span><br><span class="line">     * I2C2_SCL -&gt; UART5_TXD</span><br><span class="line">     * I2C2_SDA -&gt; UART5_RXD</span><br><span class="line">     *&#x2F;</span><br><span class="line">	IOMUXC_SetPinMux(IOMUXC_UART5_TX_DATA_I2C2_SCL,1);</span><br><span class="line">	IOMUXC_SetPinMux(IOMUXC_UART5_RX_DATA_I2C2_SDA,1);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 配置I2C2 IO属性	</span><br><span class="line">	 *bit 16:0 HYS关闭</span><br><span class="line">	 *bit [15:14]: 1 默认47K上拉</span><br><span class="line">	 *bit [13]: 1 pull功能</span><br><span class="line">	 *bit [12]: 1 pull&#x2F;keeper使能 </span><br><span class="line">	 *bit [11]: 0 关闭开路输出</span><br><span class="line">	 *bit [7:6]: 10 速度100Mhz</span><br><span class="line">	 *bit [5:3]: 110 驱动能力为R0&#x2F;6</span><br><span class="line">	 *bit [0]: 1 高转换率</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	IOMUXC_SetPinConfig(IOMUXC_UART5_TX_DATA_I2C2_SCL,0x70B0);</span><br><span class="line">	IOMUXC_SetPinConfig(IOMUXC_UART5_RX_DATA_I2C2_SDA,0X70B0);</span><br><span class="line">	</span><br><span class="line">	&#x2F;* 2、初始化触摸屏中断IO和复位IO *&#x2F;</span><br><span class="line">	gpio_pin_config_t ctintpin_config;</span><br><span class="line"></span><br><span class="line">	IOMUXC_SetPinMux(IOMUXC_GPIO1_IO09_GPIO1_IO09,0);		&#x2F;* 复用为GPIO1_IO9 *&#x2F;</span><br><span class="line">	IOMUXC_SetPinMux(IOMUXC_SNVS_SNVS_TAMPER9_GPIO5_IO09,0);&#x2F;* 复用为GPIO5_IO9 *&#x2F;</span><br><span class="line"></span><br><span class="line">	</span><br><span class="line">	IOMUXC_SetPinConfig(IOMUXC_GPIO1_IO09_GPIO1_IO09,0xF080);</span><br><span class="line">	IOMUXC_SetPinConfig(IOMUXC_SNVS_SNVS_TAMPER9_GPIO5_IO09,0X10B0);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 中断IO初始化 *&#x2F;</span><br><span class="line">	ctintpin_config.direction &#x3D; kGPIO_DigitalInput;</span><br><span class="line">	ctintpin_config.interruptMode &#x3D; kGPIO_IntRisingOrFallingEdge;</span><br><span class="line">	gpio_init(GPIO1, 9, &amp;ctintpin_config);</span><br><span class="line"></span><br><span class="line">	GIC_EnableIRQ(GPIO1_Combined_0_15_IRQn);				&#x2F;* 使能GIC中对应的中断 *&#x2F;</span><br><span class="line">	system_register_irqhandler(GPIO1_Combined_0_15_IRQn, (system_irq_handler_t)gpio1_io9_irqhandler, NULL);	&#x2F;* 注册中断服务函数 *&#x2F;</span><br><span class="line">	gpio_enableint(GPIO1, 9);								&#x2F;* 使能GPIO1_IO18的中断功能 *&#x2F;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 复位IO初始化 *&#x2F;</span><br><span class="line">    ctintpin_config.direction&#x3D;kGPIO_DigitalOutput;	</span><br><span class="line">    ctintpin_config.interruptMode&#x3D;kGPIO_NoIntmode;	</span><br><span class="line">    ctintpin_config.outputLogic&#x3D;1;					   </span><br><span class="line">    gpio_init(GPIO5, 9, &amp;ctintpin_config); </span><br><span class="line"></span><br><span class="line">	&#x2F;* 3、初始化I2C *&#x2F;</span><br><span class="line">	i2c_init(I2C2);	</span><br><span class="line"></span><br><span class="line">	&#x2F;* 4、初始化FT5426 *&#x2F;</span><br><span class="line">	gpio_pinwrite(GPIO5, 9, 0);	&#x2F;* 复位FT5426 *&#x2F;</span><br><span class="line">	delayms(20);</span><br><span class="line">	gpio_pinwrite(GPIO5, 9, 1); &#x2F;* 停止复位FT5426 *&#x2F;</span><br><span class="line">	delayms(20);</span><br><span class="line"></span><br><span class="line">	ft5426_write_byte(FT5426_ADDR, FT5426_DEVICE_MODE, 0); 	&#x2F;* 进入正常模式 				*&#x2F;</span><br><span class="line">	ft5426_write_byte(FT5426_ADDR, FT5426_IDG_MODE, 1); 	&#x2F;* FT5426中断模式 			*&#x2F;</span><br><span class="line"></span><br><span class="line">	</span><br><span class="line">	ft426_read_len(FT5426_ADDR, FT5426_IDGLIB_VERSION, 2, reg_value);</span><br><span class="line">	printf(&quot;Touch Frimware Version:%#X\r\n&quot;, ((unsigned short)reg_value[0] &lt;&lt; 8) + reg_value[1]);</span><br><span class="line">	</span><br><span class="line">	ft5426_dev.initfalg &#x3D; FT5426_INIT_FINISHED;	&#x2F;* 标记FT5426初始化完成 *&#x2F;</span><br><span class="line">	ft5426_dev.intflag &#x3D; 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description			: GPIO1_IO9最终的中断处理函数</span><br><span class="line"> * @param				: 无</span><br><span class="line"> * @return 				: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void gpio1_io9_irqhandler(void)</span><br><span class="line">&#123; </span><br><span class="line">	if(ft5426_dev.initfalg &#x3D;&#x3D; FT5426_INIT_FINISHED)</span><br><span class="line">	&#123;</span><br><span class="line">		&#x2F;&#x2F;ft5426_dev.intflag &#x3D; 1;</span><br><span class="line">		ft5426_read_tpcoord();</span><br><span class="line">	&#125;</span><br><span class="line">	gpio_clearintflags(GPIO1, 9); &#x2F;* 清除中断标志位 *&#x2F;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 向FT5429写入数据</span><br><span class="line"> * @param - addr: 设备地址</span><br><span class="line"> * @param - reg : 要写入的寄存器</span><br><span class="line"> * @param - data: 要写入的数据</span><br><span class="line"> * @return 		: 操作结果</span><br><span class="line"> *&#x2F;</span><br><span class="line">unsigned char ft5426_write_byte(unsigned char addr,unsigned char reg, unsigned char data)</span><br><span class="line">&#123;</span><br><span class="line">    unsigned char status&#x3D;0;</span><br><span class="line">    unsigned char writedata&#x3D;data;</span><br><span class="line">    struct i2c_transfer masterXfer;</span><br><span class="line">	</span><br><span class="line">    &#x2F;* 配置I2C xfer结构体 *&#x2F;</span><br><span class="line">   	masterXfer.slaveAddress &#x3D; addr; 			&#x2F;* 设备地址 				*&#x2F;</span><br><span class="line">    masterXfer.direction &#x3D; kI2C_Write;			&#x2F;* 写入数据 				*&#x2F;</span><br><span class="line">    masterXfer.subaddress &#x3D; reg;				&#x2F;* 要写入的寄存器地址 			*&#x2F;</span><br><span class="line">    masterXfer.subaddressSize &#x3D; 1;				&#x2F;* 地址长度一个字节 			*&#x2F;</span><br><span class="line">    masterXfer.data &#x3D; &amp;writedata;				&#x2F;* 要写入的数据 				*&#x2F;</span><br><span class="line">    masterXfer.dataSize &#x3D; 1;  					&#x2F;* 写入数据长度1个字节			*&#x2F;</span><br><span class="line"></span><br><span class="line">    if(i2c_master_transfer(I2C2, &amp;masterXfer))</span><br><span class="line">        status&#x3D;1;</span><br><span class="line">        </span><br><span class="line">    return status;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 从FT5426读取一个字节的数据</span><br><span class="line"> * @param - addr: 设备地址</span><br><span class="line"> * @param - reg : 要读取的寄存器</span><br><span class="line"> * @return 		: 读取到的数据。</span><br><span class="line"> *&#x2F;</span><br><span class="line">unsigned char ft5426_read_byte(unsigned char addr,unsigned char reg)</span><br><span class="line">&#123;</span><br><span class="line">	unsigned char val&#x3D;0;</span><br><span class="line">	</span><br><span class="line">	struct i2c_transfer masterXfer;	</span><br><span class="line">	masterXfer.slaveAddress &#x3D; addr;				&#x2F;* 设备地址 				*&#x2F;</span><br><span class="line">    masterXfer.direction &#x3D; kI2C_Read;			&#x2F;* 读取数据 				*&#x2F;</span><br><span class="line">    masterXfer.subaddress &#x3D; reg;				&#x2F;* 要读取的寄存器地址 			*&#x2F;</span><br><span class="line">    masterXfer.subaddressSize &#x3D; 1;				&#x2F;* 地址长度一个字节 			*&#x2F;</span><br><span class="line">    masterXfer.data &#x3D; &amp;val;						&#x2F;* 接收数据缓冲区 				*&#x2F;</span><br><span class="line">    masterXfer.dataSize &#x3D; 1;					&#x2F;* 读取数据长度1个字节			*&#x2F;</span><br><span class="line">	i2c_master_transfer(I2C2, &amp;masterXfer);</span><br><span class="line"></span><br><span class="line">	return val;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 从FT5429读取多个字节的数据</span><br><span class="line"> * @param - addr: 设备地址</span><br><span class="line"> * @param - reg : 要读取的开始寄存器地址</span><br><span class="line"> * @param - len : 要读取的数据长度.</span><br><span class="line"> * @param - buf : 读取到的数据缓冲区</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void ft426_read_len(unsigned char addr,unsigned char reg,unsigned char len,unsigned char *buf)</span><br><span class="line">&#123;	</span><br><span class="line">	struct i2c_transfer masterXfer;	</span><br><span class="line">	</span><br><span class="line">	masterXfer.slaveAddress &#x3D; addr;				&#x2F;* 设备地址 				*&#x2F;</span><br><span class="line">    masterXfer.direction &#x3D; kI2C_Read;			&#x2F;* 读取数据 				*&#x2F;</span><br><span class="line">    masterXfer.subaddress &#x3D; reg;				&#x2F;* 要读取的寄存器地址 			*&#x2F;</span><br><span class="line">    masterXfer.subaddressSize &#x3D; 1;				&#x2F;* 地址长度一个字节 			*&#x2F;</span><br><span class="line">    masterXfer.data &#x3D; buf;						&#x2F;* 接收数据缓冲区 				*&#x2F;</span><br><span class="line">    masterXfer.dataSize &#x3D; len;					&#x2F;* 读取数据长度1个字节			*&#x2F;</span><br><span class="line">	i2c_master_transfer(I2C2, &amp;masterXfer);</span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 读取当前触摸点个数</span><br><span class="line"> * @param 		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void ft5426_read_tpnum(void)</span><br><span class="line">&#123;</span><br><span class="line">	ft5426_dev.point_num &#x3D; ft5426_read_byte(FT5426_ADDR, FT5426_TD_STATUS);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 读取当前所有触摸点的坐标</span><br><span class="line"> * @param 		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void ft5426_read_tpcoord(void)</span><br><span class="line">&#123;</span><br><span class="line">	unsigned char i &#x3D; 0;</span><br><span class="line">	unsigned char type &#x3D; 0;</span><br><span class="line">	&#x2F;&#x2F;unsigned char id &#x3D; 0;</span><br><span class="line">	unsigned char pointbuf[FT5426_XYCOORDREG_NUM];</span><br><span class="line">	</span><br><span class="line">	ft5426_dev.point_num &#x3D; ft5426_read_byte(FT5426_ADDR, FT5426_TD_STATUS);</span><br><span class="line"></span><br><span class="line">	&#x2F;*</span><br><span class="line">  	 * 从寄存器FT5426_TOUCH1_XH开始，连续读取30个寄存器的值，这30个寄存器</span><br><span class="line">  	 * 保存着5个点的触摸值，每个点占用6个寄存器。</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	ft426_read_len(FT5426_ADDR, FT5426_TOUCH1_XH, FT5426_XYCOORDREG_NUM, pointbuf);</span><br><span class="line">		</span><br><span class="line">	for(i &#x3D; 0; i &lt; ft5426_dev.point_num ; i++)</span><br><span class="line">	&#123;</span><br><span class="line">		unsigned char *buf &#x3D; &amp;pointbuf[i * 6];</span><br><span class="line">		&#x2F;* 以第一个触摸点为例，寄存器TOUCH1_XH(地址0X03),各位描述如下：</span><br><span class="line">		 * bit7:6  Event flag  0:按下 1:释放 2：接触 3：没有事件</span><br><span class="line">		 * bit5:4  保留</span><br><span class="line">		 * bit3:0  X轴触摸点的11~8位。</span><br><span class="line">		 *&#x2F;</span><br><span class="line">		ft5426_dev.x[i] &#x3D; ((buf[2] &lt;&lt; 8) | buf[3]) &amp; 0x0fff;</span><br><span class="line">		ft5426_dev.y[i] &#x3D; ((buf[0] &lt;&lt; 8) | buf[1]) &amp; 0x0fff;</span><br><span class="line">		</span><br><span class="line">		type &#x3D; buf[0] &gt;&gt; 6;	&#x2F;* 获取触摸类型 *&#x2F;</span><br><span class="line">		</span><br><span class="line"></span><br><span class="line">		&#x2F;* 以第一个触摸点为例，寄存器TOUCH1_YH(地址0X05),各位描述如下：</span><br><span class="line">		 * bit7:4  Touch ID  触摸ID，表示是哪个触摸点</span><br><span class="line">		 * bit3:0  Y轴触摸点的11~8位。</span><br><span class="line">		 *&#x2F;</span><br><span class="line">		&#x2F;&#x2F;id &#x3D; (buf[2] &gt;&gt; 4) &amp; 0x0f;</span><br><span class="line">		</span><br><span class="line">		if(type &#x3D;&#x3D; FT5426_TOUCH_EVENT_DOWN || type &#x3D;&#x3D; FT5426_TOUCH_EVENT_ON )&#x2F;* 按下 	*&#x2F;</span><br><span class="line">		&#123;</span><br><span class="line">		</span><br><span class="line">		&#125; else  &#123;	&#x2F;* 释放 *&#x2F;	</span><br><span class="line">			</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;	</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-    
-
-    
-
-    
-
-  </div>
-  <div class="article-info article-info-index">
-    
-    
-    
-
-    
-    <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/12/IMX6U-I2C-%E8%A7%A6%E6%91%B8%E5%B1%8F/">展开 >></a>
-    </p>
-    
-
-    
-    <div class="clearfix"></div>
-  </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
     <article id="post-IMX6U-SPI" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -1232,6 +1141,155 @@
 
 
   
+    <article id="post-IMX6U-GPIO详解" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+  
+  
+    <h1 itemprop="name">
+	
+	  <a class="article-title" href="/2021/04/10/IMX6U-GPIO%E8%AF%A6%E8%A7%A3/" target="_blank">I.MX6U的GPIO详解</a>
+  
+    </h1>
+  
+
+
+  
+  
+<a href="/2021/04/10/IMX6U-GPIO%E8%AF%A6%E8%A7%A3/" class="archive-article-date">
+        <time datetime="2021-04-10T12:00:19.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-10</time>
+</a>
+
+  
+  
+    
+
+  
+  </header>
+  
+  <div class="article-entry" itemprop="articleBody">
+    
+     <a id="more"></a>
+
+<h1 id="I-MX6U-IO-命名"><a href="#I-MX6U-IO-命名" class="headerlink" title="I.MX6U IO 命名"></a><strong>I.MX6U IO</strong> <strong>命名</strong></h1><p>“IOMUXC_SW_MUC_CTL_PAD_GPIO1_IO00”的就是 GPIO 命名，命名形式就是“IOMUXC_SW_MUC_CTL_PAD_XX_XX”，后面的“XX_XX”就是 GPIO 命名， 比如：GPIO1_IO01、UART1_TX_DATA、JTAG_MOD、SNVS_TAMPER1 等等。</p>
+<p>I.MX6U 的 GPIO 并不像 STM32 一样以 PA0~15 这样命名，他是根据某个 IO 所拥有的功能来命名的。 GPIO1_IO01，这个肯定能做 GPIO， UART1_TX_DATA 肯定这个 IO 肯定能做为 UART1 的发送引脚。</p>
+<p>I.MX6U 的其它 IO 也是可以复用为 GPIO 功能。同样的，GPIO1_IO00~GPIO_IO09 也是可以复用为其它外设引脚的。</p>
+<h2 id="I-MX6U-IO-复用"><a href="#I-MX6U-IO-复用" class="headerlink" title="I.MX6U IO 复用"></a><strong>I.MX6U IO</strong> <strong>复用</strong></h2><p>IOMUXC_SW_MUX_CTL_PAD_GPIO1_IO00的寄存器，寄存器地址为 0X020E005C，这个寄存器是 32 位的，但是只用到了最低 5位，其中bit0<del>bit3(MUX_MODE)就是设置 GPIO1_IO00 的复用功能的。GPIO1_IO00 一共可以复用为 9 种功能 IO，分别对应 ALT0</del>ALT8，其中 ALT5 就是作为 GPIO1_IO00。GPIO1_IO00 还可以作 为 I2C2_SCL、GPT1_CAPTURE1、ANATOP_OTG1_ID 等。这个就是 I.MX6U 的 IO 复用。</p>
+<p>由此可见，I.MX6U 的 GPIO 不止 GPIO1_IO00~GPIO1_IO09 这 10 个，其它的 IO 都可以复用为 GPIO 来使用。I.MX6U 的 GPIO 一共有 5 组：GPIO1、GPIO2、GPIO3、GPIO4 和 GPIO5，其中 GPIO1 有 32 个 IO，GPIO2 有22 个 IO，GPIO3 有 29 个 IO、GPIO4 有 29 个 IO，GPIO5 最少，只有 12 个 IO，这样一共有 124 个 GPIO。</p>
+<h2 id="I-MX6U-IO-配置"><a href="#I-MX6U-IO-配置" class="headerlink" title="I.MX6U IO 配置"></a><strong>I.MX6U IO</strong> <strong>配置</strong></h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">IOMUXC_SW_MUX_CTL_PAD_GPIO1_IO00 </span><br><span class="line">IOMUXC_SW_PAD_CTL_PAD_GPIO1_IO00</span><br></pre></td></tr></table></figure>
+<p>上面两个都是跟 GPIO_IO00 有关的寄存器，名字上的区别就是红色部分，一个是“MUX”， 一个是“PAD”。</p>
+<p>IOMUXC_SW_MUX_CTL_PAD_XX_XX 和 IOMUXC_SW_PAD_CTL_PAD_XX_XX 这两种寄存器都是配置 IO 的，注意是 IO！IOMUXC_SW_MUX_CTL_PAD_XX_XX配置GPIO1_IO00 复用功能的，IOMUXC_SW_PAD_CTL_PAD_XX_XX是用来配置 GPIO1_IO00 的IO 属性，包括速度设置、驱动能力设置、压摆率设置等等。</p>
+<p><strong>当 IO 用作 GPIO 的时候需要设置的寄存器，一共有八个：DR、GDIR、PSR、ICR1、ICR2、EDGE_SEL、IMR 和 ISR。</strong></p>
+<p>DR 寄存器，数据寄存器。此寄存器是 32 位的，一个 GPIO 组最大只有 32 个 IO，因此 DR 寄存器中的每个位都对应一个 GPIO。当 GPIO 被配置为输出功能以后，向DR寄存器指定的位写入数据那么相应的 IO 就会输出相应的高低电平，当 GPIO被配置为输入模式以后，此DR寄存器就保存着对应 IO 的电平值。</p>
+<p>GDIR 寄存器，方向寄存器。用来设置某个 GPIO 的工作方向的，即输入/输出，GDIR 寄存器也是 32 位的，此寄存器用来设置某个 IO 的工作方向，是输入还是输出。同样的，每个 IO 对应一个位，如果要设置 GPIO 为输入的话就设置相应的位为 0，如果要设置为输出的话就设置为 1。</p>
+<p>PSR 寄存器， GPIO 状态寄存器，同样的 PSR 寄存器也是一个 GPIO 对应一个位，读取相应的位即可获取对应的 GPIO 的状态，也就是 GPIO 的高低电平值。功能和输入状态下的 DR 寄存器一样。 </p>
+<p>ICR1和ICR2这两个寄存器，都是中断控制寄存器，ICR1用于配置低16个GPIO， ICR2 用于配置高 16 个 GPIO，ICR1 用于 IO0<del>15 的配置， ICR2 用于 IO16</del>31 的配置。ICR1 寄存器中一个 GPIO 用两个位，这两个位用来配置中断的触发方式。</p>
+<table>
+<thead>
+<tr>
+<th><strong>位设置</strong></th>
+<th>触发方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>00</td>
+<td>低电平触发</td>
+</tr>
+<tr>
+<td>01</td>
+<td>高电平触发</td>
+</tr>
+<tr>
+<td>10</td>
+<td>上升沿触发</td>
+</tr>
+<tr>
+<td>11</td>
+<td>下降沿触发</td>
+</tr>
+</tbody></table>
+<p>以GPIO1_IO15为例，如果要设置GPIO1_IO15为上升沿触发中断，那么GPIO1.ICR1=2&lt;&lt;30，如果要设置 GPIO1 的 IO16~31 的话就需要设置 ICR2 寄存器了。</p>
+<p>IMR 寄存器，中断屏蔽寄存器。IMR 寄存器也是一个 GPIO 对应一个位，IMR 寄存器用来控制 GPIO 的中断禁止和使能，如果使能某个 GPIO 的中断，那么设置相应的位为 1 即可，反之，如果要禁止中断，那么就设 置相应的位为 0 即可。</p>
+<p>寄存器 ISR，中断状态寄存器。ISR 寄存器也是 32 位寄存器，一个 GPIO 对应一个位，只要某个 GPIO 的中断发生，那么 ISR 中相应的位就会被置 1。所以，我们可以通过读取 ISR 寄存器来判断 GPIO 中断是否发生， 相当于 ISR 中的这些位就是中断标志位。当我们处理完中断以后，必须清除中断标志位，清除 方法就是向 ISR 中相应的位写 1，也就是写 1 清零。 </p>
+<p>EDGE_SEL 寄存器，边沿选择寄存器。EDGE_SEL 寄存器用来设置边沿中断，这个寄存器会覆盖 ICR1 和 ICR2 的设置，同样是一 个 GPIO 对应一个位。如果相应的位被置 1，那么就相当与设置了对应的 GPIO 是上升沿和下降 沿(双边沿)触发。例如，我们设置 GPIO1.EDGE_SEL=1，那么就表示 GPIO1_IO01 是双边沿触发中断，无论 GFPIO1_CR1 的设置为多少，都是双边沿触发。</p>
+<h2 id="I-MX6U-GPIO-时钟使能"><a href="#I-MX6U-GPIO-时钟使能" class="headerlink" title="I.MX6U GPIO 时钟使能"></a><strong>I.MX6U GPIO</strong> <strong>时钟使能</strong></h2><p>I.MX6U每个外设的时钟都可以独立的使能或禁止，这样可以关闭掉不使用的外设时钟，起到 省电的目的。如果要使用某个外设的话必须要先使能其时钟。CCM 里面 的外设时钟使能寄存器CMM 有 CCM_CCGR0~CCM_CCGR6 这 7 个寄存器，这 7 个寄存器控制着 I.MX6U 的所有外设时钟开关。</p>
+<p>CCM_CCGR0 是个 32 为寄存器，其中每 2 位控制一个外设的时钟，比如 bit31:30 控制着GPIO2 的外设时钟，两个位就有 4 中操作方式。</p>
+<table>
+<thead>
+<tr>
+<th><strong>位设置</strong></th>
+<th><strong>时钟控制</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>00</td>
+<td>所有模式下都关闭外设时钟。</td>
+</tr>
+<tr>
+<td>01</td>
+<td>只有在运行模式下打开外设时钟，等待模式和停止模式下均关闭外设时钟。</td>
+</tr>
+<tr>
+<td>10</td>
+<td>未使用(保留)。</td>
+</tr>
+<tr>
+<td>11</td>
+<td>除了停止模式以外，其他所有模式下时钟都打开。</td>
+</tr>
+</tbody></table>
+<p>要打开 GPIO2 的外设时钟，那么只需要设置CCM_CCGR0 的 bit31 和 bit30 都为 1 即可，也就是 CCM_CCGR0=3 &lt;&lt; 30。反之，如果要关闭GPIO2 的 外设时钟 ，CCM_CCGR0 的 bit31 和 bit30 都 为0 即 可 。</p>
+<p>要将 I.MX6U 的 IO 作为 GPIO 使用，我们需要一下 几步： </p>
+<p>①、使能 GPIO 对应的时钟。 </p>
+<p>②、设置寄存器 IOMUXC_SW_MUX_CTL_PAD_XX_XX，设置 IO 的复用功能，使其复用 GPIO 功能。 </p>
+<p>③、设置寄存器 IOMUXC_SW_PAD_CTL_PAD_XX_XX，设置 IO 的上下拉、速度等等。 </p>
+<p>④、第②步已经将 IO 复用为了 GPIO 功能，所以需要配置 GPIO，设置输入/输出、是否使用中断、默认输出电平等。</p>
+
+    
+
+    
+
+    
+
+  </div>
+  <div class="article-info article-info-index">
+    
+    
+    
+
+    
+    <p class="article-more-link">
+      <a class="article-more-a" href="/2021/04/10/IMX6U-GPIO%E8%AF%A6%E8%A7%A3/">展开 >></a>
+    </p>
+    
+
+    
+    <div class="clearfix"></div>
+  </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
   
     <nav id="page-nav">
       <a class="extend prev" rel="prev" href="/page/4/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/6/">Next &amp;raquo;</a>
@@ -1365,15 +1423,15 @@
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">ARM</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">IMX6U</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">C语言</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">ARM</a>
               </li>
              
               <li class="article-tag-list-item">

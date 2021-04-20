@@ -195,99 +195,6 @@
             
 
   
-    <article id="post-Linux驱动-platform设备驱动-非设备树" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-  
-  
-    <h1 itemprop="name">
-	
-	  <a class="article-title" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-platform%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-%E9%9D%9E%E8%AE%BE%E5%A4%87%E6%A0%91/" target="_blank">Linux驱动-platform设备驱动-非设备树</a>
-  
-    </h1>
-  
-
-
-  
-  
-<a href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-platform%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-%E9%9D%9E%E8%AE%BE%E5%A4%87%E6%A0%91/" class="archive-article-date">
-        <time datetime="2021-04-16T09:31:45.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-16</time>
-</a>
-
-  
-  
-    
-
-  
-  </header>
-  
-  <div class="article-entry" itemprop="articleBody">
-    
-     <a id="more"></a>
-
-<p>使用platform 驱动框架来编写一个 LED 灯驱动，不使用设备树来描述设备信息，我们采用自定义platform_device这种“古老”方式来编写LED的设备信息。</p>
-<p>需要编写一个驱动模块和一个设备模块，其中驱动模块是 platform 驱动程序， </p>
-<p>设备模块是 platform 的设备信息。当这两个模块都加载成功以后就会匹配成功，然后 platform </p>
-<p>驱动模块中的 probe 函数就会执行，probe 函数中就是传统的字符设备驱动那一套。 </p>
-<p><strong>试验程序编写</strong></p>
-<p><strong>platform</strong> <strong>设备与驱动程序编写</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;***************************************************************</span><br><span class="line">文件名		: leddriver.c</span><br><span class="line">描述	   	: platform驱动</span><br><span class="line">***************************************************************&#x2F;</span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: flatform驱动的probe函数，当驱动与设备匹配以后此函数就会执行</span><br><span class="line"> * @param - dev 	: platform设备</span><br><span class="line"> * @return 			: 0，成功;其他负值,失败</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int led_probe(struct platform_device *dev)</span><br><span class="line">&#123;	</span><br><span class="line">	…………</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: platform驱动的remove函数，移除platform驱动的时候此函数会执行</span><br><span class="line"> * @param - dev 	: platform设备</span><br><span class="line"> * @return 			: 0，成功;其他负值,失败</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int led_remove(struct platform_device *dev)</span><br><span class="line">&#123;</span><br><span class="line">	iounmap(IMX6U_CCM_CCGR1);</span><br><span class="line">	iounmap(SW_MUX_GPIO1_IO03);</span><br><span class="line">	…………</span><br><span class="line"></span><br><span class="line">	cdev_del(&amp;leddev.cdev);&#x2F;*  删除cdev *&#x2F;</span><br><span class="line">	unregister_chrdev_region(leddev.devid, LEDDEV_CNT); &#x2F;* 注销设备号 *&#x2F;</span><br><span class="line">	device_destroy(leddev.class, leddev.devid);</span><br><span class="line">	class_destroy(leddev.class);</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;* platform驱动结构体 *&#x2F;</span><br><span class="line">static struct platform_driver led_driver &#x3D; &#123;</span><br><span class="line">	.driver		&#x3D; &#123;</span><br><span class="line">		.name	&#x3D; &quot;imx6ul-led&quot;,			&#x2F;* 驱动名字，用于和设备匹配 *&#x2F;</span><br><span class="line">	&#125;,</span><br><span class="line">	.probe		&#x3D; led_probe,</span><br><span class="line">	.remove		&#x3D; led_remove,</span><br><span class="line">&#125;;</span><br><span class="line">		</span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 驱动模块加载函数</span><br><span class="line"> * @param 		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int __init leddriver_init(void)</span><br><span class="line">&#123;</span><br><span class="line">	return platform_driver_register(&amp;led_driver);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 驱动模块卸载函数</span><br><span class="line"> * @param 		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">static void __exit leddriver_exit(void)</span><br><span class="line">&#123;</span><br><span class="line">	platform_driver_unregister(&amp;led_driver);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">module_init(leddriver_init);</span><br><span class="line">module_exit(leddriver_exit);</span><br></pre></td></tr></table></figure>
-<p>probe 函数，当设备和驱动匹配以后此函数就会执行，当匹配成功以后会在终端上输出“led driver and device has matched!”这样语句。在 probe 函数里面初始化 LED、注册字符设备驱动。也就是将原来在驱动加载函数里面做的工作全部放到 probe 函数里面完成。 </p>
-<p>remobe 函数，当卸载 platform 驱动的时候此函数就会执行。在此函数里面 释放内存、注销字符设备等。也就是将原来驱动卸载函数里面的工作全部都放到 remove 函数中完成。 </p>
-<p>platform_driver 驱动结构体，注意 name 字段为”imx6ul-led”，和leddevice.c 文件里面设置的设备 name 字段一致</p>
-<p>驱动模块加载函数，在此函数里面通过 platform_driver_register 向 Linux 内核注册 led_driver 驱动。 </p>
-<p>驱动模块卸载函数，在此函数里面通过 platform_driver_unregister 从 Linux 内核卸载 led_driver 驱动。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;***************************************************************</span><br><span class="line">文件名		: leddevice.c</span><br><span class="line">描述	   	: platform设备</span><br><span class="line">***************************************************************&#x2F;</span><br><span class="line">&#x2F;* </span><br><span class="line"> * 寄存器地址定义</span><br><span class="line"> *&#x2F;</span><br><span class="line">#define CCM_CCGR1_BASE				(0X020C406C)	</span><br><span class="line">#define SW_MUX_GPIO1_IO03_BASE		(0X020E0068)</span><br><span class="line">#define SW_PAD_GPIO1_IO03_BASE		(0X020E02F4)</span><br><span class="line">#define GPIO1_DR_BASE				(0X0209C000)</span><br><span class="line">#define GPIO1_GDIR_BASE				(0X0209C004)</span><br><span class="line">#define REGISTER_LENGTH				4</span><br><span class="line"></span><br><span class="line">&#x2F;* @description		: 释放flatform设备模块的时候此函数会执行	</span><br><span class="line"> * @param - dev 	: 要释放的设备 </span><br><span class="line"> * @return 			: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">static void	led_release(struct device *dev)</span><br><span class="line">&#123;</span><br><span class="line">	printk(&quot;led device released!\r\n&quot;);	</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*  </span><br><span class="line"> * 设备资源信息，也就是LED0所使用的所有寄存器</span><br><span class="line"> *&#x2F;</span><br><span class="line">static struct resource led_resources[] &#x3D; &#123;</span><br><span class="line">	[0] &#x3D; &#123;</span><br><span class="line">		.start 	&#x3D; CCM_CCGR1_BASE,</span><br><span class="line">		.end 	&#x3D; (CCM_CCGR1_BASE + REGISTER_LENGTH - 1),</span><br><span class="line">		.flags 	&#x3D; IORESOURCE_MEM,</span><br><span class="line">	&#125;,	</span><br><span class="line">	[1] &#x3D; &#123;</span><br><span class="line">		.start	&#x3D; SW_MUX_GPIO1_IO03_BASE,</span><br><span class="line">		.end	&#x3D; (SW_MUX_GPIO1_IO03_BASE + REGISTER_LENGTH - 1),</span><br><span class="line">		.flags	&#x3D; IORESOURCE_MEM,</span><br><span class="line">	&#125;,</span><br><span class="line">	[2] &#x3D; &#123;</span><br><span class="line">		.start	&#x3D; SW_PAD_GPIO1_IO03_BASE,</span><br><span class="line">		.end	&#x3D; (SW_PAD_GPIO1_IO03_BASE + REGISTER_LENGTH - 1),</span><br><span class="line">		.flags	&#x3D; IORESOURCE_MEM,</span><br><span class="line">	&#125;,</span><br><span class="line">	[3] &#x3D; &#123;</span><br><span class="line">		.start	&#x3D; GPIO1_DR_BASE,</span><br><span class="line">		.end	&#x3D; (GPIO1_DR_BASE + REGISTER_LENGTH - 1),</span><br><span class="line">		.flags	&#x3D; IORESOURCE_MEM,</span><br><span class="line">	&#125;,</span><br><span class="line">	[4] &#x3D; &#123;</span><br><span class="line">		.start	&#x3D; GPIO1_GDIR_BASE,</span><br><span class="line">		.end	&#x3D; (GPIO1_GDIR_BASE + REGISTER_LENGTH - 1),</span><br><span class="line">		.flags	&#x3D; IORESOURCE_MEM,</span><br><span class="line">	&#125;,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * platform设备结构体 </span><br><span class="line"> *&#x2F;</span><br><span class="line">static struct platform_device leddevice &#x3D; &#123;</span><br><span class="line">	.name &#x3D; &quot;imx6ul-led&quot;,</span><br><span class="line">	.id &#x3D; -1,</span><br><span class="line">	.dev &#x3D; &#123;</span><br><span class="line">		.release &#x3D; &amp;led_release,</span><br><span class="line">	&#125;,</span><br><span class="line">	.num_resources &#x3D; ARRAY_SIZE(led_resources),</span><br><span class="line">	.resource &#x3D; led_resources,</span><br><span class="line">&#125;;</span><br><span class="line">		</span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 设备模块加载 </span><br><span class="line"> * @param 		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int __init leddevice_init(void)</span><br><span class="line">&#123;</span><br><span class="line">	return platform_device_register(&amp;leddevice);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 设备模块注销</span><br><span class="line"> * @param 		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">static void __exit leddevice_exit(void)</span><br><span class="line">&#123;</span><br><span class="line">	platform_device_unregister(&amp;leddevice);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">module_init(leddevice_init);</span><br><span class="line">module_exit(leddevice_exit);</span><br></pre></td></tr></table></figure>
-<p>led_resources 数组，也就是设备资源，描述了 LED 所要使用到的寄存器信息，也就是 IORESOURCE_MEM 资源。 </p>
-<p>platform 设备结构体变量 leddevice，这里要注意 name 字段为“imx6ul-led”， platform 驱动中的 name 字段也要为“imx6ul-led”，否则设备和驱动匹配失败。 </p>
-<p>设备模块加载函数，在此函数里面通过 platform_device_register 向 Linux 内核注册 leddevice 这个 platform 设备。 </p>
-<p>设备模块卸载函数，在此函数里面通过 platform_device_unregister 从 Linux内核中删除掉 leddevice 这个 platform 设备。 </p>
-
-    
-
-    
-
-    
-
-  </div>
-  <div class="article-info article-info-index">
-    
-    
-    
-
-    
-    <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-platform%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-%E9%9D%9E%E8%AE%BE%E5%A4%87%E6%A0%91/">展开 >></a>
-    </p>
-    
-
-    
-    <div class="clearfix"></div>
-  </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
     <article id="post-Linux驱动-platform设备驱动" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -1342,6 +1249,102 @@
 
 
   
+    <article id="post-Linux驱动-并发与竞争-原子操作" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+  
+  
+    <h1 itemprop="name">
+	
+	  <a class="article-title" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C/" target="_blank">Linux驱动-并发与竞争-原子操作</a>
+  
+    </h1>
+  
+
+
+  
+  
+<a href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C/" class="archive-article-date">
+        <time datetime="2021-04-15T10:40:54.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-15</time>
+</a>
+
+  
+  
+    
+
+  
+  </header>
+  
+  <div class="article-entry" itemprop="articleBody">
+    
+     <a id="more"></a>
+
+<h2 id="1、原子操作"><a href="#1、原子操作" class="headerlink" title="1、原子操作"></a>1、原子操作</h2><p>原子操作就是指不能再进一步分割的操作，一般原子操作用于变量或者位操作。原子操作只能对整形变量或者位进行保护。C 语言里面简简单单的一句“a=3”，编译成汇编文件以后变成了 3 句，那么程 序在执行的时候肯定汇编语句一条一条的执行。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ldr r0, &#x3D;0X30000000 &#x2F;* 变量 a 地址 *&#x2F;</span><br><span class="line">ldr r1, &#x3D; 3 &#x2F;* 要写入的值 *&#x2F;</span><br><span class="line">str r1, [r0] &#x2F;* 将 3 写入到 a 变量中 *&#x2F;</span><br></pre></td></tr></table></figure>
+<p>假设现在线程 A要向 a 变量写入 10 这个值，而线程 B 也要向 a 变量写入 20 这个值，结果线程 A 最终将变量 a 设置为了 20。这就是一个最简单的设置变量值的并发与竞争的例子。要解决并发与竞争问题就要保证三行汇编指令作为一个整体运行，也就是作为一个原子存在。</p>
+<p>Linux 内核 提供了一组原子操作 API 函数来完成此功能，Linux 内核提供了两组原子操作 API 函数，一组是对整形变量进行操作的，一组是对位进行操作的，</p>
+<p><strong>原子整形操作 API 函数</strong></p>
+<p>Linux 内核定义了叫做 atomic_t 的结构体来完成整形数据的原子操作，在使用中用原子变量来代替整形变量，</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">typedef struct &#123;</span><br><span class="line">	int counter;</span><br><span class="line">&#125; atomic_t;</span><br></pre></td></tr></table></figure>
+<p>在定义原子变量的时候给原子变量赋初值</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">atomic_t b &#x3D; ATOMIC_INIT(0); &#x2F;&#x2F;定义原子变量 b 并赋初值为 0</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">MIC_INIT(int i) &#x2F;&#x2F;定义原子变量的时候对其初始化。</span><br><span class="line">int atomic_read(atomic_t *v)&#x2F;&#x2F;读取 v 的值，并且返回。</span><br><span class="line">void atomic_set(atomic_t *v, int i)&#x2F;&#x2F;向 v 写入 i 值。</span><br><span class="line">void atomic_add(int i, atomic_t *v) &#x2F;&#x2F;给 v 加上 i 值。</span><br><span class="line">void atomic_sub(int i, atomic_t *v) &#x2F;&#x2F;从 v 减去 i 值。</span><br><span class="line">void atomic_inc(atomic_t *v) &#x2F;&#x2F;给 v 加 1，也就是自增。</span><br><span class="line">void atomic_dec(atomic_t *v) &#x2F;&#x2F;从 v 减 1，也就是自减</span><br><span class="line">int atomic_dec_return(atomic_t *v) &#x2F;&#x2F;从 v 减 1，并且返回 v 的值。</span><br><span class="line">int atomic_inc_return(atomic_t *v) &#x2F;&#x2F;给 v 加 1，并且返回 v 的值。</span><br><span class="line">int atomic_sub_and_test(int i, atomic_t *v) &#x2F;&#x2F;从 v 减 i，如果结果为 0 就返回真，否则返回假</span><br><span class="line">int atomic_dec_and_test(atomic_t *v) &#x2F;&#x2F;从 v 减 1，如果结果为 0 就返回真，否则返回假</span><br><span class="line">int atomic_inc_and_test(atomic_t *v) &#x2F;&#x2F;给 v 加 1，如果结果为 0 就返回真，否则返回假</span><br><span class="line">int atomic_add_negative(int i, atomic_t *v) &#x2F;&#x2F;给 v 加 i，如果结果为负就返回真，否则返回假</span><br></pre></td></tr></table></figure>
+<p><strong>原子位操作 API 函数</strong></p>
+<p>位操作也是很常用的操作，Linux 内核也提供了一系列的原子位操作 API 函数，只不过原子位操作不像原子整形变量那样有个 atomic_t 的数据结构，原子位操作是直接对内存进行操作，API 函数所示：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">void set_bit(int nr, void *p) &#x2F;&#x2F;将 p 地址的第 nr 位置 1。</span><br><span class="line">void clear_bit(int nr,void *p) &#x2F;&#x2F;将 p 地址的第 nr 位清零。</span><br><span class="line">void change_bit(int nr, void *p) &#x2F;&#x2F;将 p 地址的第 nr 位进行翻转。</span><br><span class="line">int test_bit(int nr, void *p) 获取 p &#x2F;&#x2F;地址的第 nr 位的值。</span><br><span class="line">int test_and_set_bit(int nr, void *p) &#x2F;&#x2F;将 p 地址的第 nr 位置 1，并且返回 nr 位原来的值。</span><br><span class="line">int test_and_clear_bit(int nr, void *p) &#x2F;&#x2F;将 p 地址的第 nr 位清零，并且返回 nr 位原来的值。</span><br><span class="line">int test_and_change_bit(int nr, void *p) &#x2F;&#x2F;将 p 地址的第 nr 位翻转，并且返回 nr 位原来的值。</span><br></pre></td></tr></table></figure>
+<h2 id="2、实验程序编写"><a href="#2、实验程序编写" class="headerlink" title="2、实验程序编写"></a>2、<strong>实验程序编写</strong></h2><p>使用原子操作来 </p>
+<p>实现对 LED 这个设备的互斥访问，也就是一次只允许一个应用程序可以使用 LED 灯。 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;***************************************************************</span><br><span class="line">文件名		: atomic.c</span><br><span class="line">描述	   	: 原子操作实验，使用原子变量来实现对实现设备的互斥访问</span><br><span class="line">***************************************************************&#x2F;</span><br><span class="line">&#x2F;* gpioled设备结构体 *&#x2F;</span><br><span class="line">struct gpioled_dev&#123;</span><br><span class="line">	atomic_t lock;			&#x2F;* 原子变量 *&#x2F;</span><br><span class="line">&#125;;</span><br><span class="line">struct gpioled_dev gpioled;	&#x2F;* led设备 *&#x2F;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: 打开设备</span><br><span class="line"> * @param - inode 	: 传递给驱动的inode</span><br><span class="line"> * @param - filp 	: 设备文件，file结构体有个叫做private_data的成员变量</span><br><span class="line"> * 					  一般在open的时候将private_data指向设备结构体。</span><br><span class="line"> * @return 			: 0 成功;其他 失败</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int led_open(struct inode *inode, struct file *filp)</span><br><span class="line">&#123;</span><br><span class="line">	&#x2F;* 通过判断原子变量的值来检查LED有没有被别的应用使用 *&#x2F;</span><br><span class="line">	if (!atomic_dec_and_test(&amp;gpioled.lock)) &#123;</span><br><span class="line">		atomic_inc(&amp;gpioled.lock);	&#x2F;* 小于0的话就加1,使其原子变量等于0 *&#x2F;</span><br><span class="line">		return -EBUSY;				&#x2F;* LED被使用，返回忙 *&#x2F;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	filp-&gt;private_data &#x3D; &amp;gpioled; &#x2F;* 设置私有数据 *&#x2F;</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: 关闭&#x2F;释放设备</span><br><span class="line"> * @param - filp 	: 要关闭的设备文件(文件描述符)</span><br><span class="line"> * @return 			: 0 成功;其他 失败</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int led_release(struct inode *inode, struct file *filp)</span><br><span class="line">&#123;</span><br><span class="line">	struct gpioled_dev *dev &#x3D; filp-&gt;private_data;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 关闭驱动文件的时候释放原子变量 *&#x2F;</span><br><span class="line">	atomic_inc(&amp;dev-&gt;lock);</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 驱动出口函数</span><br><span class="line"> * @param 		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int __init led_init(void)</span><br><span class="line">&#123;</span><br><span class="line">	int ret &#x3D; 0;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 初始化原子变量 *&#x2F;</span><br><span class="line">	atomic_set(&amp;gpioled.lock, 1);	&#x2F;* 原子变量初始值为1 *&#x2F;</span><br><span class="line"></span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>第 42 行，原子变量 lock，用来实现一次只能允许一个应用访问 LED 灯，led_init 驱动入口函数会将 lock 的值设置为 1。 </p>
+<p>第 57~60 行，每次调用 open 函数打开驱动设备的时候先申请 lock，如果申请成功的话就表示LED灯还没有被其他的应用使用，如果申请失败就表示LED灯正在被其他的应用程序使用。每次打开驱动设备的时候先使用 atomic_dec_and_test 函数将 lock 减 1，如果 atomic_dec_and_test函数返回值为真就表示 lock 当前值为 0，说明设备可以使用。如果 atomic_dec_and_test 函数返回值为假，就表示 lock 当前值为负数(lock 值默认是 1)，lock 值为负数的可能性只有一个，那就是其他设备正在使用 LED。其他设备正在使用 LED 灯，那么就只能退出了，在退出之前调用函数 atomic_inc 将 lock 加 1，因为此时 lock 的值被减成了负数，必须要对其加 1，将 lock 的值变为 0。</p>
+<p>第 120 行，LED 灯使用完毕，应用程序调用 close 函数关闭的驱动文件，led_release 函数执行，调用 atomic_inc 释放 lcok，也就是将 lock 加 1。 </p>
+<p>第 143 行，初始化原子变量 lock，初始值设置为 1，这样每次就只允许一个应用使用 LED灯。</p>
+
+    
+
+    
+
+    
+
+  </div>
+  <div class="article-info article-info-index">
+    
+    
+    
+
+    
+    <p class="article-more-link">
+      <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C/">展开 >></a>
+    </p>
+    
+
+    
+    <div class="clearfix"></div>
+  </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
   
     <nav id="page-nav">
       <a class="extend prev" rel="prev" href="/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/3/">Next &amp;raquo;</a>
@@ -1475,15 +1478,15 @@
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">ARM</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">IMX6U</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">C语言</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">ARM</a>
               </li>
              
               <li class="article-tag-list-item">
