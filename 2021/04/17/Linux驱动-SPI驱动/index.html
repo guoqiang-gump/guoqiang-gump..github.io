@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="Linux 下 SPI 驱动框架SPI 主机驱动SPI 主机驱动就是 SOC 的 SPI 控制器驱动，类似 I2C 驱动里面的适配器驱动。Linux 内核使用 spi_master表示 SPI 主机驱动，spi_master 是个结构体，定义在 include&#x2F;linux&#x2F;spi&#x2F;spi.h 文件中，内容如下(有缩减)： 1234567891011struct spi_master &amp;#12">
+  <meta name="description" content="Linux 下 SPI 驱动框架">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux驱动-SPI驱动">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/17/Linux%E9%A9%B1%E5%8A%A8-SPI%E9%A9%B1%E5%8A%A8/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="Linux 下 SPI 驱动框架SPI 主机驱动SPI 主机驱动就是 SOC 的 SPI 控制器驱动，类似 I2C 驱动里面的适配器驱动。Linux 内核使用 spi_master表示 SPI 主机驱动，spi_master 是个结构体，定义在 include&#x2F;linux&#x2F;spi&#x2F;spi.h 文件中，内容如下(有缩减)： 1234567891011struct spi_master &amp;#12">
+<meta property="og:description" content="Linux 下 SPI 驱动框架">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-17T14:50:57.000Z">
-<meta property="article:modified_time" content="2021-04-20T09:41:12.208Z">
+<meta property="article:modified_time" content="2021-04-20T09:53:02.178Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,9 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
+    <h1 id="Linux-下-SPI-驱动框架"><a href="#Linux-下-SPI-驱动框架" class="headerlink" title="Linux 下 SPI 驱动框架"></a><strong>Linux</strong> <strong>下</strong> <strong>SPI</strong> <strong>驱动框架</strong></h1> <a id="more"></a>
 
-<h1 id="Linux-下-SPI-驱动框架"><a href="#Linux-下-SPI-驱动框架" class="headerlink" title="Linux 下 SPI 驱动框架"></a><strong>Linux</strong> <strong>下</strong> <strong>SPI</strong> <strong>驱动框架</strong></h1><h2 id="SPI-主机驱动"><a href="#SPI-主机驱动" class="headerlink" title="SPI 主机驱动"></a><strong>SPI</strong> <strong>主机驱动</strong></h2><p>SPI 主机驱动就是 SOC 的 SPI 控制器驱动，类似 I2C 驱动里面的适配器驱动。Linux 内核使用 spi_master表示 SPI 主机驱动，spi_master 是个结构体，定义在 include/linux/spi/spi.h 文件中，内容如下(有缩减)：</p>
+<h2 id="SPI-主机驱动"><a href="#SPI-主机驱动" class="headerlink" title="SPI 主机驱动"></a><strong>SPI</strong> <strong>主机驱动</strong></h2><p>SPI 主机驱动就是 SOC 的 SPI 控制器驱动，类似 I2C 驱动里面的适配器驱动。Linux 内核使用 spi_master表示 SPI 主机驱动，spi_master 是个结构体，定义在 include/linux/spi/spi.h 文件中，内容如下(有缩减)：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">struct spi_master &#123;</span><br><span class="line">    struct device dev;</span><br><span class="line">    struct list_head list;</span><br><span class="line">    ......</span><br><span class="line">    (*transfer)(struct spi_device *spi, struct spi_message *mesg);</span><br><span class="line">    ......</span><br><span class="line">    int (*transfer_one_message)(struct spi_master *master, struct spi_message *mesg);</span><br><span class="line">    ......</span><br><span class="line">&#125;;</span><br><span class="line">&#x2F;&#x2F;transfer函数，和 i2c_algorithm 中的 master_xfer 函数一样，控制器数据传输函数。</span><br><span class="line">&#x2F;&#x2F;transfer_one_message函数，也用于 SPI 数据发送，用于发送一个spi_message，SPI的数据会打包成 spi_message，然后以队列方式发送出去。</span><br></pre></td></tr></table></figure>
 <p>SPI 主机端最终会通过 transfer 函数与 SPI 设备进行通信，因此对于 SPI 主机控制器的驱动编写者而言 transfer 函数是需要实现的，因为不同的 SOC 其 SPI 控制器不同，寄存器都不一样。SPI 主机驱动一般都是 SOC 厂商去编写的。</p>
 <p>SPI 主机驱动的核心就是申请 spi_master，然后初始化 spi_master，最后向 Linux 内核注册 spi_master。 </p>
@@ -595,15 +595,7 @@
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">ARM</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">IMX6U</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">C语言</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -611,11 +603,15 @@
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">串口</a>
+                <a href="javascript:void(0)" class="js-tag color4">ARM</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">蜂鸣器</a>
+                <a href="javascript:void(0)" class="js-tag color4">C语言</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">串口</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -623,11 +619,7 @@
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">时钟</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">汇编</a>
+                <a href="javascript:void(0)" class="js-tag color4">蜂鸣器</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -636,6 +628,14 @@
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">烧写</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">汇编</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">时钟</a>
               </li>
              
               <li class="article-tag-list-item">
