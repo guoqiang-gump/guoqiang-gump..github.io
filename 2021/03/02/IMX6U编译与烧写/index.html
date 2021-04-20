@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="编译程序​    1、编译程序     ①、使用**arm-linux-gnueabihf-gcc******，****将.c .s文件变为.o ②、将所有的.o文件连接为elf格式的可执行文件。 ③、将elf文件转为bin文件。 ④、将elf文件转为汇编，反汇编。">
+  <meta name="description" content="编译程序​    1、编译程序     ①、使用**arm-linux-gnueabihf-gcc******，****将.c .s文件变为.o">
 <meta property="og:type" content="article">
 <meta property="og:title" content="IMX6U编译与烧写">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/03/02/IMX6U%E7%BC%96%E8%AF%91%E4%B8%8E%E7%83%A7%E5%86%99/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="编译程序​    1、编译程序     ①、使用**arm-linux-gnueabihf-gcc******，****将.c .s文件变为.o ②、将所有的.o文件连接为elf格式的可执行文件。 ③、将elf文件转为bin文件。 ④、将elf文件转为汇编，反汇编。">
+<meta property="og:description" content="编译程序​    1、编译程序     ①、使用**arm-linux-gnueabihf-gcc******，****将.c .s文件变为.o">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-03-02T15:32:19.000Z">
-<meta property="article:modified_time" content="2021-03-02T15:50:42.617Z">
+<meta property="article:modified_time" content="2021-04-10T14:13:30.670Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="linux">
 <meta property="article:tag" content="IMX6U">
@@ -227,7 +227,7 @@
       <!-- 百度字体平台:http://fontstore.baidu.com/static/editor/index.html -->
       <i class="icon-statistics"></i>
       <span class="post-meta-item-text"> 字数统计:</span>
-      <span class="post-count">985字</span>
+      <span class="post-count">2k字</span>
     </span>
   </span>
 
@@ -236,7 +236,7 @@
     <span class="post-meta-item-icon">
       <i class="icon-book icon"></i>
       <span class="post-meta-item-text"> 阅读时长≈</span>
-      <span class="post-count">3分</span>
+      <span class="post-count">7分</span>
     </span>
   </span>
 </div>
@@ -249,30 +249,47 @@
     
     <h1 id="编译程序"><a href="#编译程序" class="headerlink" title="编译程序"></a>编译程序</h1><p>​    1、编译程序    </p>
 <p>①、使用*<strong>*arm-linux-gnueabihf-gcc*****</strong>*，****将.c .s文件变为.o</p>
+  <a id="more"></a>  
+
 <p>②、将所有的.o文件连接为elf格式的可执行文件。</p>
 <p>③、将elf文件转为bin文件。</p>
 <p>④、将elf文件转为汇编，反汇编。</p>
-  <a id="more"></a>  
-
 <p>链接：</p>
 <p>​    链接就是将所有.o文件链接在一起，并且链接到指定的地方。本实验链接的时候要指定链接起始地址。链接起始地址就是代码运行的起始地址。</p>
-<p>​    对于6ULL来说，链接起始地址应该指向RAM地址。RAM分为内部RAM和外部RAM，也就是 DDR。6ULL内部RAM地址范围0X900000<del>0X91FFFF。也可以放到外部DDR中，对于I.MX6U-ALPHA开发板，512MB字节DDR版本的核心板，DDR范围就是0X80000000</del>0X9FFFFFFF。对于256MB的DDR来说，那就是0X80000000~0X8FFFFFFF。</p>
+<p>​    对于6ULL来说，链接起始地址应该指向RAM地址。RAM分为内部RAM和外部RAM，也就是 DDR。6ULL内部RAM地址范围0X900000<del>0X91FFFF。也可以放到外部DDR中，对于I.MX6U-ALPHA开发板，512MB字节DDR版本的核心板，DDR范围就是0X80000000</del>0X9FFFFFFF。对于256MB的DDR来说，那就0X80000000~0X8FFFFFFF。</p>
 <p>​    本系列视频，裸机代码的链接起始地址为0X87800000。要使用DDR，那么必须要初始化DDR，对于I.MX来说bin文件不能直接运行，需要添加一个头部，这个头部信息包含了DDR的初始化参数，I.MX系列SOC内部boot rom会从SD卡，EMMC等外置存储中读取头部信息，然后初始化DDR，并且将bin文件拷贝到指定的地方。</p>
 <p>​    Bin的运行地址一定要和链接起始地址一致。位置无关代码除外。</p>
-<h2 id="编译代码"><a href="#编译代码" class="headerlink" title="编译代码"></a><strong>编译代码</strong></h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">arm-linux-gnueabihf-gcc -g -c led.s -o led.o &#x2F;&#x2F;编译文件</span><br></pre></td></tr></table></figure>
-<p>​    上述命令就是将 led.s 编译为 led.o，其中“-g”选项是产生调试信息，GDB 能够使用这些调试信息进行代码调试。“-c”选项是编译源文件，但是不链接。“-o”选项是指定编译产生的文 件名字，这里我们指定 led.s 编译完成以后的文件名字为 led.o。执行上述命令以后就会编译生 成一个 led.o 文件。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">arm-linux-gnueabihf-ld -Ttext 0X87800000 led.o -o led.elf </span><br><span class="line">&#x2F;&#x2F;链接文件 </span><br></pre></td></tr></table></figure>
-<p>​    arm-linux-gnueabihf-ld 用来将众多的.o 文件链接到一个指定的链接位置。我们在学习 SMT32 的时候基本就没有听过“链接”这个词，我们一般用 MDK 编写好代码，然后点击“编译”，MDK 或者 IAR 就会自动帮我们编译好整个工程，最后再点击“下载”就可以将代码下载 到开发板中。这是因为链接这个操作 MDK 或者 IAR 已经帮你做好了，后面我就以 MDK 为例给大家讲解。大家可以打开一个 STM32 的工程，然后编译一下，肯定能找到很多.o 文件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">arm-linux-gnueabihf-objcopy -O binary -S -g led.elf led.bin</span><br></pre></td></tr></table></figure>
-<p>​    上述命令中，“-O”选项指定以什么格式输出，后面的“binary”表示以二进制格式输出， 选项“-S”表示不要复制源文件中的重定位信息和符号信息，“-g”表示不复制源文件中的调试 信息。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">arm-linux-gnueabihf-objdump -D led.elf &gt; led.dis</span><br></pre></td></tr></table></figure>
-<p>​    上述代码中的“-D”选项表示反汇编所有的段，反汇编完成以后就会在当前目录下出现一个名为 led.dis 文件</p>
+<h2 id="编译代码"><a href="#编译代码" class="headerlink" title="编译代码"></a><strong>编译代码</strong></h2><p><strong>arm-linux-gnueabihf-gcc</strong> <strong>编译文件</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">arm-linux-gnueabihf-gcc -g -c led.s -o led.o</span><br></pre></td></tr></table></figure>
+<p>上述命令就是将 led.s 编译为 led.o，其中“-g”选项是产生调试信息，GDB 能够使用这些调试信息进行代码调试。“-c”选项是编译源文件，但是不链接。“-o”选项是指定编译产生的文件名字，这里我们指定 led.s 编译完成以后的文件名字为 led.o。</p>
+<p><strong>arm-linux-gnueabihf-ld</strong> <strong>链接文件</strong></p>
+<p>本试验最终的可执行文件其运行起始地址，也就是链接地址。这里我们要区分“存储地址”和“运行地址”这两个概念，“存储地址”就是可执 行文件存储在哪里，可执行文件的存储地址可以随意选择。“运行地址”就是代码运行的时候所处的地址，这个我们在链接的时候就已经确定好了，代码要运行，那就必须处于运行地址处，否则代码肯定运行出错。比如 I.MX6U 支持 SD 卡、EMMC、NAND 启动，因此代码可以 存储到 SD 卡、EMMC 或者 NAND 中，但是要运行的话就必须将代码从 SD 卡、EMMC 或者NAND 中拷贝到其运行地址(链接地址)处，“存储地址”和“运行地址”可以一样。</p>
+<p>裸机例程都是烧写到 SD 卡中，上电以后 I.MX6U 的内部 boot rom 程序会将 可执行文件拷贝到链接地址处，这个链接地址可以在 I.MX6U 的内部 128KB RAM 中 (0X900000~0X91FFFF)，也可以在外部的 DDR 中。所有裸机例程的链接地址都在 DDR 中，链接起始地址为 0X87800000。之所以选择 0X87800000 这个地址是因为后面要讲的 Uboot 其链接地址就是 0X87800000，这样我们统一使用 0X87800000 这个链接地址，不容易记混。</p>
+<p>确定了链接地址以后就可以使用 arm-linux-gnueabihf-ld 来将前面编译出来的 led.o 文件链接到 0X87800000 这个地址，使用如下命令： </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">arm-linux-gnueabihf-ld -Ttext 0X87800000 led.o -o led.elf</span><br></pre></td></tr></table></figure>
+<p>上述命令中-Ttext 就是指定链接地址，“-o”选项指定链接生成的 elf 文件名，这里我们命名为 led.elf。上述命令执行完以后就会在工程目录下多一个 led.elf 文件，</p>
+<p><strong>arm-linux-gnueabihf-objcopy</strong> <strong>格式转换</strong></p>
+<p>arm-linux-gnueabihf-objcopy 更像一个格式转换工具，我们需要用它将 led.elf 文件转换为led.bin 文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">arm-linux-gnueabihf-objcopy -O binary -S -g led.elf led.bin </span><br></pre></td></tr></table></figure>
+<p>上述命令中，“-O”选项指定以什么格式输出，后面的“binary”表示以二进制格式输出，选项“-S”表示不要复制源文件中的重定位信息和符号信息，“-g”表示不复制源文件中的调试信息。</p>
+<p><strong>arm-linux-gnueabihf-objdump</strong> <strong>反汇编</strong> </p>
+<p>大多数情况下我们都是用 C 语言写试验例程的，有时候需要查看其汇编代码来调试代码，因此就需要进行反汇编，一般可以将 elf 文件反汇编，比如如下命令： </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">arm-linux-gnueabihf-objdump -D led.elf &gt; led.dis </span><br></pre></td></tr></table></figure>
+<p>上述代码中的“-D”选项表示反汇编所有的段。</p>
 <h1 id="烧写bin文件"><a href="#烧写bin文件" class="headerlink" title="烧写bin文件"></a>烧写bin文件</h1><p>6ULL支持SD卡、EMMC、NAND、nor、SPI flash等等启动。裸机例程选择烧写到SD卡里面。</p>
-<p>​    在ubuntu下向SD卡烧写裸机bin文件。烧写不是将bin文件拷贝到SD卡中，而是将bin文件烧写到SD卡绝对地址上。而且对于I.MX而言，不能直接烧写bin文件，比如先在bin文件前面添加头部。完成这个工作，需要使用正点原子提供的imxdownload软件。</p>
-<p>​    Imxdownload使用方法，确定要烧写的SD卡文件，我的是/dev/sdf。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">给予imxdownload可执行权限：</span><br><span class="line"></span><br><span class="line">Chmod 777 imxdownload</span><br></pre></td></tr></table></figure>
+<p>​    在ubuntu下向SD卡烧写裸机bin文件。烧写不是将bin文件拷贝到SD卡中，而是将bin文件烧写到SD卡绝对地址上。而且对于I.MX而言，不能直接烧写bin文件，比如先在bin文件前面添加头部。完成这个工作，需要使用正点原子提供的imxdownload软件。Imxdownload使用方法，确定要烧写的SD卡文件。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">给予imxdownload可执行权限：</span><br><span class="line">Chmod 777 imxdownload</span><br></pre></td></tr></table></figure>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">烧写：</span><br><span class="line">.&#x2F;imxdownload led.bin &#x2F;dev&#x2F;sdf</span><br></pre></td></tr></table></figure>
 <p>​    Imxdownlaod会向led.bin添加一个头部，生成新的load.imx文件，这个load.imx文件就是最终烧写到SD卡里面去的。</p>
+<h1 id="链接脚本"><a href="#链接脚本" class="headerlink" title="链接脚本"></a><strong>链接脚本</strong></h1><p>在上面的 Makefile 中我们链接代码的时候使用如下语句： </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">arm-linux-gnueabihf-ld -Ttext 0X87800000 -o ledc.elf $^ </span><br></pre></td></tr></table></figure>
+<p>上面语句中我们是通过“-Ttext”来指定链接地址是 0X87800000 的，这样的话所有的文件都会链接到0X87800000 为起始地址的区域。要完成指定一个文件或者函数应该存放到哪个段里面去这个功能我们就需要使用到链接脚本，链接脚本主要用于链接的，用于描述文件应该如何被链接在一起形成最终的可执行文件。其主要目的是描述输入文件中的段如何被映射到输出文件中，并且控制输出文件中的内存排布。我们一般编译出来的代码都包含在 text、data、bss 和 rodata 这四个段内。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">1 SECTIONS&#123; </span><br><span class="line">2 . &#x3D; 0X10000000; </span><br><span class="line">3 .text : &#123;*(.text)&#125;</span><br><span class="line">4 . &#x3D; 0X30000000; </span><br><span class="line">5 .data ALIGN(4) : &#123; *(.data) &#125; </span><br><span class="line">6 .bss ALIGN(4) : &#123; *(.bss) &#125; </span><br><span class="line">7 &#125;</span><br></pre></td></tr></table></figure>
+<p>第 1 行我们先写了一个关键字“SECTIONS”，后面跟了一个大括号，这个大括号和第 7 行的大括号是一对，这是必须的。看起来就跟 C 语言里面的函数一样。第 2 行对一个特殊符号“.”进行赋值，“.”在链接脚本里面叫做定位计数器，默认的定位计数器为0。我们要求代码链接到以 0X10000000 为起始地址的地方，因此这一行给“.”赋值0X10000000，表示以 0X10000000 开始，后面的文件或者段都会以 0X10000000 为起始地址开始链接。 </p>
+<p>第 3 行的“.text”是段名，后面的冒号是语法要求，冒号后面的大括号里面可以填上要链接到“.text”这个段里面的所有文件，“*(.text)”中的“*”是通配符，表示所有输入文件的.text段都放到“.text”中。 </p>
+<p>第 4 行，我们的要求是数据放到 0X30000000 开始的地方，所以我们需要重新设置定位计数器“.”，将其改为 0X30000000。</p>
+<p>第 5 行定义了一个名为“.data”的段，然后所有文件的“.data”段都放到这里面。但是这一行多了一个“ALIGN(4)”用来对“.data”这个段的起 始地址做字节对齐的，ALIGN(4)表示 4 字节对齐。也就是说段“.data”的起始地址要能被 4 整 除，一般常见的都是 ALIGN(4)或者 ALIGN(8)，也就是 4 字节或者 8 字节对齐。 </p>
+<p>第 6 行定义了一个“.bss”段，所有文件中的“.bss”数据都会被放到这个里面，“.bss”数据就是那些定义了但是没有被初始化的变量。</p>
 
     
 
@@ -642,6 +659,30 @@
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">shell</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">按键</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">中断</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">时钟</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">I2C</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">串口</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">ARM</a>
               </li>
             
             <div class="clearfix"></div>
