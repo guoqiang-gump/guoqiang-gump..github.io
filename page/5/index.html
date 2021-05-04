@@ -195,6 +195,554 @@
             
 
   
+    <article id="post-Linux移植-uboot启动流程" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+  <div class="article-entry" itemprop="articleBody">
+    
+     <a id="more"></a>
+
+<h1 id="一、连接脚本u-boot-lds详解"><a href="#一、连接脚本u-boot-lds详解" class="headerlink" title="一、连接脚本u-boot.lds详解"></a>一、连接脚本u-boot.lds详解</h1><p>程序的链接是由链接脚本来决定的，所以通过链接脚本可以找到程序的入口。如果没有编译过 uboot 的话链接 脚本为 arch/arm/cpu/u-boot.lds。但是这个不是最终使用的链接脚本，最终的链接脚本是在这个链接脚本的基础上生成的。</p>
+<p>​    1、从u-boot.lds可知，uboot入口地址为_start</p>
+<p>​    __image_copy_start  -》 0x87800000</p>
+<p>​    .vetcors    -&gt;    0x87800000 存放中断向量表</p>
+<p>​    arch/arm/cpu/armv7/start.o  start.c</p>
+<p>​    __image_copy_end -》 0x8785dc6c</p>
+<p>__rel_dyn_start -&gt;  0x8785dc6c        rel段</p>
+<p>__rel_dyn_end -&gt; 0x878668a4</p>
+<p>__end  -》 0x878668a4</p>
+<p>_image_binary_end -》  0x878668a4</p>
+<p>__bss_start    -》 0x8785dc6c  bss段。</p>
+<p>__bss_end -》 0x878a8d74</p>
+<h1 id="二、uboot启动流程"><a href="#二、uboot启动流程" class="headerlink" title="二、uboot启动流程"></a>二、uboot启动流程</h1><p>​    1、reset函数</p>
+<p>​    bicne=bic + ne </p>
+<p>​    ①、reset函数目的是将处理器设置为SVC模式，并且关闭FIQ和IRQ.</p>
+<p>​    ②、设置中断向量。</p>
+<p>​    ③、初始化CP15    </p>
+<p>​    ④、</p>
+<p>​    2、lowlevel_init函数</p>
+<p>​    CONFIG_SYS_INIT_SP_ADDR</p>
+<p>  #define CONFIG_SYS_INIT_SP_ADDR \</p>
+<p>​    (CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)</p>
+<p>#define CONFIG_SYS_INIT_SP_OFFSET \</p>
+<p>​    (CONFIG_SYS_INIT_RAM_SIZE - GENERATED_GBL_DATA_SIZE)</p>
+<p>#define CONFIG_SYS_INIT_RAM_SIZE  IRAM_SIZE</p>
+<p>#define IRAM_SIZE           0x00020000</p>
+<p>#define CONFIG_SYS_INIT_RAM_ADDR    IRAM_BASE_ADDR</p>
+<p>#define IRAM_BASE_ADDR            0x00900000               6ULL内部OCRAM</p>
+<p>#define GENERATED_GBL_DATA_SIZE 256</p>
+<p>0x00900000 + CONFIG_SYS_INIT_SP_OFFSE =&gt;</p>
+<p>0x00900000  + CONFIG_SYS_INIT_RAM_SIZE - GENERATED_GBL_DATA_SIZE =&gt;</p>
+<p>0x00900000 <strong><em>\</em>+**</strong> 0x00020000 – 256 = 0x0091ff00</p>
+<p>设置SP指针、R9寄存器</p>
+<p>​    3、s_init函数</p>
+<p>​    空函数。</p>
+<p>​    4、_main函数</p>
+<p>​    5、board_init_f函数</p>
+<p>​    initcall_run_lis此函数会调用一系列的函数，这些函数保存在init_sequence_f数组里面，</p>
+<p>version_string[] = U_BOOT_VERSION_STRING </p>
+<p>#define U_BOOT_VERSION_STRING  U_BOOT_VERSION “ (“ U_BOOT_DATE “ - “ \</p>
+<p>​    U_BOOT_TIME “ “ U_BOOT_TZ “)” CONFIG_IDENT_STRING</p>
+<p>U_BOOT_VERSION = U-Boot 2016.03</p>
+<p>TOTAL_MALLOC_LEN    (CONFIG_SYS_MALLOC_LEN + CONFIG_ENV_SIZE)</p>
+<p>CONFIG_SYS_MALLOC_LEN  (16 * SZ_1M) </p>
+<p>CONFIG_ENV_SIZE            SZ_8K</p>
+<p>​    </p>
+<p>mx6ullevk.c mx6ullevk.h这两个文件长打交道</p>
+<p>​    6、relocate_code函数</p>
+<p>​    relocate_code函数有一个参数，r0=gd-&gt;relocaddr=0X9FF47000，uboot重定位后的首地址。</p>
+<p>​    r1=0X87800000 源地址起始地址。</p>
+<p>​    r4=0X9FF47000-0X87800000=0X18747000 偏移。</p>
+<p>​    r2=0x8785dc6c</p>
+<p>​    当简单粗暴的将uboot从0X87800000拷贝到其他地方以后，关于函数调用、全局变量引用就会出问题。Uboot对于这个的处理方法就是采用位置无关码，这个就需要借助于.rel.dyn段。</p>
+<p>8785dcf8 <rel_a>:</p>
+<p>8785dcf8:    00000000     andeq    r0, r0, r0</p>
+<p>878042b4 <rel_test>:</p>
+<p>878042b4:    e59f300c     ldr    r3, [pc, #12]    ; 878042c8 &lt;rel_test+0x14&gt;</p>
+<p>878042b8:    e3a02064     mov    r2, #100    ; 0x64</p>
+<p>878042bc:    e59f0008     ldr    r0, [pc, #8]    ; 878042cc &lt;rel_test+0x18&gt;</p>
+<p>878042c0:    e5832000     str    r2, [r3]</p>
+<p>878042c4:    ea00d64c     b    87839bfc <printf></p>
+<p>878042c8:    8785dcf8             ; <UNDEFINED> instruction: 0x8785dcf8</p>
+<p>878042cc:    87842aaf     strhi    r2, [r4, pc, lsr #21]</p>
+<p>设置r3为878042b4+8+12=878042c8的值，r3=8785dcf8。这里并没有直接去读取rel_a的地址，而是借助了878042c。</p>
+<p>​    878042c8叫做Label。</p>
+<p>重定位以后</p>
+<p>9ffa4cf8 <rel_a>:</p>
+<p>9ffa4cf8:    00000000     andeq    r0, r0, r0</p>
+<p>9ff4b2b4<rel_test>:</p>
+<p>9ff4b2b4:    e59f300c     ldr    r3, [pc, #12]    ; 878042c8 &lt;rel_test+0x14&gt;</p>
+<p>9ff4b2b8:    e3a02064     mov    r2, #100    ; 0x64</p>
+<p>9ff4b2bc:     e59f0008     ldr    r0, [pc, #8]    ; 878042cc &lt;rel_test+0x18&gt;</p>
+<p>9ff4b2c0:     e5832000     str    r2, [r3]</p>
+<p>9ff4b2c4:     ea00d64c     b    87839bfc <printf></p>
+<p>9ff4b2c8:     8785dcf8             ; <UNDEFINED> instruction: 0x8785dcf8</p>
+<p>9ff4b2cc:  87842aaf     strhi    r2, [r4, pc, lsr #21]</p>
+<p>Label中的值还是原来的！必须要将8785dcf8换为重定位后的rel_a地址。读取9ff4b2c8里面的数据，也就是老的rel_a的地址=8785dcf8+0x18747000=0x9ffa4cf8</p>
+<p>重定位以后，需要对所有的Label保存的数据加上偏移！！</p>
+<p>8785dcec:    87800020     strhi    r0, [r0, r0, lsr #32]</p>
+<p>8785dcf0:    00000017     andeq    r0, r0, r7, lsl r0</p>
+<p>……</p>
+<p>8785e2fc:    878042c8    strhi    r4, [r0, r8, asr #5]</p>
+<p>8785e300:    00000017     andeq    r0, r0, r7, lsl r0</p>
+<p>878042c8+offset = 读取新的Label处的数据+offset</p>
+<p>​    完成这个功能在连接的时候需要加上”-pie”</p>
+<p>​    7、relocate_vectors函数</p>
+<p>​    设置VBAR寄存器为重定位后的中断向量表起始地址。</p>
+<p>​    8、board_init_r函数</p>
+<p>​    Board_init_r函数和board_init_f函数很类似。board_init_r也是执行init_sequence_r初始化序列。</p>
+<p>​    </p>
+<p>​    9、run_main_loop函数</p>
+<p>​    run_main_loop</p>
+<p>​        -&gt; main_loop</p>
+<p>​            -&gt; bootdelay_process 获取bootdelay的值，然后保存到stored_bootdelay</p>
+<p>全局变量里面，获取bootcmd环境变量值，并且将其</p>
+<p>返回    </p>
+<p>-&gt; autoboot_command 参数是bootcmd的值。</p>
+<p>​    -&gt; abortboot 参数为boot delay，此函数会处理倒计时</p>
+<p>​        -&gt; abortboot_normal 参数为boot delay，此函数会处理倒计时</p>
+<p>-&gt; cli_loop  uboot命令模式处理函数。</p>
+<p>​    -&gt; parse_file_outer </p>
+<p>​        -&gt; parse_stream_outer </p>
+<p>​            -&gt; parse_stream 解析输入的字符，得到命令</p>
+<p>​            -&gt; run_list 运行命令</p>
+<p>​                -&gt; run_list_real</p>
+<p>​                    -&gt; run_pipe_real </p>
+<p>​                        -&gt; cmd_process  处理命令，也就是执行命令</p>
+<p>​            </p>
+<p>​    10、cli_loop函数</p>
+<p>​    11、cmd_process函数</p>
+<p>​    Uboot使用U_BOOT_CMD来定义一个命令。CONFIG_CMD_XXX来使能uboot中的某个命令。</p>
+<p>​    U_BOOT_CMD最终是定义了一个cmd_tbl_t类型的变量，所有的命令最终都是存放在.u_boot_list段里面。cmd_tbl_t的cmd成员变量就是具体的命令执行函数，命令执行函数都是do_xxx。</p>
+<p>​    cmd_process</p>
+<p>​        -&gt;find_cmd  从.u_boot_list段里面查找命令，当找到对应的命令以后以返回值的</p>
+<p>形式给出，为cmd_tbl_t类型</p>
+<p>​        -&gt;cmd_call </p>
+<p>​            -&gt;cmdtp-&gt;cmd  直接引用cmd成员变量</p>
+<h1 id="三、bootz启动Linux内核过程"><a href="#三、bootz启动Linux内核过程" class="headerlink" title="三、bootz启动Linux内核过程"></a>三、bootz启动Linux内核过程</h1><p>​    Uboot启动Linux内核使用bootz命令，bootm。。bootz是如何启动Linux内核？uboot的生命是怎么终止的呢？linux又是怎么启动的呢？</p>
+<p>​    1、image全局变量</p>
+<p>bootm_headers_t images;    </p>
+<p>​    </p>
+<p>​    2、do_bootz函数</p>
+<p>tftp 80800000 zImage</p>
+<p>tftp 83000000 imx6ull-14x14-emmc-7-1024x600-c.dtb</p>
+<p>bootz 80800000 - 83000000</p>
+<p>​    bootz命令的执行函数，do_xxxx，do_bootz是bootz的执行函数。</p>
+<p>do_bootz</p>
+<p>​    -&gt; bootz_start</p>
+<p>​        -&gt; do_bootm_states 阶段为BOOTM_STATE_START</p>
+<p>​            -&gt;  bootm_start 对images全局变量清零，</p>
+<p>​        -&gt; images-&gt;ep = 0X80800000</p>
+<p>​        -&gt;bootz_setup         判断zImage是否正确</p>
+<p>​        -&gt; bootm_find_images </p>
+<p>​    ·        -&gt; boot_get_fdt    找到设备树，然后将设备树起始地址和长度，写入到images</p>
+<p>的ft_addr和ft_len成员变量中。</p>
+<p>​        </p>
+<p>​    -&gt; bootm_disable_interrupts        关闭中断相关</p>
+<p>​    -&gt; images.os.os = IH_OS_LINUX;  表示要启动Linux系统</p>
+<p>​    -&gt; do_bootm_states  状态BOOTM_STATE_OS_PREP 、BOOTM_STATE_OS_FAKE_GO 、</p>
+<p>BOOTM_STATE_OS_GO,</p>
+<p>​        -&gt; bootm_os_get_boot_func  查找Linux内核启动函数。找到Linux内核启动函数</p>
+<p>do_bootm_linux，赋值给boot_fn。</p>
+<p>​        -&gt; boot_fn(BOOTM_STATE_OS_PREP, argc, argv, images); 就是do_bootm_linux。</p>
+<p>​            -&gt; boot_prep_linux  启动之前的一些工作，对于使用设备树来说，他会将</p>
+<p>Bootargs传递给Linux内核，通过设备树完成。也就是向</p>
+<p>Linux内核传参。</p>
+<p>​        -&gt; boot_selected_os BOOTM_STATE_OS_GO, do_bootm_linux</p>
+<p>​            -&gt; do_bootm_linux，BOOTM_STATE_OS_GO</p>
+<p>​                -&gt; boot_jump_linux </p>
+<p>​                    -&gt; machid= gd-&gt;bd-&gt;bi_arch_number;</p>
+<p>​                    -&gt; void (*kernel_entry)(int zero, int arch, uint params); </p>
+<p>​                    -&gt; kernel_entry = (void (*)(int, int, uint))images-&gt;ep; 0X80800000。</p>
+<p>​                    -&gt; announce_and_cleanup 输出Starting kernel……</p>
+<p>​                    -&gt; kernel_entry(0, machid, r2);  启动Linux内核。Uboot的最终使命，启动Linux内核。</p>
+<p>​                                </p>
+<p>zimage_header 的zi_magic为zimage的幻数，魔术数。应该为0x016f2818。前面有9个32位的数据，那么9*4=36，0~35，第36个字节的数据开始就是zimage的幻数。</p>
+<p>​    </p>
+<p>​    3、do_bootm_states函数</p>
+<p>​    4、bootm_os_get_boot_func函数</p>
+<p>​    5、do_bootm_linux函数</p>
+
+    
+
+    
+
+    
+
+  </div>
+  <div class="article-info article-info-index">
+    
+    
+    
+
+    
+    <p class="article-more-link">
+      <a class="article-more-a" href="/2021/04/12/Linux%E7%A7%BB%E6%A4%8D-uboot%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/">展开 >></a>
+    </p>
+    
+
+    
+    <div class="clearfix"></div>
+  </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-Linux移植-uboot-Makefile" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+  
+  
+    <h1 itemprop="name">
+	
+	  <a class="article-title" href="/2021/04/12/Linux%E7%A7%BB%E6%A4%8D-uboot-Makefile/" target="_blank">IMX6U移植-uboot-Makefile</a>
+  
+    </h1>
+  
+
+
+  
+  
+<a href="/2021/04/12/Linux%E7%A7%BB%E6%A4%8D-uboot-Makefile/" class="archive-article-date">
+        <time datetime="2021-04-12T15:04:55.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-12</time>
+</a>
+
+  
+  
+    
+
+  
+  </header>
+  
+  <div class="article-entry" itemprop="articleBody">
+    
+     <a id="more"></a>
+
+<h1 id="一、Uboot源码目录分析"><a href="#一、Uboot源码目录分析" class="headerlink" title="一、Uboot源码目录分析"></a>一、Uboot源码目录分析</h1><p>1、因为uboot会使用到一些经过编译才会生成的文件，因此我们在分析uboot的时候，需要先编译一下uboot。</p>
+<p>2、arch\arm\cpu\u-boot.lds就是整个UBOOT的连接脚本</p>
+<p>3、board\freescale\mx6ullevk。重点。</p>
+<p>4、configs目录是uboot的默认配置文件目录。此目录下都是以_defconfig结尾的。这些配置文件对应不同的板子。在编译 uboot 之前一定要使用 defconfig 来配置 uboot！ 使用 “make xxx_defconfig”命令即可配置 uboot。当我们执行make xxx_defconfig以后就会生成.config问价，此文件保存了详细的uboot配置信息。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make mx6ull_14x14_ddr512_emmc_defconfig</span><br></pre></td></tr></table></figure>
+<p>5、我们移植uboot的时候重点要关注：board\freescale和·\configs，主要是_defconfig</p>
+<p>6、当我们执行make xxx_defconfig以后就会生成.config问价，此文件保存了详细的uboot配置信息。在.config 中会有大量的变量值为‘y’，这些为‘y’的变量一般用于控制某项功能是否使能，为‘y’的话就表示功能使能，</p>
+<p>7、顶层README，描述了 uboot 的详细信息，包括 uboot 该如何编译、uboot 中各文件夹的含 义、相应的命令等等,非常重要，建议大家阅读。</p>
+<h1 id="二、顶层Makefile分析"><a href="#二、顶层Makefile分析" class="headerlink" title="二、顶层Makefile分析"></a><strong>二、顶层Makefile</strong>分析</h1><p>Makefile 是支持嵌套的，也就是顶层 Makefile 可以调用子目录中的 Makefile 文件。每个功能模块目录下都有一个 Makefile，这个 Makefile 只处理本模块的编译链接工作。顶层 Makefile会调用其它的模块的 Makefile 文件。 </p>
+<p>AS= $(CROSS_COMPILE)as</p>
+<p>AS = arm-linux-gnueabihf-as</p>
+<p>2、变量值</p>
+<p>ARCH = arm</p>
+<p>CPU = armv7</p>
+<p>BOARD = mx6ullevk</p>
+<p>VENDOR = freescale</p>
+<p>SOC = mx6</p>
+<p>CPUDIR = arch/arm/cpu/armv7</p>
+<p>BOARDDIR = freescale/mx6ullevk</p>
+<h2 id="编译处理过程"><a href="#编译处理过程" class="headerlink" title="编译处理过程"></a>编译处理过程</h2><p>make distclean</p>
+<p> make mx6ull_14x14_ddr512_emmc_defconfig<br>make xxx_defconfig的规则：</p>
+<p>%config: scripts_basic outputmakefile FORCE<br>    $(Q)$(MAKE) $(build)=scripts/kconfig $@</p>
+<p>1、目标为scripts_basic </p>
+<p>scripts_basic:<br>    $(Q)$(MAKE) $(build)=scripts/basic<br>展开以后就是：<br>    make  -f ./scripts/Makefile.build obj= scripts/basic</p>
+<pre><code>build定义在scripts\Kbuild.include
+</code></pre>
+<p>build := -f $(srctree)/scripts/Makefile.build obj<br>build := -f ./scripts/Makefile.build obj</p>
+<p>2、outputmakefile，<br>    因为KBUILD_SRC，因此outputmakefile无效。</p>
+<p>最终要执行的命令<br>make -f ./scripts/Makefile.build obj=scripts/basic </p>
+<p>· Make -f ./scripts/Makefile.build obj=scripts/kconfig xxx_defconfig</p>
+<p>第一条命令：<br>src = scripts/basic<br>kbuild-dir = ./scripts/basic<br>kbuild-file = ./scripts/basic/Makefile<br>include  ./scripts/basic/Makefile</p>
+<p>__build: $(if $(KBUILD_BUILTIN),$(builtin-target) $(lib-target) $(extra-y)) <br>     $(if $(KBUILD_MODULES),$(obj-m) $(modorder-target)) <br>     $(subdir-ym) $(always)<br>    @:</p>
+<p>__build: $(builtin-target) $(lib-target) $(extra-y) $(subdir-ym) $(always)<br>    @:</p>
+<p>scripts/basic/fixdep</p>
+<p>__build: scripts/basic/fixdep<br>因此需要编译出scripts/basic/fixdep，对应的.c是scripts/basic/fixdep.c，</p>
+<p>第二条命令：<br>Make -f ./scripts/Makefile.build obj=scripts/kconfig xxx_defconfig</p>
+<p>src = scripts/kconfig<br>kbuild-dir = ./scripts/ kconfig<br>kbuild-file = ./scripts/ kconfig/Makefile<br>include  ./scripts/kconfig/Makefile</p>
+<p>%_defconfig: $(obj)/conf<br>    $(Q)$&lt; $(silent) –defconfig=arch/$(SRCARCH)/configs/$@ $(Kconfig)</p>
+<p>xxx_defconfig: scripts/kconfig/conf<br>    $(Q)$&lt; $(silent) –defconfig=arch/$(SRCARCH)/configs/$@ $(Kconfig)<br>    scripts/kconfig/conf –defconfig=arch/../configs/ xxx_defconfig Kconfig</p>
+<p>  make V=1 -j12<br>    默认目标<br>PHONY := _all<br>_all:<br>_all: all<br>all:        $(ALL-y)<br>ALL-y += u-boot.srec u-boot.bin u-boot.sym System.map u-boot.cfg binary_size_check</p>
+<p>u-boot.bin: u-boot-nodtb.bin FORCE<br>    $(call if_changed,copy)</p>
+<p>u-boot-nodtb.bin: u-boot FORCE<br>    $(call if_changed,objcopy)<br>    $(call DO_STATIC_RELA,$&lt;,$@,$(CONFIG_SYS_TEXT_BASE))<br>    $(BOARD_SIZE_CHECK)</p>
+<p>u-boot:    $(u-boot-init) $(u-boot-main) u-boot.lds FORCE<br>    $(call if_changed,u-boot__)</p>
+<p>u-boot-init := $(head-y)<br>u-boot-main := $(libs-y)</p>
+<p>head-y= arch/arm/cpu/armv7/start.o</p>
+<p>libs-y=保存源码的目录<br>libs-y += lib/ -》lib/built-in.o<br>libs-y保存大量的built-in.o</p>
+<p>u-boot就是将start.o 和大量的built-in.o链接在一起。</p>
+<p>假如<br>CONFIG_ONENAND_U_BOOT =y<br>ALL-$(CONFIG_ONENAND_U_BOOT)<br>ALL-y += u-boot-onenand.bin</p>
+<p>四、链接<br>链接脚本为u-boot.lds，uboot链接首地址为0X87800000，在mx6_common.h文件中设置CONFIG_SYS_TEXT_BASE=0X87800000</p>
+
+    
+
+    
+
+    
+
+  </div>
+  <div class="article-info article-info-index">
+    
+    
+    
+
+    
+    <p class="article-more-link">
+      <a class="article-more-a" href="/2021/04/12/Linux%E7%A7%BB%E6%A4%8D-uboot-Makefile/">展开 >></a>
+    </p>
+    
+
+    
+    <div class="clearfix"></div>
+  </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-Linux移植-uboot简介" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+  
+  
+    <h1 itemprop="name">
+	
+	  <a class="article-title" href="/2021/04/12/Linux%E7%A7%BB%E6%A4%8D-uboot%E7%AE%80%E4%BB%8B/" target="_blank">Linux移植-uboot简介</a>
+  
+    </h1>
+  
+
+
+  
+  
+<a href="/2021/04/12/Linux%E7%A7%BB%E6%A4%8D-uboot%E7%AE%80%E4%BB%8B/" class="archive-article-date">
+        <time datetime="2021-04-12T13:51:24.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-12</time>
+</a>
+
+  
+  
+    
+
+  
+  </header>
+  
+  <div class="article-entry" itemprop="articleBody">
+    
+     <a id="more"></a>
+
+<h1 id="系统移植简介"><a href="#系统移植简介" class="headerlink" title="系统移植简介"></a>系统移植简介</h1><p>在移植 Linux之前，需要先移植一个 bootloader 代码，这个 bootloader 代码用于启动 Linux 内核，bootloader有很多，常用的就是 U-Boot。移植好 U-Boot 以后再移植 Linux 内核，移植完 Linux 内核以后 Linux 还不能正常启动，还需要再移植一个根文件系统(rootfs)，根文件系统里面包含了一些最 常用的命令和文件。所以 U-Boot、Linux kernel 和 rootfs 这三者一起构成了一个可以正常使用、功能完善的 Linux 系统。</p>
+<p>Linux 系统要启动就必须需要一个bootloader 程序，也就说芯片上电以后先运行一段 bootloader程序。这段bootloader程序会先初始化DDR等外设，然后将Linux内核从flash(NAND，NOR FLASH，SD，MMC 等)拷贝到 DDR 中，最后启动 Linux 内核。bootloader最主要的工作就是启动 Linux 内核，bootloader 和 Linux 内核的关系就跟 PC 上的 BIOS 和 Windows 的关系一样，bootloader 就相当于 BIOS。</p>
+<h1 id="U-Boot-简介"><a href="#U-Boot-简介" class="headerlink" title="U-Boot 简介"></a><strong>U-Boot</strong> <strong>简介</strong></h1><p>uboot 的全称是 Universal Boot Loader，uboot 是一个遵循 GPL 协议的开源软件，uboot 官方的 uboot 源码是给半导体厂商准备的，半导体厂商会下载 uboot 官方的 uboot 源码，然后将自家相应的芯片移植进去。也就是说半导体厂商会自己维护一个版本的 uboot，这个版本的 uboot 相当于是他们定制的。</p>
+<h2 id="U-Boot-初次编译"><a href="#U-Boot-初次编译" class="headerlink" title="U-Boot 初次编译"></a><strong>U-Boot</strong> <strong>初次编译</strong></h2><p>首先在 Ubuntu 中安装 ncurses 库，否则编译会报错，安装命令如下： </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install libncurses5-dev</span><br></pre></td></tr></table></figure>
+<p>如果使用的是 512MB+8G 的 EMMC 核心板，使用如下命令来编译对应的 uboot： </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">make ARCH&#x3D;arm CROSS_COMPILE&#x3D;arm-linux-gnueabihf- distclean </span><br><span class="line">make ARCH&#x3D;arm CROSS_COMPILE&#x3D;arm-linux-gnueabihf- (加空格) </span><br><span class="line">mx6ull_14x14_ddr512_emmc_defconfig </span><br><span class="line">make V&#x3D;1 ARCH&#x3D;arm CROSS_COMPILE&#x3D;arm-linux-gnueabihf- -j12 </span><br></pre></td></tr></table></figure>
+<p>这三条命令中 ARCH=arm 设置目标为 arm 架构，CROSS_COMPILE 指定所使用的交叉编译器。</p>
+<p>第一条命令相当于“make distclean”，目的是清除工程，一般在第一次编译的时候最好清理一下工程。</p>
+<p>第二条指令相当于“make mx6ull_14x14_ddr512_emmc_defconfig”，用于配置 uboot， 配置文件为 mx6ull_14x14_ddr512_emmc_defconfig。</p>
+<p>最后一条指令相当于 “make -j12”， 其中 V=1 用于设置编译过程的信息输出级别；-j 用于设置主机使用多少线程编译uboot。</p>
+<p>编译完成以后 uboot 源码多了一些文件，其中 u-boot.bin 就是编译出来的 uboot二进制文件。uboot是个裸机程序，因此需要在其前面加上头部才能在I.MX6U上执行 u-boot.imx 文件就是添加头部(IVT、DCD等数据)以后的 u-boot.bin，u-boot.imx 就是最终要烧写到开发板中的 uboot 镜像文件。</p>
+<h2 id="U-Boot-烧写与启动"><a href="#U-Boot-烧写与启动" class="headerlink" title="U-Boot 烧写与启动"></a><strong>U-Boot</strong> <strong>烧写与启动</strong></h2><p>将 uboot烧写到 SD 卡中，然后通过 SD 卡来启动来运行 uboot。使用 imxdownload 软件烧写。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">chmod 777 imxdownload &#x2F;&#x2F;给予 imxdownload 可执行权限，一次即可 </span><br><span class="line">.&#x2F;imxdownload u-boot.bin &#x2F;dev&#x2F;sdd </span><br></pre></td></tr></table></figure>
+<p>在 3 秒倒计时结束以后如果没有按下回车键的话 uboot 就会使用默认参数来启动 Linux 内核了。Linux 内核一旦启动，uboot 就会寿终正寝。 如果在 3 秒倒计时 结束之前按下回车键，那么就会进入 uboot 的命令行模式。</p>
+<h1 id="U-Boot-命令使用"><a href="#U-Boot-命令使用" class="headerlink" title="U-Boot 命令使用"></a><strong>U-Boot</strong> <strong>命令使用</strong></h1><p>uboot 支持的命令很多，而且也可以在 uboot 中自定义命令。</p>
+<p>命令<strong>bdinfo</strong>用于查看板子信息，命令<strong>printenv</strong>用于输出环境变量信息。</p>
+<p>命令 <strong>setenv</strong> 用于设置或者修改环境变量的值。命令saveenv 用于保存修改后的环境变量，一般环境变量是存放在外部 flash 中的uboot 启动的时候会将环境变量从 flash 读取到 DRAM 中。所以使用命令 <strong>setenv</strong> 修改的是 DRAM 中的环境变量值，修改以后要使用 saveenv 命令将修改后的环境变量保存到 flash 中，否则的话 uboot 下一次重启会继续使用以前的环境变量值。</p>
+<h2 id="网络操作命令"><a href="#网络操作命令" class="headerlink" title="网络操作命令"></a><strong>网络操作命令</strong></h2><p><strong>nfs</strong> <strong>命令</strong></p>
+<p>nfs(Network File System)网络文件系统，通过 nfs 可以在计算机之间通过网络来分享资源，比如我们将 linux 镜像和设备树文件放到 Ubuntu 中，然后在 uboot 中使用 nfs 命令将 Ubuntu 中的 linux 镜像和设备树下载到开发板的 DRAM 中。这样做的目的是为了方便调试 linux 镜像和设备树，也就是网络调试。</p>
+<p>通过网络调试是 Linux 开发中最常用的调试方法。原因是嵌入式 linux开发不像单片机开发可以直接通过 JLINK 或 STLink 等仿真器将代码直接烧写到单片机内部的 flash 中，嵌入式 Linux 通常是烧写到 EMMC、NANDFlash、SPI Flash 等外置 flash 中，但是嵌入式 Linux 开发也没有 MDK，IAR 这样的 IDE，更没有烧写算法，因此不可能通过点击一个 “download”按钮就将固件烧写到外部 flash 中。网络调试的优势就显现出来了，可以通过网络将编译好的 linux 镜像和设备树文件下载到 DRAM 中，然后就可以直接运行。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nfs [loadAddress] [[hostIPaddr:]bootfilename] </span><br><span class="line">nfs 80800000 192.168.1.250:&#x2F;home&#x2F;zuozhongkai&#x2F;linux&#x2F;nfs&#x2F;zImage</span><br></pre></td></tr></table></figure>
+<p>loadAddress 是要保存的 DRAM 地址，[[hostIPaddr:]bootfilename]是要下载的文件地址。</p>
+<p><strong>tftp</strong> <strong>命令</strong></p>
+<p>tftp 命令的作用和 nfs 命令一样，都是用于通过网络下载东西到 DRAM 中，只是 tftp 命令使用的 TFTP 协议，Ubuntu 主机作为 TFTP 服务器。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tftpboot [loadAddress] [[hostIPaddr:]bootfilename] </span><br><span class="line">tftp 80800000 zImage </span><br></pre></td></tr></table></figure>
+<p> loadAddress 是文件在 DRAM 中 的存 放 地 址 ，[[hostIPaddr:]bootfilename]是要从 Ubuntu 中下载的文件。但是和 nfs 命令的区别在于，tftp 命令不需要输入文件在 Ubuntu 中的完整路径，只需要输入文件名即可。</p>
+<h2 id="EMMC-和-SD-卡操作命令"><a href="#EMMC-和-SD-卡操作命令" class="headerlink" title="EMMC 和 SD 卡操作命令"></a><strong>EMMC</strong> <strong>和</strong> <strong>SD</strong> <strong>卡操作命令</strong></h2><p>mmc info 命令用于输出当前选中的 mmc info 设备的信息。</p>
+<p>mmc rescan 命令用于扫描当前开发板上所有的 MMC 设备。</p>
+<p>mmc list 命令用于来查看当前开发板一共有几个 MMC 设备。</p>
+<p>“mmc part”来查看候 SD 卡或者 EMMC 分区，</p>
+<p><strong>mmc dev</strong> 命令用于切换当前 MMC 设备，</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mmc dev [dev] [part] </span><br><span class="line">mmc dev 0 	&#x2F;&#x2F;切换到 SD 卡，0 为 SD 卡，1 为 eMMC</span><br><span class="line">mmc dev 1 2	&#x2F;&#x2F;将 EMMC 的分区 2 设置为当前 MMC 设置</span><br></pre></td></tr></table></figure>
+<p>[dev]用来设置要切换的 MMC 设备号，[part]是分区号。如果不写分区号的话默认为分区 0。 </p>
+<p><strong>mmc read</strong> 命令用于读取 mmc 设备的数据</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mmc read addr blk# cnt </span><br><span class="line">mmc read 80800000 600 10 &#x2F;&#x2F;读取数据 </span><br></pre></td></tr></table></figure>
+<p>addr 是数据读取到 DRAM 中的地址，blk 是要读取的块起始地址(十六进制)，一个块是 512字节，这里的块和扇区是一个意思，在 MMC 设备中我们通常说扇区，cnt 是要读取的块数量(十六进制)。</p>
+<h2 id="BOOT-操作命令"><a href="#BOOT-操作命令" class="headerlink" title="BOOT 操作命令"></a><strong>BOOT</strong> <strong>操作命令</strong></h2><p><strong>bootz</strong> <strong>命令</strong></p>
+<p>要启动 Linux，需要先将 Linux 镜像文件拷贝到 DRAM 中，如果使用到设备树的话也需要将设备树拷贝到 DRAM 中。然后使用 bootz 命令来启动，bootz 命令用于启动 zImage 镜像文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bootz [addr [initrd[:size]] [fdt]] </span><br></pre></td></tr></table></figure>
+<p>命令 bootz 有三个参数，addr 是 Linux 镜像文件在 DRAM 中的位置，initrd 是 initrd 文件在DRAM 中的地址，如果不使用 initrd 的话使用‘-’代替即可，fdt 就是设备树文件在 DRAM 中的地址。</p>
+<p>使用<strong>tftp</strong>命令通过网络<strong>从Ubuntu</strong>将 zImage 下载到 DRAM 的 0X80800000 地址处，然后将设备树 imx6ull-alientek-emmc.dtb 下载到 DRAM 中的 0X83000000 地址处，最后之后命令 bootz 启动：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">tftp 80800000 zImage </span><br><span class="line">tftp 83000000 imx6ull-alientek-emmc.dtb </span><br><span class="line">bootz 80800000 – 83000000</span><br></pre></td></tr></table></figure>
+<p>使用<strong>fatload</strong> <strong>从 EMMC的分区 1</strong> 中将 zImage 和 imx6ull-alientek-emmc.dtb 拷贝到 DRAM 中，然后使用命令 bootz 启动：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">fatload mmc 1:1 80800000 zImage</span><br><span class="line">fatload mmc 1:1 83000000 imx6ull-alientek-emmc.dtb</span><br><span class="line">bootz 80800000 - 83000000</span><br></pre></td></tr></table></figure>
+<p><strong>bootm</strong> <strong>命令</strong></p>
+<p>bootm 和 bootz 功能类似，但是 bootm 用于启动 uImage 镜像文件。</p>
+<p><strong>boot</strong> <strong>命令</strong></p>
+<p>boot 会读取环境变量 bootcmd 来启动 Linux 系统。bootcmd这个环境变量保存着引导命令，其实就是启动的命令集合，具体的引导命令内容是可以修改的。</p>
+<p>使用 tftp 命令从网络启动 Linux 那么就可以设置 bootcmd 为“tftp 80800000 zImage; tftp 83000000 imx6ull-alientek-emmc.dtb; bootz 80800000 - 83000000”，然后使用 saveenv 将 bootcmd 保存起来。然后直接输入 boot 命令即可从网络启动 Linux 系统： </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">setenv bootcmd &#39;tftp 80800000 zImage; tftp 83000000 imx6ull-alientek-emmc.dtb; bootz  </span><br><span class="line">80800000 - 83000000&#39; </span><br><span class="line">saveenv </span><br><span class="line">boot</span><br></pre></td></tr></table></figure>
+<p>如果想从 EMMC 启动那就设置 bootcmd 为“fatload mmc 1:1 80800000 zImage; fatload mmc  1:1 83000000 imx6ull-alientek_emmc.dtb; bootz 80800000 - 83000000”，然后使用 boot 命令启动即可： </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">setenv bootcmd &#39;fatload mmc 1:1 80800000 zImage; fatload mmc 1:1 83000000 imx6ull-</span><br><span class="line">alientek_emmc.dtb; bootz 80800000 - 83000000&#39; </span><br><span class="line">savenev </span><br><span class="line">boot</span><br></pre></td></tr></table></figure>
+
+    
+
+    
+
+    
+
+  </div>
+  <div class="article-info article-info-index">
+    
+    
+    
+
+    
+    <p class="article-more-link">
+      <a class="article-more-a" href="/2021/04/12/Linux%E7%A7%BB%E6%A4%8D-uboot%E7%AE%80%E4%BB%8B/">展开 >></a>
+    </p>
+    
+
+    
+    <div class="clearfix"></div>
+  </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-IMX6U-PWM" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+  
+  
+    <h1 itemprop="name">
+	
+	  <a class="article-title" href="/2021/04/12/IMX6U-PWM/" target="_blank">IMX6U-PWM</a>
+  
+    </h1>
+  
+
+
+  
+  
+<a href="/2021/04/12/IMX6U-PWM/" class="archive-article-date">
+        <time datetime="2021-04-12T09:27:23.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-12</time>
+</a>
+
+  
+  
+    
+
+  
+  </header>
+  
+  <div class="article-entry" itemprop="articleBody">
+    
+     <a id="more"></a>
+
+<h1 id="一、PWM简介"><a href="#一、PWM简介" class="headerlink" title="一、PWM简介"></a>一、PWM简介</h1><p>PWM 全称是 PulseWidth Modulation，也就是脉冲宽度调制，</p>
+<p><strong>频率</strong>是开关速度，把一次开关算作一个周 期，那么频率就是 1 秒内进行了多少次开关。</p>
+<p><strong>占空比</strong>是一个周期内高电平时间和低电平时间的比例，一个周期内高电平时间越长占空比就越大，反之占空比就越小。占空比用百分数表示，如果一个周期内全是低电平那么占空比就是 0%，提高占空比就会提高背光亮度，降低占空比就会降低背光亮度。</p>
+<h1 id="二、I-MX6U的PWM详解"><a href="#二、I-MX6U的PWM详解" class="headerlink" title="二、I.MX6U的PWM详解"></a>二、I.MX6U的PWM详解</h1><p>I.MX6U一共有 8 路 PWM 信号，每个 PWM 包含一个 16 位的计数器和一个 4 x 16 的数据 FIFO。</p>
+<p>​    1、6ULL的PWM是16位计数器，<br>​    2、有4个16位的FIFO。<br>​    3、一个12位的分频器<br>​    4、正点原子LCD屏幕的背光IO连接到了GPIO1_IO08上。GPIO1_IO08可以复用位PWM1_OUT信号。<br>PWM计数器从0X0000开始计数，当计数器的值等于PWMPR+1的时候定时器就会重新开始下一个周期的运行，因此PWMPR寄存器控制着PWM频率。<br>FIFO保存着采样值，控制着占空比。当我们向PWMSAR寄存器写采样值的时候会写道FIFO里面，内每当读取一次PWMSAR寄存器，FIFO里面的数据都会减一，或者每产生一个PWM信号，FIFO的数据也会减一。直到FIFO为空，那么就无法再产生PWM信号。FIFO为空的时候会产生中断，我们可以在中断中向FIFO写入采样数据，也就是向PWMSAR写数据，相当于 PWMx_PWMSAR 控制着占空比。<br>PWMCR寄存器，bit0是PWM使能信号，bit2:1设置为0，每个周期使用FIFO里面的一个数据。Bit15:4，PWM分频设置，可以设置0<del>4095，对应1</del>4096分频。Bit17:16设置PWM时钟源，设置为1，表示使用ipg_clk=66MHz。bit19:18，设置为0。Bit27：26，设置为01，表示当FIFO里面空余位置大于2的时候FIFO为空。<br>PWMIR寄存器，bit0设置为1，开启FIFO空中断。</p>
+<h1 id="三、实验程序编写"><a href="#三、实验程序编写" class="headerlink" title="三、实验程序编写"></a>三、实验程序编写</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;***************************************************************</span><br><span class="line">文件名	: 	 bsp_backlight.c</span><br><span class="line">描述	   : LCD背光PWM驱动文件。</span><br><span class="line">***************************************************************&#x2F;</span><br><span class="line">&#x2F;* 背光设备 *&#x2F;</span><br><span class="line">struct backlight_dev_struc backlight_dev;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: pwm1中断处理函数</span><br><span class="line"> * @param		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void pwm1_irqhandler(void)</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">	if(PWM1-&gt;PWMSR &amp; (1 &lt;&lt; 3)) 	&#x2F;* FIFO为空中断 *&#x2F;</span><br><span class="line">	&#123;</span><br><span class="line">		&#x2F;* 将占空比信息写入到FIFO中,其实就是设置占空比 *&#x2F;</span><br><span class="line">		pwm1_setduty(backlight_dev.pwm_duty); </span><br><span class="line">		PWM1-&gt;PWMSR |&#x3D; (1 &lt;&lt; 3); &#x2F;* 写1清除中断标志位 *&#x2F; </span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 初始化背光PWM</span><br><span class="line"> * @param		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void backlight_init(void)</span><br><span class="line">&#123;</span><br><span class="line">	unsigned char i &#x3D; 0;</span><br><span class="line">	</span><br><span class="line">	&#x2F;* 1、背光PWM IO初始化 *&#x2F;</span><br><span class="line">	IOMUXC_SetPinMux(IOMUXC_GPIO1_IO08_PWM1_OUT, 0); &#x2F;* 复用为PWM1_OUT *&#x2F;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 配置PWM IO属性	</span><br><span class="line">	 *bit 16:0 HYS关闭</span><br><span class="line">	 *bit [15:14]: 10 100K上拉</span><br><span class="line">	 *bit [13]: 1 pull功能</span><br><span class="line">	 *bit [12]: 1 pull&#x2F;keeper使能</span><br><span class="line">	 *bit [11]: 0 关闭开路输出</span><br><span class="line">	 *bit [7:6]: 10 速度100Mhz</span><br><span class="line">	 *bit [5:3]: 010 驱动能力为R0&#x2F;2</span><br><span class="line">	 *bit [0]: 0 低转换率</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	IOMUXC_SetPinConfig(IOMUXC_GPIO1_IO08_PWM1_OUT, 0XB090);</span><br><span class="line">	</span><br><span class="line">	&#x2F;* 2、初始化PWM1		*&#x2F;</span><br><span class="line">	&#x2F;*</span><br><span class="line">   	 * 初始化寄存器PWMCR</span><br><span class="line">   	 * bit[27:26]	: 01  当FIFO中空余位置大于等于2的时候FIFO空标志值位</span><br><span class="line">   	 * bit[25]		:	0  停止模式下PWM不工作</span><br><span class="line">   	 * bit[24]		: 0	  休眠模式下PWM不工作</span><br><span class="line">   	 * bit[23]		: 0   等待模式下PWM不工作</span><br><span class="line">   	 * bit[22]		: 0   调试模式下PWM不工作</span><br><span class="line">   	 * bit[21]		: 0   关闭字节交换</span><br><span class="line">   	 * bit[20]		: 0	  关闭半字数据交换</span><br><span class="line">   	 * bit[19:18]	: 00  PWM输出引脚在计数器重新计数的时候输出高电平</span><br><span class="line">   	 *					  在计数器计数值达到比较值以后输出低电平</span><br><span class="line">   	 * bit[17:16]	: 01  PWM时钟源选择IPG CLK &#x3D; 66MHz</span><br><span class="line">   	 * bit[15:4]	: 65  分频系数为65+1&#x3D;66，PWM时钟源 &#x3D; 66MHZ&#x2F;66&#x3D;1MHz</span><br><span class="line">   	 * bit[3]		: 0	  PWM不复位</span><br><span class="line">   	 * bit[2:1]		: 00  FIFO中的sample数据每个只能使用一次。</span><br><span class="line">   	 * bit[0]		: 0   先关闭PWM，后面再使能</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	PWM1-&gt;PWMCR &#x3D; 0;	&#x2F;* 寄存器先清零 *&#x2F;</span><br><span class="line">	PWM1-&gt;PWMCR |&#x3D; (1 &lt;&lt; 26) | (1 &lt;&lt; 16) | (65 &lt;&lt; 4);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 设置PWM周期为1000,那么PWM频率就是1M&#x2F;1000 &#x3D; 1KHz。 *&#x2F;</span><br><span class="line">	pwm1_setperiod_value(1000);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 设置占空比，默认50%占空比   ,写四次是因为有4个FIFO *&#x2F;</span><br><span class="line">	backlight_dev.pwm_duty &#x3D; 50;</span><br><span class="line">	for(i &#x3D; 0; i &lt; 4; i++)</span><br><span class="line">	&#123;</span><br><span class="line">		pwm1_setduty(backlight_dev.pwm_duty);	</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	&#x2F;* 使能FIFO空中断，设置寄存器PWMIR寄存器的bit0为1 *&#x2F;</span><br><span class="line">	PWM1-&gt;PWMIR |&#x3D; 1 &lt;&lt; 0;</span><br><span class="line">	system_register_irqhandler(PWM1_IRQn, (system_irq_handler_t)pwm1_irqhandler, NULL);	&#x2F;* 注册中断服务函数 *&#x2F;</span><br><span class="line">	GIC_EnableIRQ(PWM1_IRQn);	&#x2F;* 使能GIC中对应的中断 *&#x2F;</span><br><span class="line">	PWM1-&gt;PWMSR &#x3D; 0;			&#x2F;* PWM中断状态寄存器清零 *&#x2F;</span><br><span class="line">	</span><br><span class="line">	pwm1_enable();				&#x2F;* 使能PWM1 *&#x2F;</span><br><span class="line"></span><br><span class="line">	</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 使能PWM</span><br><span class="line"> * @param		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void pwm1_enable(void)</span><br><span class="line">&#123;</span><br><span class="line">	PWM1-&gt;PWMCR |&#x3D; 1 &lt;&lt; 0;	 </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: 设置Sample寄存器，Sample数据会写入到FIFO中，</span><br><span class="line"> * 					  所谓的Sample寄存器，就相当于比较寄存器，假如PWMCR中的POUTC</span><br><span class="line"> *				  	  设置为00的时候。当PWM计数器中的计数值小于Sample的时候</span><br><span class="line"> *					  就会输出高电平，当PWM计数器值大于Sample的时候输出底电平,</span><br><span class="line"> *					  因此可以通过设置Sample寄存器来设置占空比</span><br><span class="line"> * @param -  value	: 寄存器值，范围0~0XFFFF</span><br><span class="line"> * @return 			: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void pwm1_setsample_value(unsigned int value)</span><br><span class="line">&#123;</span><br><span class="line">	PWM1-&gt;PWMSAR &#x3D; (value &amp; 0XFFFF);	</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: 设置PWM周期，就是设置寄存器PWMPR，PWM周期公式如下</span><br><span class="line"> *					  PWM_FRE &#x3D; PWM_CLK &#x2F; (PERIOD + 2)， 比如当前PWM_CLK&#x3D;1MHz</span><br><span class="line"> *					  要产生1KHz的PWM，那么PERIOD &#x3D; 1000000&#x2F;1K - 2 &#x3D; 	998</span><br><span class="line"> * @param -  value	: 周期值，范围0~0XFFFF</span><br><span class="line"> * @return 			: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void pwm1_setperiod_value(unsigned int value)</span><br><span class="line">&#123;</span><br><span class="line">	unsigned int regvalue &#x3D; 0;</span><br><span class="line"></span><br><span class="line">	if(value &lt; 2)</span><br><span class="line">		regvalue &#x3D; 2;</span><br><span class="line">	else </span><br><span class="line">		regvalue &#x3D; value - 2;</span><br><span class="line">	PWM1-&gt;PWMPR &#x3D; (regvalue &amp; 0XFFFF);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: 设置PWM占空比</span><br><span class="line"> * @param -  value	: 占空比0~100，对应0%~100%</span><br><span class="line"> * @return 			: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void pwm1_setduty(unsigned char duty)</span><br><span class="line">&#123;</span><br><span class="line">	unsigned short preiod;</span><br><span class="line">	unsigned short sample;</span><br><span class="line"></span><br><span class="line">	backlight_dev.pwm_duty &#x3D; duty;</span><br><span class="line">	preiod &#x3D; PWM1-&gt;PWMPR + 2;</span><br><span class="line">	sample &#x3D; preiod * backlight_dev.pwm_duty &#x2F; 100;</span><br><span class="line">	pwm1_setsample_value(sample);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    
+
+    
+
+    
+
+  </div>
+  <div class="article-info article-info-index">
+    
+    
+    
+
+    
+    <p class="article-more-link">
+      <a class="article-more-a" href="/2021/04/12/IMX6U-PWM/">展开 >></a>
+    </p>
+    
+
+    
+    <div class="clearfix"></div>
+  </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-IMX6U-I2C-触摸屏" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -771,438 +1319,6 @@
     
     <p class="article-more-link">
       <a class="article-more-a" href="/2021/04/11/RAM%E4%B8%8EROM/">展开 >></a>
-    </p>
-    
-
-    
-    <div class="clearfix"></div>
-  </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-IMX6U-GPT定时器" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-  
-  
-    <h1 itemprop="name">
-	
-	  <a class="article-title" href="/2021/04/11/IMX6U-GPT%E5%AE%9A%E6%97%B6%E5%99%A8/" target="_blank">IMX6U-GPT定时器</a>
-  
-    </h1>
-  
-
-
-  
-  
-<a href="/2021/04/11/IMX6U-GPT%E5%AE%9A%E6%97%B6%E5%99%A8/" class="archive-article-date">
-        <time datetime="2021-04-11T08:46:40.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-11</time>
-</a>
-
-  
-  
-    
-
-  
-  </header>
-  
-  <div class="article-entry" itemprop="articleBody">
-    
-     <a id="more"></a>
-
-<h1 id="GPT-定时器简介"><a href="#GPT-定时器简介" class="headerlink" title="GPT 定时器简介"></a>GPT 定时器简介</h1><p>I.MX6U 的 GPT 定时器全称为 General Purpose Timer，可实现高精度延时。GPT 定时器是一个 32 位向上定时器(也就是从 0X00000000 开始向上递增计数)，GPT 定时器也可以跟一个值进行比较，当计数器值和这个值相等的话就发生比较事件，产生比较中断。GPT 定时器有一个 12 位的分频器，可以对 GPT 定时器的时钟源进行分频，GPT 定时器特性如下： </p>
-<p>①、一个可选时钟源的 32 位向上计数器。 </p>
-<p>②、两个输入捕获通道，可以设置触发方式。 </p>
-<p>③、三个输出比较通道，可以设置输出模式。 </p>
-<p>④、可以生成捕获中断、比较中断和溢出中断。 </p>
-<p>⑤、计数器可以运行在重新启动(restart)或(自由运行)free-run 模式。 </p>
-<p>GPT 定时器共有五个时钟源，分别为：ipg_clk_24M、GPT_CLK(外部时钟)、 ipg_clk、ipg_clk_32k 和 ipg_clk_highfreq。现选择 ipg_clk 为 GPT 的时钟源，ipg_clk=66MHz。 </p>
-<p><strong>GPT 定时器有两种工作模式</strong></p>
-<p><strong>重新启动(restart)模式</strong>：当 GPTx_CR(x=1，2)寄存器的 FRR 位清零的时候 GPT 工作在此模式。在此模式下，当计数值和比较寄存器中的值相等的话计数值就会清零，然后重新从0X00000000 开始向上计数，只有比较通道 1 才有此模式！向比较通道 1 的比较寄存器写入任何数据都会复位 GPT 计数器。对于其他两路比较通道（通道 2 和 3），当发生比较事件以后不会复位计数器。</p>
-<p><strong>自由运行(free-run)模式</strong>：当 GPTx_CR(x=1，2)寄存器的 FRR 位置 1 时候 GPT 工作在此模式下，此模式适用于所有三个比较通道，当比较事件发生以后并不会复位计数器，而是继续计数，直到计数值为 0XFFFFFFFF，然后重新回滚到 0X00000000。 </p>
-<h1 id="定时器实现高精度延时原理"><a href="#定时器实现高精度延时原理" class="headerlink" title="定时器实现高精度延时原理"></a>定时器实现高精度延时原理</h1><p>高精度延时函数的实现肯定是要借助硬件定时器，如果设置 GPT 定时器的时钟源为 ipg_clk=66MHz，设置 66 分频，那么进入 GPT 定时器的最终时钟频率就是 66/66=1MHz，周期为 1us。GPT 的计数器每计一个数就表示“过去” 了 1us。如果计 10 个数就表示“过去”了 10us。通过读取寄存器 GPTx_CNT 中的值就知道计了个数，比如现在要延时 100us，那么进入延时函数以后纪录下寄存器 GPTx_CNT 中的值为 200， 当 GPTx_CNT 中的值为 300 的时候就表示 100us 过去了，也就是延时结束。GPTx_CNT 是个 32 位寄存器，如果时钟为 1MHz 的话，GPTx_CNT 最多可以实现 0XFFFFFFFFus=4294967295us≈4294s≈72min。也就是说 72 分钟以后 GPTx_CNT 寄存器就会回滚到 0X00000000，也就是溢出，所以需要在延时函数中要处理溢出的情况。</p>
-<p><strong>高精度延时的实现步骤如下</strong></p>
-<p>1、设置 GPT1 定时器<br>首先设置 GPT1_CR 寄存器的 SWR(bit15)位来复位寄存器 GPT1。复位完成以后设置寄存器 GPT1_CR 寄存器的 CLKSRC(bit8:6)位，选择 GPT1 的时钟源为 ipg_clk。设置定时器 GPT1的工作模式。</p>
-<p>2、设置 GPT1 的分频值<br>设置寄存器 GPT1_PR 寄存器的 PRESCALAR(bit111:0)位，设置分频值。66分频</p>
-<p>3、设置 GPT1 的比较值</p>
-<p>如果要使用 GPT1 的输出比较中断，那么 GPT1 的输出比较寄存器 GPT1_OCR1 的值可以根据所需的中断时间来设置。本章例程不使用比较输出中断，所以将 GPT1_OCR1 设置为最大 值，即：0XFFFFFFFF。 </p>
-<p>4、使能 GPT1 定时器<br>设置好 GPT1 定时器以后就可以使能了，设置 GPT1_CR 的 EN(bit0)位为 1 来使能 GPT1 定时器。</p>
-<p>5、编写延时函数<br>GPT1定时器已经开始运行了，可以根据前面介绍的高精度延时函数原理来编写延时函数，针对 us 和 ms 延时分别编写两个延时函数。</p>
-<h1 id="程序编写"><a href="#程序编写" class="headerlink" title="程序编写"></a>程序编写</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;***************************************************************</span><br><span class="line">文件名	: 	 bsp_delay.c</span><br><span class="line">描述	   : 延时文件。使用定时器GPT实现高精度延时,添加了：delay_init 延时初始化函数gpt1_irqhandler 			gpt1定时器中断处理函数delayus us延时函数delayms ms延时函数</span><br><span class="line">***************************************************************&#x2F;</span><br><span class="line">#include &quot;bsp_delay.h&quot;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 延时有关硬件初始化,主要是GPT定时器</span><br><span class="line">				  GPT定时器时钟源选择ipg_clk&#x3D;66Mhz</span><br><span class="line"> * @param		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void delay_init(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPT1-&gt;CR &#x3D; 0; 					&#x2F;* 清零，bit0也为0，即停止GPT  			*&#x2F;</span><br><span class="line"></span><br><span class="line">	GPT1-&gt;CR &#x3D; 1 &lt;&lt; 15;				&#x2F;* bit15置1进入软复位 				*&#x2F;</span><br><span class="line">	while((GPT1-&gt;CR &gt;&gt; 15) &amp; 0x01);	&#x2F;*等待复位完成 						*&#x2F;</span><br><span class="line">	</span><br><span class="line">	&#x2F;*</span><br><span class="line">   	 * GPT的CR寄存器,GPT通用设置</span><br><span class="line">   	 * bit22:20	000 输出比较1的输出功能关闭，也就是对应的引脚没反应</span><br><span class="line">     * bit9:    0   Restart模式,当CNT等于OCR1的时候就产生中断</span><br><span class="line">     * bit8:6   001 GPT时钟源选择ipg_clk&#x3D;66Mhz</span><br><span class="line">     * bit</span><br><span class="line">  	 *&#x2F;</span><br><span class="line">	GPT1-&gt;CR &#x3D; (1&lt;&lt;6);</span><br><span class="line"></span><br><span class="line">	&#x2F;*</span><br><span class="line">     * GPT的PR寄存器，GPT的分频设置</span><br><span class="line">     * bit11:0  设置分频值，设置为0表示1分频，</span><br><span class="line">     *          以此类推，最大可以设置为0XFFF，也就是最大4096分频</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	GPT1-&gt;PR &#x3D; 65;	&#x2F;* 设置为65，即66分频，因此GPT1时钟为66M&#x2F;(65+1)&#x3D;1MHz *&#x2F;</span><br><span class="line"></span><br><span class="line">	 &#x2F;*</span><br><span class="line">      * GPT的OCR1寄存器，GPT的输出比较1比较计数值，</span><br><span class="line">      *	GPT的时钟为1Mz，那么计数器每计一个值就是就是1us。</span><br><span class="line">      * 为了实现较大的计数，我们将比较值设置为最大的0XFFFFFFFF,</span><br><span class="line">      * 这样一次计满就是：0XFFFFFFFFus &#x3D; 4294967296us &#x3D; 4295s &#x3D; 71.5min</span><br><span class="line">      * 也就是说一次计满最多71.5分钟，存在溢出</span><br><span class="line">	  *&#x2F;</span><br><span class="line">	GPT1-&gt;OCR[0] &#x3D; 0XFFFFFFFF;</span><br><span class="line"></span><br><span class="line">	GPT1-&gt;CR |&#x3D; 1&lt;&lt;0;			&#x2F;&#x2F;使能GPT1</span><br><span class="line"></span><br><span class="line">	&#x2F;* 一下屏蔽的代码是GPT定时器中断代码，</span><br><span class="line">	 * 如果想学习GPT定时器的话可以参考一下代码。</span><br><span class="line">	 *&#x2F;</span><br><span class="line">#if 0</span><br><span class="line">	&#x2F;*</span><br><span class="line">     * GPT的PR寄存器，GPT的分频设置</span><br><span class="line">     * bit11:0  设置分频值，设置为0表示1分频，</span><br><span class="line">     *          以此类推，最大可以设置为0XFFF，也就是最大4096分频</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	GPT1-&gt;PR &#x3D; 65;	&#x2F;&#x2F;设置为1，即65+1&#x3D;66分频，因此GPT1时钟为66M&#x2F;66&#x3D;1MHz</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	 &#x2F;*</span><br><span class="line">      * GPT的OCR1寄存器，GPT的输出比较1比较计数值，</span><br><span class="line">      * 当GPT的计数值等于OCR1里面值时候，输出比较1就会发生中断</span><br><span class="line">      * 这里定时500ms产生中断，因此就应该为1000000&#x2F;2&#x3D;500000;</span><br><span class="line">	  *&#x2F;</span><br><span class="line">	GPT1-&gt;OCR[0] &#x3D; 500000;</span><br><span class="line"></span><br><span class="line">	&#x2F;*</span><br><span class="line">     * GPT的IR寄存器，使能通道1的比较中断</span><br><span class="line">     * bit0： 0 使能输出比较中断</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	GPT1-&gt;IR |&#x3D; 1 &lt;&lt; 0;</span><br><span class="line"></span><br><span class="line">	&#x2F;*</span><br><span class="line">     * 使能GIC里面相应的中断，并且注册中断处理函数</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	GIC_EnableIRQ(GPT1_IRQn);	&#x2F;&#x2F;使能GIC中对应的中断</span><br><span class="line">	system_register_irqhandler(GPT1_IRQn, (system_irq_handler_t)gpt1_irqhandler, NULL);	&#x2F;&#x2F;注册中断服务函数	</span><br><span class="line">#endif</span><br><span class="line">	</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">#if 0</span><br><span class="line">&#x2F;* 中断处理函数 *&#x2F;</span><br><span class="line">void gpt1_irqhandler(void)</span><br><span class="line">&#123; </span><br><span class="line">	static unsigned char state &#x3D; 0;</span><br><span class="line"></span><br><span class="line">	state &#x3D; !state;</span><br><span class="line"></span><br><span class="line">	&#x2F;*</span><br><span class="line">     * GPT的SR寄存器，状态寄存器</span><br><span class="line">     * bit2： 1 输出比较1发生中断</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	if(GPT1-&gt;SR &amp; (1&lt;&lt;0)) </span><br><span class="line">	&#123;</span><br><span class="line">		led_switch(LED2, state);</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	GPT1-&gt;SR |&#x3D; 1&lt;&lt;0; &#x2F;* 清除中断标志位 *&#x2F;</span><br><span class="line">&#125;</span><br><span class="line">#endif</span><br><span class="line"> </span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: 微秒(us)级延时</span><br><span class="line"> * @param - value	: 需要延时的us数,最大延时0XFFFFFFFFus</span><br><span class="line"> * @return 			: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void delayus(unsigned    int usdelay)</span><br><span class="line">&#123;</span><br><span class="line">	unsigned long oldcnt,newcnt;</span><br><span class="line">	unsigned long tcntvalue &#x3D; 0;	&#x2F;* 走过的总时间  *&#x2F;</span><br><span class="line"></span><br><span class="line">	oldcnt &#x3D; GPT1-&gt;CNT;</span><br><span class="line">	while(1)</span><br><span class="line">	&#123;</span><br><span class="line">		newcnt &#x3D; GPT1-&gt;CNT;</span><br><span class="line">		if(newcnt !&#x3D; oldcnt)</span><br><span class="line">		&#123;</span><br><span class="line">			if(newcnt &gt; oldcnt)		&#x2F;* GPT是向上计数器,并且没有溢出 *&#x2F;</span><br><span class="line">				tcntvalue +&#x3D; newcnt - oldcnt;</span><br><span class="line">			else  					&#x2F;* 发生溢出    *&#x2F;</span><br><span class="line">				tcntvalue +&#x3D; 0XFFFFFFFF-oldcnt + newcnt;</span><br><span class="line">			oldcnt &#x3D; newcnt;</span><br><span class="line">			if(tcntvalue &gt;&#x3D; usdelay)&#x2F;* 延时时间到了 *&#x2F;</span><br><span class="line">			break;			 		&#x2F;*  跳出 *&#x2F;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: 毫秒(ms)级延时</span><br><span class="line"> * @param - msdelay	: 需要延时的ms数</span><br><span class="line"> * @return 			: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void delayms(unsigned	 int msdelay)</span><br><span class="line">&#123;</span><br><span class="line">	int i &#x3D; 0;</span><br><span class="line">	for(i&#x3D;0; i&lt;msdelay; i++)</span><br><span class="line">	&#123;</span><br><span class="line">		delayus(1000);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-    
-
-    
-
-    
-
-  </div>
-  <div class="article-info article-info-index">
-    
-    
-    
-
-    
-    <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/11/IMX6U-GPT%E5%AE%9A%E6%97%B6%E5%99%A8/">展开 >></a>
-    </p>
-    
-
-    
-    <div class="clearfix"></div>
-  </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-IMX6U-EPIT定时器" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-  
-  
-    <h1 itemprop="name">
-	
-	  <a class="article-title" href="/2021/04/11/IMX6U-EPIT%E5%AE%9A%E6%97%B6%E5%99%A8/" target="_blank">IMX6U-EPIT定时器</a>
-  
-    </h1>
-  
-
-
-  
-  
-<a href="/2021/04/11/IMX6U-EPIT%E5%AE%9A%E6%97%B6%E5%99%A8/" class="archive-article-date">
-        <time datetime="2021-04-11T08:06:21.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-11</time>
-</a>
-
-  
-  
-    
-
-  
-  </header>
-  
-  <div class="article-entry" itemprop="articleBody">
-    
-     <a id="more"></a>
-
-<h1 id="EPIT简介"><a href="#EPIT简介" class="headerlink" title="EPIT简介"></a>EPIT简介</h1><p>EPIT 的全称是：Enhanced Periodic Interrupt Timer，直译过来就是增强的周期中断定时器， 它主要是完成周期性中断定时的。I.MX6U 的 EPIT 定时器只是完成周期性中断定时的，仅此一项功能！至于输入捕获、PWM 输出等这些功能，I.MX6U 由其它的外设来完成。 </p>
-<p>EPIT 是一个 32 位定时器，在处理器几乎不用介入的情况下提供精准的定时中断，软件使能以后 EPIT 就会开始运行，EPIT 定时器有如下特点： </p>
-<p>①、时钟源可选的 32 位向下计数器。 </p>
-<p>②、12 位的分频值。 </p>
-<p>③、当计数值和比较值相等的时候产生中断。 </p>
-<p>EPIT 共有 3 个时钟源可选择， ipg_clk、ipg_clk_32k 和 ipg_clk_highfreq。 选择ipg_clk=66MHz。可以对时钟源进行分频，12位的分频器，0<del>4095分别代表1</del>4096分频。</p>
-<ul>
-<li>计数寄存器 (<strong>EPIT_CNR</strong>)：向下计数，给它一个初值，它就会从这个给定的初值开始递减，直到减为 0。</li>
-<li>加载寄存器(**EPIT_LR)**：保存初值</li>
-<li>比较寄存器(<strong>EPIT_CMPR</strong>)：比较寄存器里面保存的数值用于和计数寄存器里面的计数值比较，如果相等， 产生一个比较事件。</li>
-<li>配置寄存器(<strong>EPIT_CR</strong>)：用于配置EPIT。</li>
-<li>(<strong>EPITx_SR</strong>) ：只有一个位有效，那就是 OCIF(bit0)，这个位是比较中断标志位，为 0 的时候表示没有比较事件发生，为 1 的时候表示有比较事件发生。当比较中断发生以后需要手动清除此位，此位是写 1 清零的。 </li>
-</ul>
-<p>EPIT 可以设置引脚输出，如果设置了的话就会通过指定的引脚输出信号。</p>
-<p>EPIT 定时器有两种工作模式：set-and-forget 和 free-running。</p>
-<p><strong>set-and-forget</strong> <strong>模式</strong>：EPITx_CR(x=1，2)寄存器的 RLD 位置 1 的时候 EPIT 工作在此模式 </p>
-<p>下，在此模式下 EPIT 的计数器从加载寄存器 EPITx_LR 中获取初始值，不能直接向计数器寄存 </p>
-<p>器写入数据。不管什么时候，只要计数器计数到 0，那么就会从加载寄存器 EPITx_LR 中重新 </p>
-<p>加载数据到计数器中，周而复始。 </p>
-<p><strong>free-running</strong> <strong>模式</strong>：EPITx_CR 寄存器的 RLD 位清零的时候 EPIT 工作在此模式下，当计数 </p>
-<p>器计数到0以后会重新从0XFFFFFFFF开始计数，并不是从加载寄存器EPITx_LR中获取数据。 </p>
-<p>EPIT_CR寄存器用于配置EPIT。</p>
-<h1 id="EPIT-的配置步骤"><a href="#EPIT-的配置步骤" class="headerlink" title="EPIT 的配置步骤"></a><strong>EPIT 的配置步骤</strong></h1><p>1、设置 EPIT1 的时钟源：设置寄存器 EPIT1_CR 寄存器的 CLKSRC(bit25:24)位，选择 EPIT1 的时钟源。</p>
-<p>2、设置分频值：设置寄存器 EPIT1_CR 寄存器的 PRESCALAR(bit15:4)位，设置分频值。</p>
-<p>3、设置工作模式：设置寄存器 EPIT1_CR 的 RLD(bit3)位，设置 EPTI1 的工作模式。</p>
-<p>4、设置计数器的初始值来源：设置寄存器 EPIT1_CR 的 ENMOD(bit1)位，设置计数器的初始值来源。</p>
-<p> 5、使能比较中断：要使用到比较中断，因此需要设置寄存器EPIT1_CR的OCIEN(bit2)位，使能比较中<br>断。</p>
-<p>6、设置加载值和比较值：设置寄存器 EPIT1_LR 中的加载值和寄存器 EPIT1_CMPR 中的比较值，通过这两个寄存器就可以决定定时器的中断周期。</p>
-<p>7、EPIT1 中断设置和中断服务函数编写：使能 GIC 中对应的 EPIT1 中断，注册中断服务函数，如果需要的话还可以设置中断优先级。最后编写中断服务函数。</p>
-<p>8、使能 EPIT1 定时器：配置好 EPIT1 以后就可以使能 EPIT1 了，通过寄存器 EPIT1_CR 的 EN(bit0)位来设置。</p>
-<h1 id="实验原理"><a href="#实验原理" class="headerlink" title="实验原理"></a>实验原理</h1><p>EPIT_CR bit0为1，设置EPIT使能，bit1为1，设置计数器的初始值为记载寄存器的值。Bit2为1使能比较中断，bit3为1设置定时器工作在set-and-forget模式下。Bit15~bit4设置分频值。Bit25:24设置时钟源的选择，我们设置为1，那么EPIT的时钟源就为ipg_clock=66MHz    </p>
-<p>EPIT_SR寄存器，只有bit0有效，表示中断状态，写1清零。当OCIF位为1的时候表示中断发生，为0的时候表示中断未发生。我们处理完定时器中断以后一定要清除中断标志位。</p>
-<p>EPIT_LR寄存器设置计数器的加载值。计数器每次计时到0以后就会读取LR寄存器的值重新开始计时。</p>
-<p>CMPR比较计数器，当计数器的值和CMPR相等以后就会产生比较中断。</p>
-<p>使用EPIT实现500ms周期的定时器。我们在EPIT中断服务函数里面让LED灯亮灭。</p>
-<h1 id="实验程序"><a href="#实验程序" class="headerlink" title="实验程序"></a>实验程序</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;***************************************************************</span><br><span class="line">文件名	: 	 bsp_epittimer.c</span><br><span class="line">描述	   : EPIT定时器驱动文件。</span><br><span class="line">***************************************************************&#x2F;</span><br><span class="line">#include &quot;bsp_epittimer.h&quot;</span><br><span class="line">#include &quot;bsp_int.h&quot;</span><br><span class="line">#include &quot;bsp_led.h&quot;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: 初始化EPIT定时器.</span><br><span class="line"> *					  EPIT定时器是32位向下计数器,时钟源使用ipg&#x3D;66Mhz		 </span><br><span class="line"> * @param - frac	: 分频值，范围为0~4095，分别对应1~4096分频。</span><br><span class="line"> * @param - value	: 倒计数值。</span><br><span class="line"> * @return 			: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void epit1_init(unsigned int frac, unsigned int value)</span><br><span class="line">&#123;</span><br><span class="line">	if(frac &gt; 0XFFF)</span><br><span class="line">		frac &#x3D; 0XFFF;</span><br><span class="line">		</span><br><span class="line">	EPIT1-&gt;CR &#x3D; 0;	&#x2F;* 先清零CR寄存器 *&#x2F;</span><br><span class="line">	</span><br><span class="line">	&#x2F;*</span><br><span class="line">     * CR寄存器:</span><br><span class="line">     * bit25:24 01 时钟源选择Peripheral clock&#x3D;66MHz</span><br><span class="line">     * bit15:4  frac 分频值</span><br><span class="line">     * bit3:	1  当计数器到0的话从LR重新加载数值</span><br><span class="line">     * bit2:	1  比较中断使能</span><br><span class="line">     * bit1:    1  初始计数值来源于LR寄存器值</span><br><span class="line">     * bit0:    0  先关闭EPIT1</span><br><span class="line">     *&#x2F;</span><br><span class="line">	EPIT1-&gt;CR &#x3D; (1&lt;&lt;24 | frac &lt;&lt; 4 | 1&lt;&lt;3 | 1&lt;&lt;2 | 1&lt;&lt;1);</span><br><span class="line">	</span><br><span class="line">	EPIT1-&gt;LR &#x3D; value;	&#x2F;* 倒计数值 *&#x2F;</span><br><span class="line">	EPIT1-&gt;CMPR	&#x3D; 0;	&#x2F;* 比较寄存器，当计数器值和此寄存器值相等的话就会产生中断 *&#x2F;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 使能GIC中对应的中断 			*&#x2F;</span><br><span class="line">	GIC_EnableIRQ(EPIT1_IRQn);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 注册中断服务函数 			*&#x2F;</span><br><span class="line">	system_register_irqhandler(EPIT1_IRQn, (system_irq_handler_t)epit1_irqhandler, NULL);	</span><br><span class="line"></span><br><span class="line">	EPIT1-&gt;CR |&#x3D; 1&lt;&lt;0;	&#x2F;* 使能EPIT1 *&#x2F; </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description			: EPIT中断处理函数</span><br><span class="line"> * @param				: 无</span><br><span class="line"> * @return 				: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void epit1_irqhandler(void)</span><br><span class="line">&#123; </span><br><span class="line">	static unsigned char state &#x3D; 0;</span><br><span class="line"></span><br><span class="line">	state &#x3D; !state;</span><br><span class="line">	if(EPIT1-&gt;SR &amp; (1&lt;&lt;0)) 			&#x2F;* 判断比较事件发生 *&#x2F;</span><br><span class="line">	&#123;</span><br><span class="line">		led_switch(LED0, state); 	&#x2F;* 定时器周期到，反转LED *&#x2F;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	EPIT1-&gt;SR |&#x3D; 1&lt;&lt;0; 				&#x2F;* 清除中断标志位 *&#x2F;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>epit1_init ，EPIT1 初始化函数，有两个参数 frac 和 value，其中 frac 是分频值，value 是加载值。在第 29 行设置比较寄存器为 0，也就是当计数器倒计数到 0 以后就会触发比较中断。Tout = ((frac +1 )* value) / Tclk;设置了 EPIT1 工作模式为 set-and-forget，并且时钟源为 ipg_clk=66MHz。</p>
-<p>epit1_irqhandler，EPIT1 中断处理函数。读取 EPIT1_SR 寄存器，判断当 前的中断是否为比较事件，如果是的话就翻转 LED 灯。最后在退出中断处理函数的时候需要清除中断标志位。</p>
-
-    
-
-    
-
-    
-
-  </div>
-  <div class="article-info article-info-index">
-    
-    
-    
-
-    
-    <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/11/IMX6U-EPIT%E5%AE%9A%E6%97%B6%E5%99%A8/">展开 >></a>
-    </p>
-    
-
-    
-    <div class="clearfix"></div>
-  </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-IMX6U中断" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-  
-  
-    <h1 itemprop="name">
-	
-	  <a class="article-title" href="/2021/04/11/IMX6U%E4%B8%AD%E6%96%AD/" target="_blank">IMX6U中断</a>
-  
-    </h1>
-  
-
-
-  
-  
-<a href="/2021/04/11/IMX6U%E4%B8%AD%E6%96%AD/" class="archive-article-date">
-        <time datetime="2021-04-11T04:26:49.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-11</time>
-</a>
-
-  
-  
-    
-
-  
-  </header>
-  
-  <div class="article-entry" itemprop="articleBody">
-    
-     <a id="more"></a>
-
-<h2 id="1、中断向量偏移"><a href="#1、中断向量偏移" class="headerlink" title="1、中断向量偏移"></a>1、中断向量偏移</h2><p>​    我们的裸机历程都是从0X87800000开始的，因此要设置中断向量偏移。</p>
-<h2 id="2、中断服务函数的编写"><a href="#2、中断服务函数的编写" class="headerlink" title="2、中断服务函数的编写"></a>2、中断服务函数的编写</h2><p>一个是IRQ中断服务函数的编写，另一个就是在IRQ中断服务函数里面去查找并运行的具体的外设中断服务函数。</p>
-<h2 id="3、修改start-S"><a href="#3、修改start-S" class="headerlink" title="3、修改start.S"></a>3、修改start.S</h2><p>​    添加中断向量表，编写复位中断服务函数和IRQ中断服务函数。</p>
-<p>​    编写复位中断服务函数，内容如下：</p>
-<p>​    ①、关闭I,D Cache和MMU。</p>
-<p>​    ②、设置处理器9中工作模式下对应的SP指针。要使用中断那么必须设置IRQ模式下的SP指针。索性直接设置所有模式下的SP指针。</p>
-<p>​    ③、清除bss段。</p>
-<p>​    ④、跳到C函数，也就是main函数</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;***************************************************************</span><br><span class="line">文件名	: 	 start.s</span><br><span class="line">描述	   : ZERO-I.MX6UL&#x2F;I.MX6ULL开发板启动文件，完成C环境初始化，C环境初始化完成以后跳转到C代码。</span><br><span class="line">**************************************************************&#x2F;</span><br><span class="line">.global _start  				&#x2F;* 全局标号 *&#x2F;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * 描述：	_start函数，首先是中断向量表的创建</span><br><span class="line"> *&#x2F;</span><br><span class="line">_start:</span><br><span class="line">	ldr pc, &#x3D;Reset_Handler		&#x2F;* 复位中断 					*&#x2F;	</span><br><span class="line">	ldr pc, &#x3D;Undefined_Handler	&#x2F;* 未定义中断 					*&#x2F;</span><br><span class="line">	ldr pc, &#x3D;SVC_Handler		&#x2F;* SVC(Supervisor)中断 		*&#x2F;</span><br><span class="line">	ldr pc, &#x3D;PrefAbort_Handler	&#x2F;* 预取终止中断 					*&#x2F;</span><br><span class="line">	ldr pc, &#x3D;DataAbort_Handler	&#x2F;* 数据终止中断 					*&#x2F;</span><br><span class="line">	ldr	pc, &#x3D;NotUsed_Handler	&#x2F;* 未使用中断					*&#x2F;</span><br><span class="line">	ldr pc, &#x3D;IRQ_Handler		&#x2F;* IRQ中断 					*&#x2F;</span><br><span class="line">	ldr pc, &#x3D;FIQ_Handler		&#x2F;* FIQ(快速中断)未定义中断 			*&#x2F;</span><br><span class="line"></span><br><span class="line">&#x2F;* 复位中断 *&#x2F;	</span><br><span class="line">Reset_Handler:</span><br><span class="line">	cpsid i						&#x2F;* 关闭全局中断 *&#x2F;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 关闭I,DCache和MMU </span><br><span class="line">	 * 采取读-改-写的方式。</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	mrc     p15, 0, r0, c1, c0, 0     &#x2F;* 读取CP15的C1寄存器到R0中   *&#x2F;</span><br><span class="line">    bic     r0,  r0, #(0x1 &lt;&lt; 12)     &#x2F;* 清除C1寄存器的bit12位(I位)，关闭I Cache  	*&#x2F;</span><br><span class="line">    bic     r0,  r0, #(0x1 &lt;&lt;  2)     &#x2F;* 清除C1寄存器的bit2(C位)，关闭D Cache 	*&#x2F;</span><br><span class="line">    bic     r0,  r0, #0x2             &#x2F;* 清除C1寄存器的bit1(A位)，关闭对齐	*&#x2F;</span><br><span class="line">    bic     r0,  r0, #(0x1 &lt;&lt; 11)     &#x2F;* 清除C1寄存器的bit11(Z位)，关闭分支预测	*&#x2F;</span><br><span class="line">    bic     r0,  r0, #0x1             &#x2F;* 清除C1寄存器的bit0(M位)，关闭MMU		*&#x2F;</span><br><span class="line">    mcr     p15, 0, r0, c1, c0, 0     &#x2F;* 将r0寄存器中的值写入到CP15的C1寄存器中		*&#x2F;	</span><br><span class="line">#if 0</span><br><span class="line">	&#x2F;* 汇编版本设置中断向量表偏移 *&#x2F;</span><br><span class="line">	ldr r0, &#x3D;0X87800000</span><br><span class="line"></span><br><span class="line">	dsb</span><br><span class="line">	isb</span><br><span class="line">	mcr p15, 0, r0, c12, c0, 0</span><br><span class="line">	dsb</span><br><span class="line">	isb</span><br><span class="line">#endif</span><br><span class="line">    </span><br><span class="line">	&#x2F;* 设置各个模式下的栈指针，</span><br><span class="line">	 * 注意：IMX6UL的堆栈是向下增长的！</span><br><span class="line">	 * 堆栈指针地址一定要是4字节地址对齐的！！！</span><br><span class="line">	 * DDR范围:0X80000000~0X9FFFFFFF</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	&#x2F;* 进入IRQ模式 *&#x2F;</span><br><span class="line">	mrs r0, cpsr</span><br><span class="line">	bic r0, r0, #0x1f 	&#x2F;* 将r0寄存器中的低5位清零，也就是cpsr的M0~M4 	*&#x2F;</span><br><span class="line">	orr r0, r0, #0x12 	&#x2F;* r0或上0x13,表示使用IRQ模式					*&#x2F;</span><br><span class="line">	msr cpsr, r0		&#x2F;* 将r0 的数据写入到cpsr_c中 					*&#x2F;</span><br><span class="line">	ldr sp, &#x3D;0x80600000	&#x2F;* 设置IRQ模式下的栈首地址为0X80600000,大小为2MB *&#x2F;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 进入SYS模式 *&#x2F;</span><br><span class="line">	mrs r0, cpsr</span><br><span class="line">	bic r0, r0, #0x1f 	&#x2F;* 将r0寄存器中的低5位清零，也就是cpsr的M0~M4 	*&#x2F;</span><br><span class="line">	orr r0, r0, #0x1f 	&#x2F;* r0或上0x13,表示使用SYS模式					*&#x2F;</span><br><span class="line">	msr cpsr, r0		&#x2F;* 将r0 的数据写入到cpsr_c中 					*&#x2F;</span><br><span class="line">	ldr sp, &#x3D;0x80400000	&#x2F;* 设置SYS模式下的栈首地址为0X80400000,大小为2MB *&#x2F;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 进入SVC模式 *&#x2F;</span><br><span class="line">	mrs r0, cpsr</span><br><span class="line">	bic r0, r0, #0x1f 	&#x2F;* 将r0寄存器中的低5位清零，也就是cpsr的M0~M4 	*&#x2F;</span><br><span class="line">	orr r0, r0, #0x13 	&#x2F;* r0或上0x13,表示使用SVC模式					*&#x2F;</span><br><span class="line">	msr cpsr, r0		&#x2F;* 将r0 的数据写入到cpsr_c中 					*&#x2F;</span><br><span class="line">	ldr sp, &#x3D;0X80200000	&#x2F;* 设置SVC模式下的栈首地址为0X80200000,大小为2MB *&#x2F;</span><br><span class="line"></span><br><span class="line">	cpsie i				&#x2F;* 打开全局中断 *&#x2F;</span><br><span class="line">#if 0</span><br><span class="line">	&#x2F;* 使能IRQ中断 *&#x2F;</span><br><span class="line">	mrs r0, cpsr		&#x2F;* 读取cpsr寄存器值到r0中 			*&#x2F;</span><br><span class="line">	bic r0, r0, #0x80	&#x2F;* 将r0寄存器中bit7清零，也就是CPSR中的I位清零，表示允许IRQ中断 *&#x2F;</span><br><span class="line">	msr cpsr, r0		&#x2F;* 将r0重新写入到cpsr中 			*&#x2F;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">	b main				&#x2F;* 跳转到main函数 			 	*&#x2F;</span><br><span class="line"></span><br><span class="line">&#x2F;* 未定义中断 *&#x2F;</span><br><span class="line">Undefined_Handler:</span><br><span class="line">	ldr r0, &#x3D;Undefined_Handler</span><br><span class="line">	bx r0</span><br><span class="line"></span><br><span class="line">&#x2F;* SVC中断 *&#x2F;</span><br><span class="line">SVC_Handler:</span><br><span class="line">	ldr r0, &#x3D;SVC_Handler</span><br><span class="line">	bx r0</span><br><span class="line"></span><br><span class="line">&#x2F;* 预取终止中断 *&#x2F;</span><br><span class="line">PrefAbort_Handler:</span><br><span class="line">	ldr r0, &#x3D;PrefAbort_Handler	</span><br><span class="line">	bx r0</span><br><span class="line"></span><br><span class="line">&#x2F;* 数据终止中断 *&#x2F;</span><br><span class="line">DataAbort_Handler:</span><br><span class="line">	ldr r0, &#x3D;DataAbort_Handler</span><br><span class="line">	bx r0</span><br><span class="line"></span><br><span class="line">&#x2F;* 未使用的中断 *&#x2F;</span><br><span class="line">NotUsed_Handler:</span><br><span class="line"></span><br><span class="line">	ldr r0, &#x3D;NotUsed_Handler</span><br><span class="line">	bx r0</span><br><span class="line"></span><br><span class="line">&#x2F;* IRQ中断！重点！！！！！ *&#x2F;</span><br><span class="line">IRQ_Handler:</span><br><span class="line">	push &#123;lr&#125;					&#x2F;* 保存lr地址 *&#x2F;</span><br><span class="line">	push &#123;r0-r3, r12&#125;			&#x2F;* 保存r0-r3，r12寄存器 *&#x2F;</span><br><span class="line"></span><br><span class="line">	mrs r0, spsr				&#x2F;* 读取spsr寄存器 *&#x2F;</span><br><span class="line">	push &#123;r0&#125;					&#x2F;* 保存spsr寄存器 *&#x2F;</span><br><span class="line"></span><br><span class="line">	mrc p15, 4, r1, c15, c0, 0 &#x2F;* 从CP15的C0寄存器内的值到R1寄存器中			*&#x2F;					add r1, r1, #0X2000			&#x2F;* GIC基地址加0X2000，也就是GIC的CPU接口端基地址 *&#x2F;</span><br><span class="line">	ldr r0, [r1, #0XC]			&#x2F;* GIC的CPU接口端基地址加0X0C就是GICC_IAR寄存器，</span><br><span class="line">								 * GICC_IAR寄存器保存这当前发生中断的中断号，我们要根据</span><br><span class="line">								 * 这个中断号来绝对调用哪个中断服务函数</span><br><span class="line">								 *&#x2F;</span><br><span class="line">	push &#123;r0, r1&#125;				&#x2F;* 保存r0,r1 *&#x2F;</span><br><span class="line">	</span><br><span class="line">	cps #0x13					&#x2F;* 进入SVC模式，允许其他中断再次进去 *&#x2F;</span><br><span class="line">	</span><br><span class="line">	push &#123;lr&#125;					&#x2F;* 保存SVC模式的lr寄存器 *&#x2F;</span><br><span class="line">	ldr r2, &#x3D;system_irqhandler	&#x2F;* 加载C语言中断处理函数到r2寄存器中*&#x2F;</span><br><span class="line">	blx r2						&#x2F;* 运行C语言中断处理函数，带有一个参数，保存在R0寄存器中 *&#x2F;</span><br><span class="line"></span><br><span class="line">	pop &#123;lr&#125;					&#x2F;* 执行完C语言中断服务函数，lr出栈 *&#x2F;</span><br><span class="line">	cps #0x12					&#x2F;* 进入IRQ模式 *&#x2F;</span><br><span class="line">	pop &#123;r0, r1&#125;				</span><br><span class="line">	str r0, [r1, #0X10]			&#x2F;* 中断执行完成，写EOIR *&#x2F;</span><br><span class="line"></span><br><span class="line">	pop &#123;r0&#125;						</span><br><span class="line">	msr spsr_cxsf, r0			&#x2F;* 恢复spsr *&#x2F;</span><br><span class="line"></span><br><span class="line">	pop &#123;r0-r3, r12&#125;			&#x2F;* r0-r3,r12出栈 *&#x2F;</span><br><span class="line">	pop &#123;lr&#125;					&#x2F;* lr出栈 *&#x2F;</span><br><span class="line">	subs pc, lr, #4				&#x2F;* 将lr-4赋给pc *&#x2F;</span><br><span class="line"></span><br><span class="line">&#x2F;* FIQ中断 *&#x2F;</span><br><span class="line">FIQ_Handler:</span><br><span class="line"></span><br><span class="line">	ldr r0, &#x3D;FIQ_Handler	</span><br><span class="line">	bx r0									</span><br></pre></td></tr></table></figure>
-<p>复位中断服务函数 Reset_Handler， 第 19 行先调用指令“cpsid i”关闭 IRQ， </p>
-<p>第 24 到 30 行是关闭 I/D Cache、MMU、对齐检测和分支预测。第 33 行到 42 行是汇编版本的中断向量表重映射。第 50 到 68 行是设置不同模式下的 sp 指针，分别设置 IRQ 模式、SYS 模式和 SVC 模式的栈指针，每种模式的栈大小都是 2MB。第 70 行调用指令“cpsie i”重新打开IRQ 中断，第 72 到 79 行是操作 CPSR 寄存器来打开 IRQ 中断。当初始化工作都完成以后就可 以进入到 main 函数了，第 81 行就是跳转到 main 函数。</p>
-<p>中断服务函数 IRQ_Handler，这个是本章的重点，因为所有的外部中断 最终都会触发 IRQ 中断，所以 IRQ 中断服务函数主要的工作就是区分去当前发生的什么中断(中断 ID)？然后针对不同的外部中断做出不同的处理。第 111 到 115 行是保存现场，第 117 到122 行是获取当前中断号，中断号被保存到了 r0 寄存器中。第 131 和 132 行才是中断处理的重点，这两行相当于调用了函数 system_irqhandler，函数 system_irqhandler 是一个 C 语言函数， 此函数有一个参数，这个参数中断号，所以我们需要传递一个参数。</p>
-<p>汇编中调用 C 函数如何实现参数传递呢？根据 ATPCS(ARM-Thumb Procedure Call Standard)定义的函数参数传递规则，在汇编调用 C 函数的时候建议形参不要超过 4 个，形参可以由 r0~r3 这四个寄存器来传递，如果形参大于 4 个，那么大于 4 个的部分要使用堆栈进行传递。所以给 r0 寄存器写入中断号就可以了函数 system_irqhandler 的参数传递，在 136 行已经向 r0 寄存器写入了中断号了。中断的真正处理过程其实是在函数 system_irqhandler 中完成，稍后需要编写函数 system_irqhandler。 </p>
-<p>第 137 行向 GICC_EOIR 寄存器写入刚刚处理完成的中断号，当一个中断处理完成以后必 须向 GICC_EOIR 寄存器写入其中断号表示中断处理完成。 </p>
-<p>第 139 到 143 行就是恢复现场。 </p>
-<p>第 144 行中断处理完成以后就要重新返回到曾经被中断打断的地方运行，这里为什么要将lr-4 然后赋给 pc 呢？而不是直接将 lr 赋值给 pc？ARM 的指令是三级流水线：取指、译指、执行，pc 指向的是正在取值的地址，这就是很多书上说的 pc=当前执行指令地址+8。</p>
-<h2 id="4、通用中断驱动文件编写"><a href="#4、通用中断驱动文件编写" class="headerlink" title="4、通用中断驱动文件编写"></a><strong>4、通用中断驱动文件编写</strong></h2><p>在 start.S 文件中我们在中断服务函数 IRQ_Handler 中调用了 C 函数 system_irqhandler 来处 </p>
-<p>理具体的中断。此函数有一个参数，参数是中断号，但是函数 system_irqhandler 的具体内容还 </p>
-<p>没有实现，所以需要实现函数 system_irqhandler 的具体内容。不同的中断源对应不同的中断处 </p>
-<p>理函数，I.MX6U 有 160 个中断源，所以需要 160 个中断处理函数，我们可以将这些中断处理 </p>
-<p>函数放到一个数组里面，中断处理函数在数组中的标号就是其对应的中断号。当中断发生以后 </p>
-<p>函数 system_irqhandler 根据中断号从中断处理函数数组中找到对应的中断处理函数并执行即可。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;***************************************************************</span><br><span class="line">文件名	: 	 bsp_int.h</span><br><span class="line">***************************************************************&#x2F;</span><br><span class="line">&#x2F;* 中断服务函数形式 *&#x2F; </span><br><span class="line">typedef void (*system_irq_handler_t) (unsigned int giccIar, void *param);</span><br><span class="line"></span><br><span class="line">&#x2F;* 中断服务函数结构体*&#x2F;</span><br><span class="line">typedef struct _sys_irq_handle</span><br><span class="line">&#123;</span><br><span class="line">    system_irq_handler_t irqHandler; &#x2F;* 中断服务函数 *&#x2F;</span><br><span class="line">    void *userParam;                 &#x2F;* 中断服务函数参数 *&#x2F;</span><br><span class="line">&#125; sys_irq_handle_t;</span><br><span class="line"></span><br><span class="line">&#x2F;* 函数声明 *&#x2F;</span><br><span class="line">void int_init(void);</span><br><span class="line">void system_irqtable_init(void);</span><br><span class="line">void system_register_irqhandler(IRQn_Type irq, system_irq_handler_t handler, void *userParam);</span><br><span class="line">void system_irqhandler(unsigned int giccIar); </span><br><span class="line">void default_irqhandler(unsigned int giccIar, void *userParam); </span><br></pre></td></tr></table></figure>
-<p>中断处理结构体 sys_irq_handle_t 包含一个中断处理函数和中断处 理函数的用户参数。一个中断源就需要一个 sys_irq_handle_t 变量，I.MX6U 有 160 个中断源， 因此需要 160 个 sys_irq_handle_t 组成中断处理数组。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><span class="line">#include &quot;bsp_int.h&quot;</span><br><span class="line">&#x2F;***************************************************************</span><br><span class="line">文件名	: 	 bsp_int.c</span><br><span class="line">描述	   : 中断驱动文件。</span><br><span class="line">***************************************************************&#x2F;</span><br><span class="line">static unsigned int irqNesting;&#x2F;* 中断嵌套计数器 *&#x2F;</span><br><span class="line">static sys_irq_handle_t irqTable[NUMBER_OF_INT_VECTORS];&#x2F;* 中断服务函数表 *&#x2F;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 中断初始化函数</span><br><span class="line"> * @param		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void int_init(void)</span><br><span class="line">&#123;</span><br><span class="line">	GIC_Init(); 						&#x2F;* 初始化GIC 							*&#x2F;</span><br><span class="line">	system_irqtable_init();				&#x2F;* 初始化中断表 							*&#x2F;</span><br><span class="line">	__set_VBAR((uint32_t)0x87800000); 	&#x2F;* 中断向量表偏移，偏移到起始地址   				*&#x2F;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 初始化中断服务函数表 </span><br><span class="line"> * @param		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void system_irqtable_init(void)</span><br><span class="line">&#123;</span><br><span class="line">	unsigned int i &#x3D; 0;</span><br><span class="line">	irqNesting &#x3D; 0;</span><br><span class="line">	</span><br><span class="line">	&#x2F;* 先将所有的中断服务函数设置为默认值 *&#x2F;</span><br><span class="line">	for(i &#x3D; 0; i &lt; NUMBER_OF_INT_VECTORS; i++)</span><br><span class="line">	&#123;</span><br><span class="line">		system_register_irqhandler((IRQn_Type)i,default_irqhandler, NULL);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description			: 给指定的中断号注册中断服务函数 </span><br><span class="line"> * @param - irq			: 要注册的中断号</span><br><span class="line"> * @param - handler		: 要注册的中断处理函数</span><br><span class="line"> * @param - usrParam	: 中断服务处理函数参数</span><br><span class="line"> * @return 				: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void system_register_irqhandler(IRQn_Type irq, system_irq_handler_t handler, void *userParam) </span><br><span class="line">&#123;</span><br><span class="line">	irqTable[irq].irqHandler &#x3D; handler;</span><br><span class="line">  	irqTable[irq].userParam &#x3D; userParam;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description			: C语言中断服务函数，irq汇编中断服务函数会调用此函数，此函数通过在中断服务列							表中查找指定中断号所对应的中断处理函数并执行。</span><br><span class="line"> * @param - giccIar		: 中断号</span><br><span class="line"> * @return 				: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void system_irqhandler(unsigned int giccIar) </span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">   uint32_t intNum &#x3D; giccIar &amp; 0x3FFUL;</span><br><span class="line">   </span><br><span class="line">   &#x2F;* 检查中断号是否符合要求 *&#x2F;</span><br><span class="line">   if ((intNum &#x3D;&#x3D; 1023) || (intNum &gt;&#x3D; NUMBER_OF_INT_VECTORS))</span><br><span class="line">   &#123;</span><br><span class="line">	 	return;</span><br><span class="line">   &#125;</span><br><span class="line"> </span><br><span class="line">   irqNesting++;	&#x2F;* 中断嵌套计数器加一 *&#x2F;</span><br><span class="line"></span><br><span class="line">   &#x2F;* 根据传递进来的中断号，在irqTable中调用确定的中断服务函数*&#x2F;</span><br><span class="line">   irqTable[intNum].irqHandler(intNum, irqTable[intNum].userParam);</span><br><span class="line"> </span><br><span class="line">   irqNesting--;	&#x2F;* 中断执行完成，中断嵌套寄存器减一 *&#x2F;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description			: 默认中断服务函数</span><br><span class="line"> * @param - giccIar		: 中断号</span><br><span class="line"> * @param - usrParam	: 中断服务处理函数参数</span><br><span class="line"> * @return 				: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void default_irqhandler(unsigned int giccIar, void *userParam) </span><br><span class="line">&#123;</span><br><span class="line">	while(1) </span><br><span class="line">  	&#123;</span><br><span class="line">   	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>中断初始化函数 int_init，在此函数中首先初始化了 GIC，然后初始化了中断 </p>
-<p>服务函数表，最终设置了中断向量表偏移。</p>
-<p>是中断服务函数表初始化函数 system_irqtable_init，初始化 irqTable，给其赋初 </p>
-<p>值。 </p>
-<p>注册中断处理函数 system_register_irqhandler，此函数用来给指定的中断号注 </p>
-<p>册中断处理函数。如果要使用某个外设中断，那就必须调用此函数来给这个中断注册一个中断 </p>
-<p>处理函数。 </p>
-<p>调用的 system_irqhandler 函数，此函数根据中断号在中断 </p>
-<p>处理函数表 irqTable 中取出对应的中断处理函数并执行。</p>
-<p>默认中断处理函数 default_irqhandler，这是一个空函数，主要用来给初始化 </p>
-<p>中断函数处理表</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;***************************************************************</span><br><span class="line">文件名	: 	 bsp_gpio.c</span><br><span class="line">描述	   : GPIO操作文件。</span><br><span class="line">日志	   :修改gpio_init()函数，支持中断配置.</span><br><span class="line">		 添加gpio_intconfig()函数，初始化中断</span><br><span class="line">		 添加gpio_enableint()函数，使能中断</span><br><span class="line">		 添加gpio_clearintflags()函数，清除中断标志位 </span><br><span class="line">***************************************************************&#x2F;</span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: GPIO初始化。</span><br><span class="line"> * @param - base	: 要初始化的GPIO组。</span><br><span class="line"> * @param - pin		: 要初始化GPIO在组内的编号。</span><br><span class="line"> * @param - config	: GPIO配置结构体。</span><br><span class="line"> * @return 			: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void gpio_init(GPIO_Type *base, int pin, gpio_pin_config_t *config)</span><br><span class="line">&#123;</span><br><span class="line">	base-&gt;IMR &amp;&#x3D; ~(1U &lt;&lt; pin);</span><br><span class="line">	</span><br><span class="line">	if(config-&gt;direction &#x3D;&#x3D; kGPIO_DigitalInput) &#x2F;* GPIO作为输入 *&#x2F;</span><br><span class="line">	&#123;</span><br><span class="line">		base-&gt;GDIR &amp;&#x3D; ~( 1 &lt;&lt; pin);</span><br><span class="line">	&#125;</span><br><span class="line">	else										&#x2F;* 输出 *&#x2F;</span><br><span class="line">	&#123;</span><br><span class="line">		base-&gt;GDIR |&#x3D; 1 &lt;&lt; pin;</span><br><span class="line">		gpio_pinwrite(base,pin, config-&gt;outputLogic);	&#x2F;* 设置默认输出电平 *&#x2F;</span><br><span class="line">	&#125;</span><br><span class="line">	gpio_intconfig(base, pin, config-&gt;interruptMode);	&#x2F;* 中断功能配置 *&#x2F;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description  			: 设置GPIO的中断配置功能</span><br><span class="line"> * @param - base 			: 要配置的IO所在的GPIO组。</span><br><span class="line"> * @param - pin  			: 要配置的GPIO脚号。</span><br><span class="line"> * @param - pinInterruptMode: 中断模式，参考枚举类型gpio_interrupt_mode_t</span><br><span class="line"> * @return		 			: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void gpio_intconfig(GPIO_Type* base, unsigned int pin, gpio_interrupt_mode_t pin_int_mode)</span><br><span class="line">&#123;</span><br><span class="line">	volatile uint32_t *icr;</span><br><span class="line">	uint32_t icrShift;</span><br><span class="line"></span><br><span class="line">	icrShift &#x3D; pin;</span><br><span class="line">	base-&gt;EDGE_SEL &amp;&#x3D; ~(1U &lt;&lt; pin);</span><br><span class="line"></span><br><span class="line">	if(pin &lt; 16) 	&#x2F;* 低16位 *&#x2F;</span><br><span class="line">		icr &#x3D; &amp;(base-&gt;ICR1);</span><br><span class="line">	else			&#x2F;* 高16位 *&#x2F;</span><br><span class="line">	&#123;</span><br><span class="line">		icr &#x3D; &amp;(base-&gt;ICR2);</span><br><span class="line">		icrShift -&#x3D; 16;</span><br><span class="line">	&#125;</span><br><span class="line">	switch(pin_int_mode)</span><br><span class="line">	&#123;</span><br><span class="line">		case(kGPIO_IntLowLevel):</span><br><span class="line">			*icr &amp;&#x3D; ~(3U &lt;&lt; (2 * icrShift));</span><br><span class="line">			break;</span><br><span class="line">		case(kGPIO_IntHighLevel):</span><br><span class="line">			*icr &#x3D; (*icr &amp; (~(3U &lt;&lt; (2 * icrShift)))) | (1U &lt;&lt; (2 * icrShift));</span><br><span class="line">			break;</span><br><span class="line">		case(kGPIO_IntRisingEdge):</span><br><span class="line">			*icr &#x3D; (*icr &amp; (~(3U &lt;&lt; (2 * icrShift)))) | (2U &lt;&lt; (2 * icrShift));</span><br><span class="line">			break;</span><br><span class="line">		case(kGPIO_IntFallingEdge):</span><br><span class="line">			*icr |&#x3D; (3U &lt;&lt; (2 * icrShift));</span><br><span class="line">			break;</span><br><span class="line">		case(kGPIO_IntRisingOrFallingEdge):</span><br><span class="line">			base-&gt;EDGE_SEL |&#x3D; (1U &lt;&lt; pin);</span><br><span class="line">			break;</span><br><span class="line">		default:</span><br><span class="line">			break;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description  			: 使能GPIO的中断功能</span><br><span class="line"> * @param - base 			: 要使能的IO所在的GPIO组。</span><br><span class="line"> * @param - pin  			: 要使能的GPIO在组内的编号。</span><br><span class="line"> * @return		 			: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void gpio_enableint(GPIO_Type* base, unsigned int pin)</span><br><span class="line">&#123; </span><br><span class="line">    base-&gt;IMR |&#x3D; (1 &lt;&lt; pin);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description  			: 禁止GPIO的中断功能</span><br><span class="line"> * @param - base 			: 要禁止的IO所在的GPIO组。</span><br><span class="line"> * @param - pin  			: 要禁止的GPIO在组内的编号。</span><br><span class="line"> * @return		 			: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void gpio_disableint(GPIO_Type* base, unsigned int pin)</span><br><span class="line">&#123; </span><br><span class="line">    base-&gt;IMR &amp;&#x3D; ~(1 &lt;&lt; pin);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description  			: 清除中断标志位(写1清除)</span><br><span class="line"> * @param - base 			: 要清除的IO所在的GPIO组。</span><br><span class="line"> * @param - pin  			: 要清除的GPIO掩码。</span><br><span class="line"> * @return		 			: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void gpio_clearintflags(GPIO_Type* base, unsigned int pin)</span><br><span class="line">&#123;</span><br><span class="line">    base-&gt;ISR |&#x3D; (1 &lt;&lt; pin);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><strong>gpio_intconfig</strong>：配置 GPIO 的中断功能。 </p>
-<p><strong>gpio_enableint</strong>：GPIO 中断使能函数。 </p>
-<p><strong>gpio_disableint</strong>：GPIO 中断禁止函数。 </p>
-<p><strong>gpio_clearintflags</strong>：GPIO 中断标志位清除函数</p>
-
-    
-
-    
-
-    
-
-  </div>
-  <div class="article-info article-info-index">
-    
-    
-    
-
-    
-    <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/11/IMX6U%E4%B8%AD%E6%96%AD/">展开 >></a>
-    </p>
-    
-
-    
-    <div class="clearfix"></div>
-  </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-IMX6U启动方式详解" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-  
-  
-    <h1 itemprop="name">
-	
-	  <a class="article-title" href="/2021/04/10/IMX6U%E5%90%AF%E5%8A%A8%E6%96%B9%E5%BC%8F%E8%AF%A6%E8%A7%A3/" target="_blank">I.MX6U启动方式详解</a>
-  
-    </h1>
-  
-
-
-  
-  
-<a href="/2021/04/10/IMX6U%E5%90%AF%E5%8A%A8%E6%96%B9%E5%BC%8F%E8%AF%A6%E8%A7%A3/" class="archive-article-date">
-        <time datetime="2021-04-10T13:09:13.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-10</time>
-</a>
-
-  
-  
-    
-
-  
-  </header>
-  
-  <div class="article-entry" itemprop="articleBody">
-    
-     <a id="more"></a>
-
-<h1 id="启动方式选择"><a href="#启动方式选择" class="headerlink" title="启动方式选择"></a>启动方式选择</h1><p>BOOT 的处理过程是发生在 I.MX6U 芯片上电以后，芯片会根据 BOOT_MODE[1:0]的设置 来选择 BOOT 方式。BOOT_MODE[1:0]的值是可以改变的，有两种方式，一种是改写 eFUSE(熔 丝)，一种是修改相应的 GPIO 高低电平。第一种修改 eFUSE 的方式只能修改一次，后面就不能再修改了，所以我们不使用。我们使用的是通过修改 BOOT_MODE[1:0]对应的 GPIO 高低电平来选择启动方式，所有的开发板都使用的这种方式。</p>
-<p>I.MX6U 有四个 BOOT 模式，这四个 BOOT 模式由 BOOT_MODE[1:0]来控制，也就是BOOT_MODE1 和 BOOT_MODE0 这两 IO，BOOT 模式配置如表 9.1.1 所示：</p>
-<table>
-<thead>
-<tr>
-<th><strong>BOOT_MODE[1:0]</strong></th>
-<th><strong>BOOT</strong> <strong>类型</strong></th>
-</tr>
-</thead>
-<tbody><tr>
-<td>00</td>
-<td>从 FUSE 启动</td>
-</tr>
-<tr>
-<td>01</td>
-<td>串行下载</td>
-</tr>
-<tr>
-<td>10</td>
-<td>内部 BOOT 模式</td>
-</tr>
-<tr>
-<td>11</td>
-<td>保留</td>
-</tr>
-</tbody></table>
-<p><strong>串行下载</strong></p>
-<p>当 BOOT_MODE1 为 0，BOOT_MODE0 为 1 的时候此模式使能，串行下载的意思就是可以通过 USB 或者 UART 将代码下载到板子上的外置存储设备中，我们可以使用 OTG1 这个 USB 口向开发板上的 SD/EMMC、NAND 等存储设备下载代码。我们需要将 BOOT_MODE1 拨到“OFF”，将 BOOT_MODE0 拨到“ON”。这个下载是需要用到 NXP 提供的一个软件，一般用来最终量产的时候将代码烧写到外置存储设备中的，我们后面讲解如何使用。</p>
-<p><strong>内部</strong> <strong>BOOT</strong> <strong>模式</strong></p>
-<p>当 BOOT_MODE1 为 1，BOOT_MODE0 为 0 的时候此模式使能，在此模式下，芯片会执 行内部的 boot ROM 代码，这段 boot ROM 代码会进行硬件初始化(一部分外设)，然后从 boot 设 备(就是存放代码的设备、比如 SD/EMMC、NAND)中将代码拷贝出来复制到指定的 RAM 中，一般是 DDR。 </p>
-<h1 id="BOOT-ROM-初始化内容"><a href="#BOOT-ROM-初始化内容" class="headerlink" title="BOOT ROM 初始化内容"></a><strong>BOOT ROM</strong> <strong>初始化内容</strong></h1><p>当我们设置 BOOT 模式为“内部 BOOT 模式”以后，I.MX6U 内部的 boot ROM 代码就会 执行，这个 boot ROM 代码首先肯定是初始化时钟，内部 boot ROM 为了加快执行速度会打开 MMU 和 Cache，下载镜像的时候 L1 ICache 会打 开，验证镜像的时候 L1 DCache、L2 Cache 和 MMU 都会打开。一旦镜像验证完成，boot ROM 就会关闭 L1 DCache、L2 Cache 和 MMU。中断向量偏移会被设置到 boot ROM 的起始位置，当 boot ROM 启动了用户代码以后就可以重新设置中断向量偏移了。一般是重新设置到我们用户代码的开始地方。</p>
-
-    
-
-    
-
-    
-
-  </div>
-  <div class="article-info article-info-index">
-    
-    
-    
-
-    
-    <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/10/IMX6U%E5%90%AF%E5%8A%A8%E6%96%B9%E5%BC%8F%E8%AF%A6%E8%A7%A3/">展开 >></a>
     </p>
     
 

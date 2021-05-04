@@ -6,17 +6,19 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="https://guoqiang-gump.github.io">
-  <title>Archives: 2021 | 国强-阿甘</title>
+  <title>UnixC-网络编程 | 国强-阿甘</title>
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="国强-阿甘_技术博客">
-<meta property="og:type" content="website">
-<meta property="og:title" content="国强-阿甘">
-<meta property="og:url" content="https://guoqiang-gump.github.io/archives/2021/page/6/index.html">
+  <meta name="description" content="十三、网络通信1.网络和网络协议1)什么是计算机网络？">
+<meta property="og:type" content="article">
+<meta property="og:title" content="UnixC-网络编程">
+<meta property="og:url" content="https://guoqiang-gump.github.io/2021/05/04/UnixC-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="国强-阿甘_技术博客">
+<meta property="og:description" content="十三、网络通信1.网络和网络协议1)什么是计算机网络？">
 <meta property="og:locale">
+<meta property="article:published_time" content="2021-05-04T15:41:02.000Z">
+<meta property="article:modified_time" content="2021-05-04T16:09:24.005Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -189,462 +191,296 @@
               class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-  
+            <article id="post-UnixC-网络编程" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2021" class="archive-year">2021</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/04/11/IMX6U-GPT%E5%AE%9A%E6%97%B6%E5%99%A8/" class="archive-article-date">
-        <time datetime="2021-04-11T08:46:40.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-11</time>
-</a>
-
-        </div>
-    	 
+      <header class="article-header">
   
-    <h1 itemprop="name">
-	
-	  <a class="archive-article-title" href="/2021/04/11/IMX6U-GPT%E5%AE%9A%E6%97%B6%E5%99%A8/" target="_blank">IMX6U-GPT定时器</a>
   
+    <h1 class="article-title" itemprop="name">
+      UnixC-网络编程
     </h1>
   
 
 
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
   
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/04/11/IMX6U-EPIT%E5%AE%9A%E6%97%B6%E5%99%A8/" class="archive-article-date">
-        <time datetime="2021-04-11T08:06:21.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-11</time>
+  
+        
+        <span id="busuanzi_container_page_pv" style='display:none' class="archive-article-date">
+              <i class="icon-smile icon"></i> 阅读数：<span id="busuanzi_value_page_pv"></span>次
+        </span>
+
+<a href="/2021/05/04/UnixC-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" class="archive-article-date">
+        <time datetime="2021-05-04T15:41:02.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-05-04</time>
 </a>
 
+  
+  
+    
+<div style="margin-top:10px;">
+  <span class="post-time">
+    <span class="post-meta-item-icon">
+      <!-- fonts.scss -->
+      <!-- 百度字体平台:http://fontstore.baidu.com/static/editor/index.html -->
+      <i class="icon-statistics"></i>
+      <span class="post-meta-item-text"> 字数统计:</span>
+      <span class="post-count">5k字</span>
+    </span>
+  </span>
+
+  <span class="post-time">
+    &nbsp; | &nbsp;
+    <span class="post-meta-item-icon">
+      <i class="icon-book icon"></i>
+      <span class="post-meta-item-text"> 阅读时长≈</span>
+      <span class="post-count">18分</span>
+    </span>
+  </span>
+</div>
+
+
+  
+  </header>
+  
+  <div class="article-entry" itemprop="articleBody">
+    
+    <h1 id="十三、网络通信"><a href="#十三、网络通信" class="headerlink" title="十三、网络通信"></a>十三、网络通信</h1><h2 id="1-网络和网络协议"><a href="#1-网络和网络协议" class="headerlink" title="1.网络和网络协议"></a>1.网络和网络协议</h2><p><strong>1)什么是计算机网络？</strong></p>
+<a id="more"></a>
+
+<p>计算机网络是指将地理位置不同的具有独立功能的多台计算机及其外部设备，通过有形或无形的通信线路连接起来，在网络操作系统、网络管理软件及网络通信协议的管理和协调下，实现资源共享和信息传递的计算机系统。</p>
+<p><strong>2)什么是网络协议？</strong><br>网络协议是一种特殊的软件，是计算机网络实现其功能的最基本的机制。网路协议的本质就是规则，即各种硬件和软件必须遵循的共同守则。网络协议并不是一套单独的软件，它融合于所有涉及网络通信的软件甚至硬件之中，因此可以说协议于网络中无处不在。</p>
+<p><strong>3)什么是协议栈？</strong><br>为了减少网络设计的复杂性，绝大多数网络采用分层设计的方法。所谓分层设计，就是按照信息流动的过程将网络的整体功能分解为一个个的功能层，不同机器上的同等功能层之间采用相同的协议，同一机器上相邻功能层之间通过接口进行信息传递。各层的协议和接口统称为协议栈。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">ISO(国际标准化组织)&#x2F;OSI(Open System Interconnection, 开放系统互联)网络协议模型：</span><br><span class="line">应用层：业务逻辑               \</span><br><span class="line">表示层：数据的表现形式           | -&gt; 应用层</span><br><span class="line">会话层：建立、管理和终止通信过程 &#x2F;</span><br><span class="line">传输层：源到目的地的点对点传输</span><br><span class="line">网络层：路径选择、路由、寻址等网络结构拓扑</span><br><span class="line">数据链路层：物理寻址、数据通道、错误检测等通信路径</span><br><span class="line">物理层：在数据和电平信号之间进行转换</span><br><span class="line"></span><br><span class="line">比喻：</span><br><span class="line">买点心（应用层：业务需求）</span><br><span class="line">选择包装（表示层：数据形式）</span><br><span class="line">选择快递公司（会话层：通信过程）</span><br><span class="line">填写收寄单（传输层：点对点）</span><br><span class="line">选择路径（网络层：通路）</span><br><span class="line">中途周转（数据链路层：多点连线）</span><br><span class="line">送货过程（物理层：实际通信）</span><br></pre></td></tr></table></figure>
+<p><strong>4)TCP/IP协议栈</strong><br>传输层：TCP、UDP<br>网络层：IP、ICMP、IGMP<br>链路层：ARP、RARP</p>
+<p><strong>5)消息包和数据流</strong><br>应用层：HTTP请求=用户数据包<br>传输层：TCP头+用户数据包=TCP包<br>网络层：IP头+TCP包=IP包<br>链路层：以太网头+IP包+以太网尾=以太网帧<br>物理层：以太网帧-&gt;电平信号<br>                                    |   ^<br>                                   v    |<br>                                传输线路<br>发送数据流：消息自协议栈顶层向底层流动，逐层打包。<br>接收数据流：消息自协议栈底层向顶层流程，逐层解析。</p>
+<p><strong>6)IP地址</strong><br>IP地址(Internet Protocol Address，互联网协议地址)是一种地址格式，为互联网上的每个网络和主机分配一个逻辑地址，其目的是消除物理地址的差异性。<br>IP地址的计算机内部用一个网络字节序的32位(4个字节)无符号整数表示。通常习惯将其表示为点分十进制整数字符串的形式。例如：<br>点分十进制整数字符串：1.2.3.4<br>32位(4个字节)无符号整数：0x01020304<br>内存布局：| 0x01 | 0x02 | 0x03 | 0x04 |<br>                   低地址—————&gt;高地址<br>网络字节序就是大端字节序，高位在低地址，低位在高地址。<br>一台计算机的IP地址=网络地址+主机地址<br>A级地址：以0为首8位网络地址+24位主机地址<br>B级地址：以10为首16位网络地址+16位主机地址<br>C级地址：以110为首24位网络地址+8位主机地址<br>D级地址：以1110为首的32为多(组)播地址<br>例如：某台计算机的IP地址为192.168.182.48，其网络地址和主机地址分别为何？<br>           192            168            182              48<br>11000000 10101000 10110110 00110000<br>以110为首，C级地址，网络地址是192.168.182.0，主机地址是48。<br>主机IP地址 &amp; 子网掩码 = 网络地址<br>主机IP地址 &amp; ~子网掩码 = 主机地址<br>例如：主机IP地址192.168.182.48，子网掩码255.255.255.0，其网络地址和主机地址分别为何？<br>192.168.182.48 &amp; 255.255.255.0 = 192.168.182.0<br>192.168.182.48 &amp; 0.0.0.255 = 0.0.0.48</p>
+<h2 id="2-套接字"><a href="#2-套接字" class="headerlink" title="2.套接字"></a>2.套接字</h2><p><strong>1)什么是套接字？</strong><br>Socket，电源插座-&gt;套接字<br>一个由系统内核负责维护，通过文件描述符访问的对象， 可用于在同一台机器或不同机器中的进程之间实现通信。<br>进程表项<br>    文件描述符表<br>    0: 文件描述符标志 | * -&gt; 标准输入文件表项 -&gt; 键盘<br>    1: 文件描述符标志 | * -&gt; 标准输出文件表项 -&gt; 显示器<br>    2: 文件描述符标志 | * -&gt; 标准错误文件表项 -&gt; 显示器<br>    3: 文件描述符标志 | * -&gt; 套接字对象 -&gt; 网卡<br>           应用程序                       应用程序<br>                 v                                   v<br>磁盘文件的文件描述符 表示网络的文件描述符<br>                 v                                   v<br>           文件对象                      套接字对象<br>                 v                                   v<br>           文件系统                      网络协议栈<br>                 v                                   v<br>           磁盘设备                       网络设备<br>套接字也可以被视为是围绕表示网络的文件描述符的一套函数库。调用其中的函数就可以访问网络上的数据，实现不同主机间的通信功能。<br><strong>2)绑定和连接</strong><br>   套接字就是系统内核内存中的一块数据——逻辑对象<br>                                                                            | 绑定(bind)<br>包含了IP地址和端口号等参数的网络设备——物理对象<br>互联网<br>     | &lt;-网络地址：192.168.182.0<br>子网络<br>     | &lt;-主机地址：0.0.0.48<br>计算机<br>     | &lt;-端口号：80<br>  应用<br>通过IP地址(网络地址+主机地址)和端口号就可以唯一定位互联网上的一个通信引用。</p>
+<p>主机A<br>应用程序<br>      |<br>逻辑对象(套接字)<br>      | 绑定(bind)                  连接(connection)<br>物理对象(IP地址和端口号)———物理对象(IP地址和端口号)<br>                                                             | 绑定(bind)<br>                                                       逻辑对象(套接字)<br>                                                             |<br>                                                       应用程序<br>                                                       主机B<br><strong>3)常用函数</strong><br><strong>创建套接字：</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">int socket(int domain, int type, int protocol);</span><br><span class="line">成功返回套接字描述符，失败返回-1。</span><br><span class="line">domain - 通信域，即协议族，可取以下值：</span><br><span class="line">    PF_LOCAL&#x2F;PF_UNIX: 本地通信，进程间通信</span><br><span class="line">    PF_INET: 互联网通信</span><br><span class="line">    PF_PACKET: 底层包通信（嗅探器、端口扫描）</span><br><span class="line">type - 套接字类型，可取以下值：</span><br><span class="line">SOCK_STREAM: 流式套接字，使用TCP协议</span><br><span class="line">SOCK_DGRAM: 数据报式套接字，使用UDP协议</span><br><span class="line">SOCK_RAW: 原始套接字，使用自定义协议</span><br><span class="line">protocol - 特殊协议对于流式套接字和数据报式套接字，取0</span><br></pre></td></tr></table></figure>
+<p>套接字描述符与文件描述符在逻辑层面是一致的，所有关于文件描述符的规则对于套接字描述符也同样成立。同样也通过close函数关闭套接字，即释放内核中的有关资源。</p>
+<p><strong>基本地址结构：</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">struct sockaddr &#123;</span><br><span class="line">    sa_family_t sa_family; &#x2F;&#x2F; 地址族</span><br><span class="line">    char sa_data[14]; &#x2F;&#x2F; 地址值</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>基本地址结构仅用于给函数传参时做强制类型转换。</p>
+<p><strong>本地地址结构：</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">struct sockaddr_un &#123;</span><br><span class="line">    sa_family_t sun_family; &#x2F;&#x2F; 地址族(AF_LOCAL&#x2F;AF_UNIX)</span><br><span class="line">    char sun_path[]; &#x2F;&#x2F; 套接字文件路径</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p><strong>网络地址结构：</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">struct sockaddr_in &#123;</span><br><span class="line">    sa_family_t sin_family; &#x2F;&#x2F; 地址族(AF_INET)</span><br><span class="line">    in_port_t sin_port; &#x2F;&#x2F; 端口号(网络字节序)</span><br><span class="line">    struct in_addr sin_addr; &#x2F;&#x2F; IP地址</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">struct in_addr &#123;</span><br><span class="line">    in_addr_t s_addr; &#x2F;&#x2F; 网络字节序32位无符号整数形式的IP地址</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">typedef uint32_t in_addr_t;</span><br><span class="line">typedef uint16_t in_port_t;</span><br></pre></td></tr></table></figure>
+<p>小端字节序的主机A              大端字节序的主机B<br>short a = 0x1234;<br>| 0x34 | 0x12 |                    | 0x34 | 0x12 |<br>    低         高                             低         高<br>                                             a: 0x3412<br>发送：主机字节序-&gt;网络(大端)字节序<br>接收：网络(大端)字节序-&gt;主机字节序<br>小端字节序的主机A             大端字节序的主机B<br>0x1234<br>主：0x34 | 0x12<br>           L        H<br>网：0x12 | 0x34      -&gt;      网：0x12 | 0x34<br>                                                       L         H<br>                                            主：0x12 | 0x34</p>
+<p>​                                            0x1234</p>
+<p>​                                            小端字节序的主机C<br>​                                  -&gt;      网：0x12 | 0x34<br>​                                                       L         H<br>​                                            主：0x34 | 0x12<br>​                                            0x1234</p>
+<p><strong>将套接字对象和自己的地址结构绑定在一起：</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">int bind(int sockfd, const struct sockaddr* addr, socklen_t addrlen);</span><br><span class="line">成功返回0，失败返回-1。</span><br><span class="line">sockfd - 套接字描述符</span><br><span class="line">addr - 自己的地址结构</span><br><span class="line">addrlen - 地址结构字节数</span><br><span class="line">addr-&gt;sa_family: AF_LOCAL&#x2F;AF_UNIX</span><br><span class="line">     ((struct sockaddr_un*)addr)-&gt;sun_path: 套接字文件</span><br><span class="line">addr-&gt;sa_family: AF_INET</span><br><span class="line">     ((struct sockaddr_in*)addr)-&gt;sin_port&#x2F;sin_addr: IP地址和端口号</span><br></pre></td></tr></table></figure>
+<p><strong>将套接字对象所代表的物理对象和对方的地址结构连接在一起：</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">int connect(int sockfd, const struct sockaddr* addr, socklen_t addrlen);</span><br><span class="line">成功返回0，失败返回-1。</span><br><span class="line">sockfd - 套接字描述符</span><br><span class="line">addr - 对方的地址结构</span><br><span class="line">addrlen - 地址结构字节数</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>通过套接字描述符接收和发送数据的过程完全与通过文件描述符读取和写入数据的过程完全一样。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ssize_t read(int sockfd, void* buf, size_t count);</span><br><span class="line">ssize_t write(int sockfd, const void* buf, size_t count);</span><br></pre></td></tr></table></figure>
+<p><strong>字节序转换</strong><br>通过网络传输多字节整数，需要在发送前转换为网络字节序，在接收后转换为主机字节序。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;arpa&#x2F;inet.h&gt;</span><br><span class="line">uint32_t htonl(uint32_t hostlong);</span><br><span class="line">uint16_t htons(uint16_t hostshort);</span><br><span class="line">uint32_t ntohl(uint32_t netlong);</span><br><span class="line">uint16_t ntohs(uint16_t netshort);</span><br><span class="line">h - host，主机(字节序)</span><br><span class="line">to - 到，把...转换到...</span><br><span class="line">n - network，网络(字节序)</span><br><span class="line">l - long版本，32位无符号整数</span><br><span class="line">s - short版本，16位无符号整数</span><br></pre></td></tr></table></figure>
+<p><strong>IP地址转换</strong><br>(网络字节序32位无符号)整数&lt;=&gt;(点分十进制)字符串</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">in_addr_t inet_addr(const char* cp); &#x2F;&#x2F; 串-&gt;数</span><br><span class="line">int inet_aton(const char* cp, struct in_addr* inp);&#x2F;&#x2F; 串-&gt;数</span><br><span class="line">转换成功返回0，失败返回-1。</span><br><span class="line"></span><br><span class="line">char* inet_ntoa(struct in_addr in); &#x2F;&#x2F; 数-&gt;串</span><br><span class="line">转换成功返回字符串指针，失败返回NULL。</span><br></pre></td></tr></table></figure>
+<h2 id="3-基于本地套接字的进程间通信："><a href="#3-基于本地套接字的进程间通信：" class="headerlink" title="3.基于本地套接字的进程间通信："></a>3.基于本地套接字的进程间通信：</h2><p>服务器：提供业务服务的计算机程序。<br>客户机：请求业务服务的计算机程序。<br>服务器                                     客户机<br>创建套接字(socket)                创建套接字(socket)<br>准备地址结构(sockaddr_un)  准备地址结构(sockaddr_un)<br>绑定地址(bind)                       建立连接(connect)<br>接收请求(read)                       发送请求(write)<br>业务处理(…)                            等待处理(…)<br>发送响应(write)                      接收响应(read)<br>关闭套接字(close)                   关闭套接字(close)</p>
+<h2 id="4-基于网络套接字的进程间通信："><a href="#4-基于网络套接字的进程间通信：" class="headerlink" title="4.基于网络套接字的进程间通信："></a>4.基于网络套接字的进程间通信：</h2><p>服务器                                     客户机<br>创建套接字(socket)                创建套接字(socket)<br>准备地址结构(sockaddr_in)   准备地址结构(sockaddr_in)<br>绑定地址(bind)                       建立连接(connect)<br>接收请求(read)                       发送请求(write)<br>业务处理(…)                            等待处理(…)<br>发送响应(write)                      接收响应(read)<br>关闭套接字(close)                   关闭套接字(close)</p>
+<h2 id="5-基于并发的TCP客户机-服务器模型"><a href="#5-基于并发的TCP客户机-服务器模型" class="headerlink" title="5.基于并发的TCP客户机/服务器模型"></a>5.基于并发的TCP客户机/服务器模型</h2><h3 id="1-TCP协议的基本特征"><a href="#1-TCP协议的基本特征" class="headerlink" title="1)TCP协议的基本特征"></a>1)TCP协议的基本特征</h3><p>A.面向连接：参与通信的双方在正式通信之前需要先建立连接，已形成一条虚拟电路，所有的后续通信都在这条虚电路上完成。类似于电话通信业务。正式通话之前要先拨号，拨通了才能讲话。拨号的过程就是一个建立连接的过程。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">三路握手：</span><br><span class="line">    客户机                          服务器</span><br><span class="line">发起连接请求 --------SYN(n)--------&gt; 被动侦听</span><br><span class="line">   等待应答     &lt;-ACK(n+1)+SYN(m)- 可以接受</span><br><span class="line">   反向确认     ------ACK(m+1)------&gt; 连接成功</span><br></pre></td></tr></table></figure>
+<p>一旦三路握手完成，客户机和服务器的网络协议栈中就会保存有关连接的信息，此后的通信内容全部基于此连接实现数据传输。通信过程中任何原因导致的连接中断，都无法再继续通信，除非重新建立连接。</p>
+<p>一旦三路握手完成，客户机和服务器的网络协议栈中就会保存有关连接的信息，此后的通信内容全部基于此连接实现数据传输。通信过程中任何原因导致的连接中断，都无法再继续通信，除非重新建立连接。</p>
+<p>B.可靠传输：超时重传。每次发送一个数据包，对方都需要在一个给定的时间窗口内予以应答，如果超过时间没有收到对方的应答，发送方就会重发该数据包，只有重试过足够多的次数依然失败才会最终放弃。</p>
+<p>C.保证顺序：发送端为每一个数据包编制序列号，接收端会根据序列号对所接收到的数据包进行重排，避免重复和乱序。</p>
+<p>D.流量控制：协议栈底层在从另一端接收数据时，会不断告知对方它能够接收多少字节的数据，即所谓通告窗口。任何时候，这个窗口都反映了接收缓冲区可用空间的大小，从而确保不会因为发送方发送数据过快或过慢导致接收缓冲区出现上溢出或下溢出。</p>
+<p>E.流式传输：以字节流形式传输数据，数据包在传输过程中没有记录边界。应用程序需要根据自己的规则来划分出数据包的记录边界。</p>
+<ul>
+<li>定长记录</li>
+<li>不定长记录加分隔符</li>
+<li>定长长度加不定长记录</li>
+</ul>
+<p>F.全双工：在给定的连接上，应用程序在任何时候都既可以发送数据也可以接收数据。因此TCP必须跟踪每个方向上数据流的状态信息，如序列号和通告窗口大小等。</p>
+<h3 id="2-TCP连接的生命周期"><a href="#2-TCP连接的生命周期" class="headerlink" title="2)TCP连接的生命周期"></a>2)TCP连接的生命周期</h3><p>被动打开：通过侦听套接字感知其它主机发起的连接请求。<br>三路握手：TCP连接的建立过程。<br>| TCP包头 | TCP包体 |<br>&lt;20字节&gt;<br>含有6个标志位：SYN/ACK/FIN/RST/…<br>发送序列号和应答序列号<br>…<br>数据传输：超时重传、流量控制、面向字节流、全双工<br>终止连接：<br>  客户机                                         服务器<br>主动关闭 ———FIN(n)——-&gt; 被动关闭<br>等待应答 &lt;—–ACK(n+1)——   关闭应答<br>确定关闭 &lt;——–FIN(m)——-  已经关闭<br>关闭应答 ——ACK(m+1)—–&gt;  等待应答</p>
+<h3 id="3-常用函数"><a href="#3-常用函数" class="headerlink" title="3)常用函数"></a>3)常用函数</h3><p><strong>在指定套接字上启动对连接请求的侦听，即将该套接字置为被动模式，因为套接字都缺省为主动模式。</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">int listen(int sockfd, int backlog);</span><br><span class="line">成功返回0，失败返回-1。</span><br><span class="line">sockfd - 套接字描述符</span><br><span class="line">backlog - 未决连接请求队列的最大长度</span><br></pre></td></tr></table></figure>
+<p><strong>在指定的侦听套接字上等待并接受连接请求</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">int accept(int sockfd, struct sockaddr* addr, size_t* addrlen);</span><br><span class="line">成功返回连接套接字描述符用于后续通信，失败返回-1。</span><br><span class="line">sockfd - 侦听套接字描述符</span><br><span class="line">addr - 输出连接请求发起者的地址信息</span><br><span class="line">addrlen - 输入输出连接请求发起者地址信息的字节数</span><br></pre></td></tr></table></figure>
+<p>该函数由TCP服务器调用，返回排在已决连接 队列首部的连接套接字对象的描述符，若已决连接队列为空，该函数会阻塞。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">非并发的TCP服务器：</span><br><span class="line">创建套接字(socket)</span><br><span class="line">绑定地址(bind)</span><br><span class="line">启动侦听(listen)</span><br><span class="line">等待连接(accept)&lt;--+</span><br><span class="line">接收请求(read)&lt;-+  |</span><br><span class="line">业务处理(...)   |  |</span><br><span class="line">发送响应(write)--+--+</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">并发的TCP服务器</span><br><span class="line">创建套接字(socket)</span><br><span class="line">绑定地址(bind)</span><br><span class="line">启动侦听(listen)</span><br><span class="line">等待连接(accept)&lt;---+</span><br><span class="line">                   |</span><br><span class="line">产生客户子进程(fork)-+</span><br><span class="line">    接收请求(read)&lt;-+</span><br><span class="line">    业务处理(...)   |</span><br><span class="line">    发送响应(write)--+</span><br></pre></td></tr></table></figure>
+<p><strong>接收数据</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">ssize_t recv(int sockfd, void* buf, size_t len, int flags);</span><br><span class="line">flags - 接收标志，取0等价于read</span><br><span class="line">    MSG_DONTWAIT: 非阻塞接收。对于阻塞模式，当接收缓冲区为空时，该函数会阻塞，直到接收缓冲区不空为止。如果使用了此标志位，当接收缓冲区为空时，该函数会返回-1，并置errno为EAGAIN或EWOULDBLOCK。</span><br><span class="line">    MSG_OOB: 接收带外数据。</span><br><span class="line">    MSG_PEEK: 瞄一眼数据，只将接收缓冲区中的数据复制到buf缓冲区中，但并不将其从接收缓冲区中删除。</span><br><span class="line">    MSG_WAITALL: 接收到所有期望接收的数据才返回，如果接收缓冲区中的数据不到len个字节，该函数会阻塞，直到可接收到len个字节为止。</span><br></pre></td></tr></table></figure>
+<p><strong>发送数据</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ssize_t send(int sockfd, const void* buf, size_t len, int flags);</span><br><span class="line">flags - 接收标志，取0等价于write</span><br><span class="line">     MSG_DONTWAIT: 非阻塞发送。对于阻塞模式，当发送缓冲区的空余空间不足以容纳期望发送的字节数时，该函数会阻塞，直到发送缓冲区的空余空间足以容纳期望发送的字节数为止。如果使用了此标志位，能发送多少字节就发送多少字节，不会阻塞，甚至可能返回0表示发送缓冲区满，无法发送数据。</span><br><span class="line">     MSG_OOB: 发送带外数据。</span><br><span class="line">     MSG_DONTROUT: 不查路由表，直接在本地网中寻找目的主机。</span><br></pre></td></tr></table></figure>
+<p>代码：tcpsvr.c、tcpcli.c</p>
+<h2 id="6-基于迭代的UDP客户机-服务器模型"><a href="#6-基于迭代的UDP客户机-服务器模型" class="headerlink" title="6.基于迭代的UDP客户机/服务器模型"></a>6.基于迭代的UDP客户机/服务器模型</h2><h3 id="1-UDP协议的基本特征"><a href="#1-UDP协议的基本特征" class="headerlink" title="1)UDP协议的基本特征"></a>1)UDP协议的基本特征</h3><p>A.面向无连接：参与通信的主机之间不需要专门建立和维护逻辑的连接通道。一个UDP套接字可以和任意其它UDP套接字通信，而不必受连接的限制。</p>
+<p>B.不可靠传输：没有超时重传机制。可能导致数据丢失。</p>
+<p>C.不保证顺序：没有序列号，也不进行序列重组。可能产生数据包重复和乱序。</p>
+<p>D.无流量控制：没有通告窗口，通信参与者完全不知道对方的接受能力。可能造成数据溢出。</p>
+<p>E.记录式传输：以消息报文的形式传输数据，数据包在传输过程中有记录边界。应用程序无需划分数据包边界。</p>
+<p>F.全双工</p>
+<p>通过在可靠性方面的部分牺牲换取高速度。</p>
+<h3 id="2-常用函数"><a href="#2-常用函数" class="headerlink" title="2)常用函数"></a>2)常用函数</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">发送函数：</span><br><span class="line">ssize_t sendto(int sockfd, const void* buf, size_t len, int flags,</span><br><span class="line">	const struct sockaddr* dest_addr, socklen_t addrlen);</span><br><span class="line">dest_addr - 数据包接收者地址结构</span><br><span class="line">addrlen - 数据包接收者地址结构字节数</span><br><span class="line"></span><br><span class="line">接受函数：</span><br><span class="line">ssize_t recvfrom(int sockfd, void* buf, size_t len, int flags, struct sockaddr* src_addr,</span><br><span class="line">    socklen_t* addrlen);</span><br><span class="line">src_addr - 输出数据包发送者地址结构</span><br><span class="line">addrlen - 输出数据包发送者地址结构字节数</span><br></pre></td></tr></table></figure>
+<p>针对UDP套接字的connect函数并不象TCP套接字的connect函数一样通过三路握手过程建立所谓的虚电路连接，而仅仅是将传递给该函数的对方地址结构缓存在套接字对象中。此后通过该套接字发送数据时，可以不使用 sendto函数，而直接调用send函数，有关接收方的地址信息从套接字对象的地址缓存中提取即可。<br>代码：concli.c</p>
+<h2 id="7-域名解析（Domain-Name-Service-DNS）"><a href="#7-域名解析（Domain-Name-Service-DNS）" class="headerlink" title="7.域名解析（Domain Name Service, DNS）"></a>7.域名解析（Domain Name Service, DNS）</h2><p>字符串形式的域名<br>(<a target="_blank" rel="noopener" href="http://www.tmooc.cn/">www.tmooc.cn</a>)<br>              |<br>              v<br>      DNS服务器<br>              |<br>              v<br>整数形式的IP地址<br>(202.141.55.23)–&gt;套接字编程</p>
+<p><strong>根据主机域名获取信息</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">struct hostent* gethostbyname(const char* name);</span><br><span class="line">成功返回主机信息条目指针，失败返回NULL。</span><br><span class="line">name - 主机域名(字符串)</span><br><span class="line">hostent</span><br><span class="line">    h_name -&gt; xxx\0 - 主机官方名</span><br><span class="line">    h_aliases -&gt; * * * ... NULL - 别名表</span><br><span class="line">    h_addrtype -&gt; AF_INET - 地址类型</span><br><span class="line">    h_length -&gt; 4 - 地址字节数</span><br><span class="line">    h_addr_list -&gt; * * * ... NULL - 地址表</span><br><span class="line">                          |</span><br><span class="line">                          v</span><br><span class="line">                   struct in_addr</span><br><span class="line">                       s_addr - 网络字节序32位无符号整数</span><br></pre></td></tr></table></figure>
+<h2 id="8-获取HTTP服务器上的页面内容"><a href="#8-获取HTTP服务器上的页面内容" class="headerlink" title="8.获取HTTP服务器上的页面内容"></a>8.获取HTTP服务器上的页面内容</h2><p>HTTP, Hyper Text Transform Protocol，超文本传输协议<br>www服务器通过http协议提供页面服务。<br>HTTP - 应用层协议：| HTTP包头 | HTTP包体 |<br>    |<br> TCP - 传输层协议：| TCP包头 | HTTP包头 | HTTP包体 |<br>    |<br>   IP - 网络层协议：…<br>    |<br>   …<br>HTTP请求包头：<br>方法                资源路径                 协议及<br>   |        (URI，统一资源定位符)      其版本<br>   |                         |                             |<br>GET /user/project/main.html     HTTP/1.1<br>   键         值<br>    |            |<br>Host: <a target="_blank" rel="noopener" href="http://www.tmooc.cn/r/n">www.tmooc.cn\r\n</a><br>Accept: text/html\r\n<br>Connection: Keep-Alive\r\n<br>User-Agent: Mozilla/5.0\r\n<br>Referer: <a target="_blank" rel="noopener" href="http://www.tmooc.cn/r/n">www.tmooc.cn\r\n</a><br>…<br>最后一行\r\n\r\n<br>代码：http.c</p>
+
+    
+
+    
+    <div class="page-reward">
+      <a href="javascript:void(0);" class="page-reward-btn tooltip-top" target="_self">
+        <div class="tooltip tooltip-east">
+          <span class="tooltip-item">
+            赏
+          </span>
+          <span class="tooltip-content">
+            <span class="tooltip-text">
+              <span class="tooltip-inner">
+                <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i
+                    class="icon icon-quo-right"></i></p>
+                <div class="reward-box">
+                  
+                  <div class="reward-box-item">
+                    <img class="reward-img" src="/img/alipay.jpg">
+                    <span class="reward-type">支付宝</span>
+                  </div>
+                  
+                  
+                  <div class="reward-box-item">
+                    <img class="reward-img" src="/img/weixinpay.jpg">
+                    <span class="reward-type">微信</span>
+                  </div>
+                  
+                </div>
+              </span>
+            </span>
+          </span>
         </div>
-    	 
-  
-    <h1 itemprop="name">
-	
-	  <a class="archive-article-title" href="/2021/04/11/IMX6U-EPIT%E5%AE%9A%E6%97%B6%E5%99%A8/" target="_blank">IMX6U-EPIT定时器</a>
-  
-    </h1>
-  
+      </a>
+    </div>
+    
 
+    
+    <div class="declare"> 
+      <ul class="post-copyright">
+        <li>
+          <strong>本文作者：</strong>
+          GUMP
+        </li>
+        <li>
+          <strong>本文链接：</strong>
+          <a href="https://guoqiang-gump.github.io/2021/05/04/UnixC-网络编程/" title="UnixC-网络编程" target="_blank">https://guoqiang-gump.github.io/2021/05/04/UnixC-网络编程/</a>
+        </li>
+        <li>
+          <strong>版权声明： </strong>
+          本博客所有文章除特别声明外，均采用 <a href="https://www.apache.org/licenses/LICENSE-2.0.html" rel="external nofollow" target="_blank">Apache License 2.0</a> 许可协议。转载请注明出处！
+        </li>
+      </ul>
+    </div>
+    
 
-        <div class="article-info info-on-right">
-          
-          
+  </div>
+  <div class="article-info article-info-index">
+    
+    
+    
 
+    
+
+    
+    
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <!-- <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a> -->
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+     <!-- <img src="//pan.baidu.com/share/qrcode?url=https://guoqiang-gump.github.io/2021/05/04/UnixC-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" alt="微信分享二维码"> -->
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+
+    
+    <div class="clearfix"></div>
+  </div>
   </div>
 </article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/04/11/IMX6U%E4%B8%AD%E6%96%AD/" class="archive-article-date">
-        <time datetime="2021-04-11T04:26:49.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-11</time>
-</a>
 
+
+<nav id="article-nav">
+  
+  
+    <a href="/2021/05/04/UnixC-%E7%BA%BF%E7%A8%8B/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">UnixC-线程</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
         </div>
-    	 
-  
-    <h1 itemprop="name">
-	
-	  <a class="archive-article-title" href="/2021/04/11/IMX6U%E4%B8%AD%E6%96%AD/" target="_blank">IMX6U中断</a>
-  
-    </h1>
-  
+        
+        
+    </div>
+</aside>
 
 
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/04/10/IMX6U%E5%90%AF%E5%8A%A8%E6%96%B9%E5%BC%8F%E8%AF%A6%E8%A7%A3/" class="archive-article-date">
-        <time datetime="2021-04-10T13:09:13.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-10</time>
-</a>
-
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-	
-	  <a class="archive-article-title" href="/2021/04/10/IMX6U%E5%90%AF%E5%8A%A8%E6%96%B9%E5%BC%8F%E8%AF%A6%E8%A7%A3/" target="_blank">I.MX6U启动方式详解</a>
-  
-    </h1>
-  
 
 
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/04/10/IMX6U-GPIO%E8%AF%A6%E8%A7%A3/" class="archive-article-date">
-        <time datetime="2021-04-10T12:00:19.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-10</time>
-</a>
-
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-	
-	  <a class="archive-article-title" href="/2021/04/10/IMX6U-GPIO%E8%AF%A6%E8%A7%A3/" target="_blank">I.MX6U的GPIO详解</a>
-  
-    </h1>
-  
 
 
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/04/10/ARM%E6%B1%87%E7%BC%96%E5%9F%BA%E7%A1%80/" class="archive-article-date">
-        <time datetime="2021-04-10T09:47:50.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-10</time>
-</a>
-
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-	
-	  <a class="archive-article-title" href="/2021/04/10/ARM%E6%B1%87%E7%BC%96%E5%9F%BA%E7%A1%80/" target="_blank">ARM汇编基础</a>
-  
-    </h1>
-  
 
 
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/04/10/Cortex-A7_MPCore/" class="archive-article-date">
-        <time datetime="2021-04-10T09:20:48.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-10</time>
-</a>
-
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-	
-	  <a class="archive-article-title" href="/2021/04/10/Cortex-A7_MPCore/" target="_blank">Cortex-A7架构</a>
-  
-    </h1>
-  
 
 
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">linux</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">ARM</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/Linux//" class="article-tag-list-link color1">Linux</a>
-        		</li>
-      		
-		</ul>
-	</div>
 
 
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/03/04/IMX6U-I2C-ap3216c/" class="archive-article-date">
-        <time datetime="2021-03-03T16:22:32.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-03-04</time>
-</a>
-
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-	
-	  <a class="archive-article-title" href="/2021/03/04/IMX6U-I2C-ap3216c/" target="_blank">IMX6U_I2C_ap3216c</a>
-  
-    </h1>
-  
-
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">linux</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">IMX6U</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">I2C</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/Linux//" class="article-tag-list-link color1">Linux</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/03/04/IMX6U%E4%B8%B2%E5%8F%A3/" class="archive-article-date">
-        <time datetime="2021-03-03T16:10:18.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-03-04</time>
-</a>
-
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-	
-	  <a class="archive-article-title" href="/2021/03/04/IMX6U%E4%B8%B2%E5%8F%A3/" target="_blank">IMX6U串口</a>
-  
-    </h1>
-  
-
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">linux</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">IMX6U</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">串口</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/Linux//" class="article-tag-list-link color1">Linux</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/03/04/IMX6U%E5%AE%9A%E6%97%B6/" class="archive-article-date">
-        <time datetime="2021-03-03T16:00:25.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-03-04</time>
-</a>
-
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-	
-	  <a class="archive-article-title" href="/2021/03/04/IMX6U%E5%AE%9A%E6%97%B6/" target="_blank">IMX6U定时</a>
-  
-    </h1>
-  
-
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">linux</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">IMX6U</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">蜂鸣器</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/Linux//" class="article-tag-list-link color1">Linux</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-  
-    </div></section>
-  
-
-    
-    <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/archives/2021/page/5/">&amp;laquo; Prev</a><a class="page-number" href="/archives/2021/">1</a><span class="space">&hellip;</span><a class="page-number" href="/archives/2021/page/4/">4</a><a class="page-number" href="/archives/2021/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/archives/2021/page/7/">7</a><a class="extend next" rel="next" href="/archives/2021/page/7/">Next &amp;raquo;</a>
-    </nav>
-  
 
 
           </div>
@@ -685,8 +521,8 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
-		isArchive: true,
+		isPost: true,
+		isArchive: false,
 		isTag: false,
 		isCategory: false,
 		open_in_new: true,

@@ -195,6 +195,438 @@
             
 
   
+    <article id="post-Linux驱动-LCD驱动" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+  
+  
+    <h1 itemprop="name">
+	
+	  <a class="article-title" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-LCD%E9%A9%B1%E5%8A%A8/" target="_blank">Linux驱动-LCD驱动</a>
+  
+    </h1>
+  
+
+
+  
+  
+<a href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-LCD%E9%A9%B1%E5%8A%A8/" class="archive-article-date">
+        <time datetime="2021-04-16T15:59:08.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-16</time>
+</a>
+
+  
+  
+    
+
+  
+  </header>
+  
+  <div class="article-entry" itemprop="articleBody">
+    
+     <a id="more"></a>
+
+<h1 id="Framebuffer-设备"><a href="#Framebuffer-设备" class="headerlink" title="Framebuffer 设备"></a><strong>Framebuffer</strong> <strong>设备</strong></h1><p>裸机 LCD 驱动编写流程如下：<br>①、初始化 I.MX6U 的 eLCDIF 控制器，重点是 LCD 屏幕宽(width)、高(height)、hspw、hbp、hfp、vspw、vbp 和 vfp 等信息。<br>②、初始化 LCD 像素时钟。<br>③、设置 RGBLCD 显存。<br>④、应用程序直接通过操作显存来操作 LCD，实现在 LCD 上显示字符、图片等信息。</p>
+<p>在 Linux 中应用程序最终也是通过操作 RGB LCD 的显存来实现在 LCD 上显示字符、图片<br>等信息。在裸机中我们可以随意的分配显存，但是在 Linux 系统中内存的管理很严格，显存是<br>需要申请的，不是你想用就能用的。而且因为虚拟内存的存在，驱动程序设置的显存和应用程<br>序访问的显存要是同一片物理内存。</p>
+<p>为了解决上述问题，Framebuffer 诞生了， Framebuffer 翻译过来就是帧缓冲，简称 fb，以后的 Linux 学习中见到“Framebuffer”或者“fb”的话第一反应应该想到 RGBLCD或者显示设备。fb 是一种机制，将系统中所有跟显示有关的硬件以及软件集合起来，虚拟出一个 fb 设备，当编写好 LCD 驱动以后会生成一个名为/dev/fbX(X=0~n)的设备，应用程序通过访问/dev/fbX 这个设备就可以访问 LCD。</p>
+<p>/dev/fbX是个字符设备，因此肯定有file_operations 操作集，fb 的 file_operations 操作集定义在 drivers/video/fbdev/core/fbmem.c 文件中。</p>
+<h1 id="LCD-驱动简析"><a href="#LCD-驱动简析" class="headerlink" title="LCD 驱动简析"></a><strong>LCD</strong> <strong>驱动简析</strong></h1><p>不同分辨率的 LCD 屏幕其 eLCDIF 控制器驱动代码都是一样的，只需要修改好对应的屏幕参数即可。屏幕参数信息属于屏幕设备信息内容，这些肯定是要放到设备树中的，因此我们本章实验的主要工作就是修改设备树，</p>
+<p><strong>Linux 下 Framebuffer 驱动的编写流程，</strong></p>
+<p>Linux 内核将所有的 Framebuffer 抽象为一个叫做 fb_info 的结构 体，fb_info 结构体包含了 Framebuffer 设备的完整属性和操作集合，因此每一个 Framebuffer 设备都必须有一个 fb_info。换言之就是，LCD 的驱动就是构建 fb_info，并且向系统注册 fb_info的过程。fb_info 结构体定义在 include/linux/fb.h 文件里面</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">struct fb_info &#123;</span><br><span class="line">        …………</span><br><span class="line">        struct fb_var_screeninfo var; &#x2F;* 当前可变参数 *&#x2F;</span><br><span class="line">        struct fb_fix_screeninfo fix; &#x2F;* 当前固定参数 *&#x2F;</span><br><span class="line">        struct fb_monspecs monspecs; &#x2F;* 当前显示器特性 *&#x2F;</span><br><span class="line">        struct work_struct queue; &#x2F;* 帧缓冲事件队列 *&#x2F;</span><br><span class="line">        struct fb_pixmap pixmap; &#x2F;* 图像硬件映射 *&#x2F;</span><br><span class="line">        struct fb_pixmap sprite; &#x2F;* 光标硬件映射 *&#x2F;</span><br><span class="line">        struct fb_cmap cmap; &#x2F;* 当前调色板 *&#x2F;</span><br><span class="line">        struct list_head modelist; &#x2F;* 当前模式列表 *&#x2F;</span><br><span class="line">        struct fb_videomode *mode; &#x2F;* 当前视频模式 *&#x2F;</span><br><span class="line">        ......</span><br><span class="line">        struct fb_ops *fbops; &#x2F;* 帧缓冲操作函数集 *&#x2F; </span><br><span class="line">        struct device *device; &#x2F;* 父设备 *&#x2F;</span><br><span class="line">        struct device *dev; &#x2F;* 当前 fb 设备 *&#x2F;</span><br><span class="line">        int class_flag; &#x2F;* 私有 sysfs 标志 *&#x2F;</span><br><span class="line">        ......</span><br><span class="line">        char __iomem *screen_base; &#x2F;* 虚拟内存基地址(屏幕显存) *&#x2F;</span><br><span class="line">        unsigned long screen_size; &#x2F;* 虚拟内存大小(屏幕显存大小) *&#x2F;</span><br><span class="line">        void *pseudo_palette; &#x2F;* 伪 16 位调色板 *&#x2F;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>fb_info 结构体的成员变量很多，我们重点关注 var、fix、fbops、screen_base、screen_size<br>和 pseudo_palette。mxsfb_probe 函数的主要工作内容为：<br>①、申请 fb_info。<br>②、初始化 fb_info 结构体中的各个成员变量。<br>③、初始化 eLCDIF 控制器。<br>④、使用 register_framebuffer 函数向 Linux 内核注册初始化好的 fb_info</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">int register_framebuffer(struct fb_info *fb_info)</span><br><span class="line">&#x2F;&#x2F;fb_info：需要上报的 fb_info。</span><br><span class="line">&#x2F;&#x2F;返回值：0，成功；负值，失败。</span><br></pre></td></tr></table></figure>
+<h1 id="LCD-驱动程序编写"><a href="#LCD-驱动程序编写" class="headerlink" title="LCD 驱动程序编写"></a>LCD 驱动程序编写</h1><p>6ULL 的 eLCDIF 接口驱动程序 NXP 已经编写好了，因此 LCD 驱动部分我们不需要去修改。我们需要做的就是按照所使用的 LCD 来修改设备树。重点要注意三个地方： </p>
+<p>①、LCD 所使用的 IO 配置。 </p>
+<p>②、LCD 屏幕节点修改，修改相应的属性值，换成我们所使用的 LCD 屏幕参数。 </p>
+<p>③、LCD 背光节点信息修改，要根据实际所使用的背光 IO 来修改相应的设备节点信息。 </p>
+<p><strong>1、LCD 屏幕 IO 配置</strong></p>
+<p>首先要检查一下设备树中 LCD 所使用的 IO 配置，这个其实 NXP 都已经写好了，不需要修改，</p>
+<p><strong>2、LCD 屏幕参数节点信息修改</strong></p>
+<p>继续在 imx6ull-alientek-emmc.dts 文件中找到 lcdif 节点，节点内容如下所示： </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">&amp;lcdif &#123; </span><br><span class="line">pinctrl-names &#x3D; &quot;default&quot;; </span><br><span class="line">pinctrl-0 &#x3D; &lt;&amp;pinctrl_lcdif_dat &#x2F;* 使用到的 IO *&#x2F;</span><br><span class="line">&amp;pinctrl_lcdif_ctrl</span><br><span class="line">&amp;pinctrl_lcdif_reset&gt;;</span><br><span class="line">display &#x3D; &lt;&amp;display0&gt;;</span><br><span class="line">status &#x3D; &quot;okay&quot;; 8 </span><br><span class="line">display0: display &#123; &#x2F;* LCD 属性信息 *&#x2F;</span><br><span class="line">bits-per-pixel &#x3D; &lt;16&gt;; &#x2F;* 一个像素占用几个 bit *&#x2F;</span><br><span class="line">bus-width &#x3D; &lt;24&gt;; &#x2F;* 总线宽度 *&#x2F;</span><br><span class="line"></span><br><span class="line">display-timings &#123;</span><br><span class="line">native-mode &#x3D; &lt;&amp;timing0&gt;; &#x2F;* 时序信息 *&#x2F;</span><br><span class="line">timing0: timing0 &#123; </span><br><span class="line">clock-frequency &#x3D; &lt;9200000&gt;; &#x2F;* LCD 像素时钟，单位 Hz *&#x2F;</span><br><span class="line">hactive &#x3D; &lt;480&gt;; &#x2F;* LCD X 轴像素个数 *&#x2F;</span><br><span class="line">vactive &#x3D; &lt;272&gt;; &#x2F;* LCD Y 轴像素个数 *&#x2F;</span><br><span class="line">hfront-porch &#x3D; &lt;8&gt;; &#x2F;* LCD hfp 参数 *&#x2F;</span><br><span class="line">hback-porch &#x3D; &lt;4&gt;; &#x2F;* LCD hbp 参数 *&#x2F;</span><br><span class="line">hsync-len &#x3D; &lt;41&gt;; &#x2F;* LCD hspw 参数 *&#x2F;</span><br><span class="line">vback-porch &#x3D; &lt;2&gt;; &#x2F;* LCD vbp 参数 *&#x2F;</span><br><span class="line">vfront-porch &#x3D; &lt;4&gt;; &#x2F;* LCD vfp 参数 *&#x2F;</span><br><span class="line">vsync-len &#x3D; &lt;10&gt;; &#x2F;* LCD vspw 参数 *&#x2F;</span><br><span class="line"></span><br><span class="line">hsync-active &#x3D; &lt;0&gt;; &#x2F;* hsync 数据线极性 *&#x2F;</span><br><span class="line">vsync-active &#x3D; &lt;0&gt;; &#x2F;* vsync 数据线极性 *&#x2F;</span><br><span class="line">de-active &#x3D; &lt;1&gt;; &#x2F;* de 数据线极性 *&#x2F;</span><br><span class="line">pixelclk-active &#x3D; &lt;0&gt;; &#x2F;* clk 数据线先极性 *&#x2F;</span><br><span class="line">&#125;;</span><br><span class="line">&#125;;</span><br><span class="line">&#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>第 3 行，pinctrl-0 属性，LCD 所使用的 IO 信息，这里用到了 pinctrl_lcdif_dat(RGB LCD 的 24 根数据线配置项)、pinctrl_lcdif_ctrl(RGB LCD 的 4 根控制线配置项，包括 CLK、ENABLE、VSYNC 和 HSYNC)和 pinctrl_lcdif_reset (LCD 复位 IO 信息节点)这三个 IO 相关的节点。<br>第 6 行，display 属性，指定 LCD 属性信息所在的子节点，这里为 display0，下面就是 display0子节点内容。<br>第 9<del>32 行，display0 子节点，描述 LCD 的参数信息，第 10 行的 bits-per-pixel 属性用于指明一个像素占用的 bit 数，默认为 16bit。将 LCD 配置为 RGB888 模式，因此一个像素点占用 24bit，bits-per-pixel 属性要改为 24。第 11 行的 bus-width 属性用于设置数据线宽度，因为要配置为 RGB888 模式，因此 bus-width 也要设置为 24。 第 13</del>30 行，这几行设置了 LCD 的时序参数信息，需要根据自己所使用的屏幕去修改。</p>
+<p><strong>3、LCD 屏幕背光节点信息</strong></p>
+<p>正点原子的 LCD 接口背光控制 IO 连接到了 I.MX6U 的 GPIO1_IO08 引脚上，GPIO1_IO08复用为 PWM1_OUT，通过 PWM 信号来控制 LCD 屏幕背光的亮度，正点原子 I.MX6U-ALPHA 开发板的 LCD 背光引脚和 NXP 官方 EVK 开发 板的背光引脚一样，因此背光的设备树节点是不需要修改的。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"> pinctrl_pwm1: pwm1grp &#123; </span><br><span class="line">     fsl,pins &#x3D; &lt; </span><br><span class="line">     	MX6UL_PAD_GPIO1_IO08__PWM1_OUT 0x110b0</span><br><span class="line">    &gt;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>pinctrl_pwm1 节点就是 GPIO1_IO08 的配置节点，设置 GPIO1_IO08 这个 IO 复用为 PWM1_OUT，并且设置电气属性值为 0x110b0。 </p>
+<p>LCD 背光要用到 PWM1，因此也要设置 PWM1 节点，在 imx6ull.dtsi 文件中找到如下内容：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">pwm1: pwm@02080000 &#123;</span><br><span class="line">    compatible &#x3D; &quot;fsl,imx6ul-pwm&quot;, &quot;fsl,imx27-pwm&quot;; </span><br><span class="line">    reg &#x3D; &lt;0x02080000 0x4000&gt;;</span><br><span class="line">    interrupts &#x3D; &lt;GIC_SPI 83 IRQ_TYPE_LEVEL_HIGH&gt;;</span><br><span class="line">    clocks &#x3D; &lt;&amp;clks IMX6UL_CLK_PWM1&gt;,</span><br><span class="line">    		&lt;&amp;clks IMX6UL_CLK_PWM1&gt;;</span><br><span class="line">    clock-names &#x3D; &quot;ipg&quot;, &quot;per&quot;;</span><br><span class="line">    #pwm-cells &#x3D; &lt;2&gt;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>imx6ull.dtsi 文件中的 pwm1 节点信息不要修改，如果要修改 pwm1 节点内容的话在imx6ull-alientek-emmc.dts 文件中修改。继续在 imx6ull-alientek-emmc.dts 文件中找到向 pwm1追加的内容</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&amp;pwm1 &#123; </span><br><span class="line">    pinctrl-names &#x3D; &quot;default&quot;; </span><br><span class="line">    pinctrl-0 &#x3D; &lt;&amp;pinctrl_pwm1&gt;;</span><br><span class="line">    status &#x3D; &quot;okay&quot;; </span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>设置 pwm1 所使用的 IO 为 pinctrl_pwm1，也就是GPIO1_IO08 这个 IO。将 status 设置为 okay。</p>
+<p>需要一个节点来将 LCD 背光和 PWM1_OUT连接起来 ，Linux系统才知道PWM1_OUT 就是控制 LCD 背光的。 这 个节点就是backlight，backlight节点创建总结一下：<br>①、节点名称要为“backlight”。<br>②、节点的 compatible 属性值要为“pwm-backlight”，<br>③、pwms属性用于描述背光所使用的PWM以及PWM频率，比如要使用的pwm1，pwm 频率设置为 5KHz(<br>④、brightness-levels 属性描述亮度级别，范围为 0~255，0 表示 PWM 占空比为 0%，也就是亮度最低，255 表示 100%占空比，也就是亮度最高。<br>⑤、default-brightness-level 属性为默认亮度级别。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">backlight &#123; </span><br><span class="line">    compatible &#x3D; &quot;pwm-backlight&quot;;</span><br><span class="line">    pwms &#x3D; &lt;&amp;pwm1 0 5000000&gt;;</span><br><span class="line">    brightness-levels &#x3D; &lt;0 4 8 16 32 64 128 255&gt;;</span><br><span class="line">    default-brightness-level &#x3D; &lt;6&gt;;</span><br><span class="line">    status &#x3D; &quot;okay&quot;; </span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>设置背光使用 pwm1，PWM 频率为 5KHz。设置背 8 级背光(0~7)，分别为 0、4、8、16、32、64、128、255，对应占空比为0%、1.57%、3.13%、6.27%、12.55%、25.1%、50.19%、100%。设置默认背光等级为 6，也就是 50.19%的亮度。</p>
+
+    
+
+    
+
+    
+
+  </div>
+  <div class="article-info article-info-index">
+    
+    
+    
+
+    
+    <p class="article-more-link">
+      <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-LCD%E9%A9%B1%E5%8A%A8/">展开 >></a>
+    </p>
+    
+
+    
+    <div class="clearfix"></div>
+  </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-Linux驱动-INPUT子系统" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+  
+  
+    <h1 itemprop="name">
+	
+	  <a class="article-title" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-INPUT%E5%AD%90%E7%B3%BB%E7%BB%9F/" target="_blank">Linux驱动-INPUT子系统</a>
+  
+    </h1>
+  
+
+
+  
+  
+<a href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-INPUT%E5%AD%90%E7%B3%BB%E7%BB%9F/" class="archive-article-date">
+        <time datetime="2021-04-16T12:58:20.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-16</time>
+</a>
+
+  
+  
+    
+
+  
+  </header>
+  
+  <div class="article-entry" itemprop="articleBody">
+    
+     <a id="more"></a>
+
+<h1 id="input-子系统"><a href="#input-子系统" class="headerlink" title="input 子系统"></a><strong>input</strong> <strong>子系统</strong></h1><p>按键、鼠标、键盘、触摸屏等都属于输入(input)设备，Linux 内核为此专门做了一个叫做 input子系统的框架来处理输入事件。输入设备本质上还是字符设备，只是在此基础上套上了 input 框架，用户只需要负责上报输入事件，比如按键值、坐标等信息，input 核心层负责处理这些事件。</p>
+<p> input 子系统管理输入的子系统，和 pinctrl 和 gpio 子系统 一样，都是 Linux 内核针对某一类设备而创建的框架。比如按键输入、键盘、鼠标、触摸屏等等这些都属于输入设备，不同的输入设备所代表的含义不同，按键和键盘就是代表按键信息，鼠标和触摸屏代表坐标信息，因此在应用层的处理就不同。</p>
+<p>对于驱动编写者而言不需要去关心应用层的事情，我们只需要按照要求上报这些输入事件即可。为此 input 子系统分为 input 驱动层、input 核心层、input 事件处理层，最终给用户空间提供可访问的设备节点。input 子系统驱动分层模型，编写驱动程序的时候只需要关注中间的驱动层、核心层和事件层，这三个层的分工如下： </p>
+<ul>
+<li>驱动层：输入设备的具体驱动程序，比如按键驱动程序，向内核层报告输入内容。 </li>
+<li>核心层：承上启下，为驱动层提供输入设备注册和操作接口。通知事件层对输入事件进行处理。 </li>
+<li>事件层：主要和用户空间进行交互。</li>
+</ul>
+<h2 id="input-驱动编写流程"><a href="#input-驱动编写流程" class="headerlink" title="input 驱动编写流程"></a><strong>input</strong> <strong>驱动编写流程</strong></h2><p>input 核心层会向 Linux 内核注册一个字符设备，主设备号为 INPUT_MAJOR=13，因此input 子系统的所有设备主设备号都为 13，在使用 input 子系统处理输入设备的时候就不需要去注册字符设备了，只需要向系统注册一个 input_device 即可。 </p>
+<h3 id="1、注册-input-dev"><a href="#1、注册-input-dev" class="headerlink" title="1、注册 input_dev"></a>1、注册 input_dev</h3><p>在使用 input 子系统的时候我们只需要注册一个 input 设备即可，input_dev 结构体表示 input设备，</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">struct input_dev &#123;</span><br><span class="line">    const char *name;</span><br><span class="line">    const char *phys;</span><br><span class="line">    const char *uniq;</span><br><span class="line">    struct input_id id;</span><br><span class="line"></span><br><span class="line">    unsigned long propbit[BITS_TO_LONGS(INPUT_PROP_CNT)];</span><br><span class="line"></span><br><span class="line">    unsigned long evbit[BITS_TO_LONGS(EV_CNT)]; &#x2F;* 事件类型的位图 *&#x2F;</span><br><span class="line">    unsigned long keybit[BITS_TO_LONGS(KEY_CNT)]; &#x2F;* 按键值的位图 *&#x2F;</span><br><span class="line">    unsigned long relbit[BITS_TO_LONGS(REL_CNT)]; &#x2F;* 相对坐标的位图 *&#x2F; </span><br><span class="line">    ......</span><br><span class="line">    bool devres_managed;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>evbit、keybit、relbit 等等都是存放不同事件对应的值。</p>
+<p>evbit 表示输入事件类型，可选的事件类型定义在 include/uapi/linux/input.h 文件 中，要使用到按键，那么就需要注册 EV_KEY 事件，如果要使用连按功能的话还需要注册 EV_REP 事件。 事件类型如下： </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">#define EV_SYN 0x00 &#x2F;* 同步事件 *&#x2F;</span><br><span class="line">#define EV_KEY 0x01 &#x2F;* 按键事件 *&#x2F;</span><br><span class="line">#define EV_REL 0x02 &#x2F;* 相对坐标事件 *&#x2F;</span><br><span class="line">#define EV_ABS 0x03 &#x2F;* 绝对坐标事件 *&#x2F;</span><br><span class="line">#define EV_MSC 0x04 &#x2F;* 杂项(其他)事件 *&#x2F;</span><br><span class="line">#define EV_SW 0x05 &#x2F;* 开关事件 *&#x2F;</span><br><span class="line">#define EV_LED 0x11 &#x2F;* LED *&#x2F;</span><br><span class="line">#define EV_SND 0x12 &#x2F;* sound(声音) *&#x2F;</span><br><span class="line">#define EV_REP 0x14 &#x2F;* 重复事件 *&#x2F;</span><br><span class="line">#define EV_FF 0x15 &#x2F;* 压力事件 *&#x2F;</span><br><span class="line">#define EV_PWR 0x16 &#x2F;* 电源事件 *&#x2F;</span><br><span class="line">#define EV_FF_STATUS 0x17 &#x2F;* 压力状态事件 *&#x2F;</span><br></pre></td></tr></table></figure>
+<p>要使用按键事件，因此要用到 keybit，keybit 就是按键事件使用的位图，Linux 内核定义了很多按键值，这些按键值定义在 include/uapi/linux/input.h 文件中，按键值如下： </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">#define KEY_RESERVED 0</span><br><span class="line">#define KEY_ESC 1</span><br><span class="line">#define KEY_7 8</span><br><span class="line">#define KEY_8 9</span><br><span class="line">#define KEY_9 10</span><br><span class="line">#define KEY_0 11</span><br><span class="line">......</span><br><span class="line">#define BTN_TRIGGER_HAPPY39 0x2e6</span><br><span class="line">#define BTN_TRIGGER_HAPPY40 0x2e7</span><br></pre></td></tr></table></figure>
+<p>可以将开发板上的按键值设置为任意一个，可将 I.MX6U-ALPHA 开发板上的 KEY 按键值设置为 KEY_0。 </p>
+<p>在编写 input 设备驱动的时候需要先申请一个 input_dev 结构体变量，使用input_allocate_device 函数来申请一个 input_dev，如果要注销的 input 设备的话需要使用 input_free_device 函数来释放掉前面申请到的input_dev</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">struct input_dev *input_allocate_device(void)</span><br><span class="line">&#x2F;&#x2F;参数：无。</span><br><span class="line">&#x2F;&#x2F;返回值：申请到的 input_dev。</span><br><span class="line">void input_free_device(struct input_dev *dev)</span><br><span class="line">&#x2F;&#x2F;dev：需要释放的 input_dev。</span><br><span class="line">&#x2F;&#x2F;返回值：无。</span><br></pre></td></tr></table></figure>
+<p>申请好一个 input_dev 以后就需要初始化这个 input_dev，需要初始化的内容主要为事件类型(evbit)和事件值(keybit)这两种。input_dev 初始化完成以后就需要向 Linux 内核注册 input_dev了，需要用到 input_register_device 函数，注销 input 驱动的时候也需要使用 input_unregister_device 函数来注销掉前面注册<br>的 input_dev。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">int input_register_device(struct input_dev *dev)</span><br><span class="line">&#x2F;&#x2F;dev：要注册的 input_dev 。</span><br><span class="line">&#x2F;&#x2F;返回值：0，input_dev 注册成功；负值，input_dev 注册失败。</span><br><span class="line">void input_unregister_device(struct input_dev *dev)</span><br><span class="line">&#x2F;&#x2F;dev：要注销的 input_dev 。</span><br><span class="line">&#x2F;&#x2F;返回值：无。</span><br></pre></td></tr></table></figure>
+<p>综上所述，input_dev 注册过程如下：</p>
+<p>①、使用 input_allocate_device 函数申请一个 input_dev。<br>②、初始化 input_dev 的事件类型以及事件值。<br>③、使用 input_register_device 函数向 Linux 系统注册前面初始化好的 input_dev。<br>④、卸载input驱动的时候需要先使用input_unregister_device函数注销掉注册的input_dev，然后使用 input_free_device 函数释放掉前面申请的 input_dev。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">struct input_dev *inputdev; &#x2F;* input 结构体变量 *&#x2F;</span><br><span class="line">&#x2F;* 驱动入口函数 *&#x2F;</span><br><span class="line">static int __init xxx_init(void) </span><br><span class="line">&#123; </span><br><span class="line">    ......</span><br><span class="line">    inputdev &#x3D; input_allocate_device(); &#x2F;* 申请 input_dev *&#x2F;</span><br><span class="line">    inputdev-&gt;name &#x3D; &quot;test_inputdev&quot;; &#x2F;* 设置 input_dev 名字 *&#x2F;</span><br><span class="line"></span><br><span class="line">    &#x2F;*********第一种设置事件和事件值的方法***********&#x2F;</span><br><span class="line">    __set_bit(EV_KEY, inputdev-&gt;evbit); &#x2F;* 设置产生按键事件 *&#x2F;</span><br><span class="line">    __set_bit(EV_REP, inputdev-&gt;evbit); &#x2F;* 重复事件 *&#x2F;</span><br><span class="line">    __set_bit(KEY_0, inputdev-&gt;keybit); &#x2F;*设置产生哪些按键值 *&#x2F;</span><br><span class="line">    &#x2F;************************************************&#x2F;</span><br><span class="line"></span><br><span class="line">    &#x2F;*********第二种设置事件和事件值的方法***********&#x2F;</span><br><span class="line">    keyinputdev.inputdev-&gt;evbit[0] &#x3D; BIT_MASK(EV_KEY) |BIT_MASK(EV_REP);</span><br><span class="line">    keyinputdev.inputdev-&gt;keybit[BIT_WORD(KEY_0)] |&#x3D; BIT_MASK(KEY_0);</span><br><span class="line">    &#x2F;************************************************&#x2F;</span><br><span class="line"></span><br><span class="line">    &#x2F;*********第三种设置事件和事件值的方法***********&#x2F;</span><br><span class="line">    keyinputdev.inputdev-&gt;evbit[0] &#x3D; BIT_MASK(EV_KEY) | BIT_MASK(EV_REP);</span><br><span class="line">    input_set_capability(keyinputdev.inputdev, EV_KEY, KEY_0);</span><br><span class="line">    &#x2F;************************************************&#x2F;</span><br><span class="line"></span><br><span class="line">    &#x2F;* 注册 input_dev *&#x2F;</span><br><span class="line">    input_register_device(inputdev);</span><br><span class="line">    ......</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;* 驱动出口函数 *&#x2F;</span><br><span class="line">static void __exit xxx_exit(void)</span><br><span class="line">&#123;</span><br><span class="line">    input_unregister_device(inputdev); &#x2F;* 注销 input_dev *&#x2F;</span><br><span class="line">    input_free_device(inputdev); &#x2F;* 删除 input_dev *&#x2F;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>先定义一个 input_dev 结构体指针变量。 </p>
+<p>驱动入口函数，在此函数中完成 input_dev 的申请、设置、注册等工作调用 input_allocate_device 函数申请一个 input_dev。设置 input 设备事件和按键值，这里用了三种方法来设置事件和按键值。调用 input_register_device 函数向 Linux内核注册 inputdev。 </p>
+<p>驱动出口函数，调用 input_unregister_device 函数注销前面注册的input_dev，调用 input_free_device 函数删除前面申请的 input_dev。 </p>
+<h3 id="2、上报输入事件"><a href="#2、上报输入事件" class="headerlink" title="2、上报输入事件"></a><strong>2、上报输入事件</strong></h3><p>向 Linux 内核注册好 input_dev 以后需要获取到具体的输入值，或者说是输入事件，然后将输入事件上报给 Linux 内核。比如按键，我们需要在按键中断处理函数，或者消抖定时器中断函数中将按键值上报给 Linux 内核，这样 Linux 内核才能获取到正确的输入值。不同的事件，其上报事件的 API 函数不同，</p>
+<p> input_event 函数用于上报指定的事件以及对应的值</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">void input_event(struct input_dev *dev, unsigned int type, unsigned int code, int value)</span><br><span class="line">&#x2F;&#x2F;dev：需要上报的 input_dev。</span><br><span class="line">&#x2F;&#x2F;type: 上报的事件类型，比如 EV_KEY。</span><br><span class="line">&#x2F;&#x2F;code：事件码，也就是我们注册的按键值，比如 KEY_0、KEY_1 等等。</span><br><span class="line">&#x2F;&#x2F;value：事件值，比如 1 表示按键按下，0 表示按键松开。</span><br><span class="line">&#x2F;&#x2F;返回值：无。</span><br></pre></td></tr></table></figure>
+<p>input_event 函数可以上报所有的事件类型和事件值，Linux 内核也提供了其他的针对具体事件的上报函数，这些函数其实都用到了 input_event 函数。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">void input_report_key(struct input_dev *dev, unsigned int code, int value)</span><br><span class="line">void input_report_rel(struct input_dev *dev, unsigned int code, int value)</span><br><span class="line">void input_report_abs(struct input_dev *dev, unsigned int code, int value)</span><br><span class="line">…………</span><br></pre></td></tr></table></figure>
+<p>这些函数的本质就是 input_event 函数，如果要上报按键事件的话还是建议大家使用 input_report_key 函数。 </p>
+<p>当上报事件以后还需要使用 input_sync 函数来告诉 Linux 内核 input 子系统上报结束，input_sync 函数本质是上报一个同步事件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">void input_sync(struct input_dev *dev)</span><br><span class="line">&#x2F;&#x2F;dev：需要上报同步事件的 input_dev。</span><br><span class="line">&#x2F;&#x2F;返回值：无。</span><br></pre></td></tr></table></figure>
+<p>综上所述，按键的上报事件的参考代码如下所示</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;* 用于按键消抖的定时器服务函数 *&#x2F;</span><br><span class="line">void timer_function(unsigned long arg) </span><br><span class="line">&#123; </span><br><span class="line">    unsigned char value; </span><br><span class="line">    value &#x3D; gpio_get_value(keydesc-&gt;gpio); &#x2F;* 读取 IO 值 *&#x2F;</span><br><span class="line">    if(value &#x3D;&#x3D; 0)&#123; &#x2F;* 按下按键 *&#x2F;</span><br><span class="line">        &#x2F;* 上报按键值 *&#x2F;</span><br><span class="line">        input_report_key(inputdev, KEY_0, 1); &#x2F;* 最后一个参数 1，按下 *&#x2F;</span><br><span class="line">        input_sync(inputdev); &#x2F;* 同步事件 *&#x2F;</span><br><span class="line">    &#125; else &#123; &#x2F;* 按键松开 *&#x2F;</span><br><span class="line">        input_report_key(inputdev, KEY_0, 0); &#x2F;* 最后一个参数 0，松开 *&#x2F;</span><br><span class="line">        input_sync(inputdev); &#x2F;* 同步事件 *&#x2F;</span><br><span class="line">    &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>先获取按键值，判断按键是否按下。 如果按键值为 0 那么表示按键被按下了，如果按键按下的话就要使用 input_report_key 函数向 Linux 系统上报按键值，比如向 Linux 系统通知 KEY_0 这个按键按下了。 如果按键值为 1 的话就表示按键没有按下，是松开的。向 Linux 系统通知KEY_0 这个按键没有按下或松开了。 </p>
+<h3 id="input-event-结构体"><a href="#input-event-结构体" class="headerlink" title="input_event 结构体"></a>input_event 结构体</h3><p>Linux 内核使用 input_event 这个结构体来表示所有的输入事件，input_event 结构体定义在 include/uapi/linux/input.h 文件中，结构体内容如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">struct input_event &#123;</span><br><span class="line">    struct timeval time;</span><br><span class="line">    __u16 type;</span><br><span class="line">    __u16 code;</span><br><span class="line">    __s32 value;</span><br><span class="line">&#125;;</span><br><span class="line">&#x2F;&#x2F;time：时间，也就是此事件发生的时间，为 timeval 结构体类型</span><br><span class="line">&#x2F;&#x2F;type：事件类型，比如 EV_KEY，表示此次事件为按键事件，此成员变量为 16 位。</span><br><span class="line">&#x2F;&#x2F;code：事件码，比如在EV_KEY事件中code就表示具体的按键码，如：KEY_0、KEY_1这些按键。此成员变量为16位。</span><br><span class="line">&#x2F;&#x2F;value：值，比如EV_KEY事件中value就是按键值，表示按键有没有被按下，如果为 1 的话说明按键按下，如果为 0 的话说明按键没有被按下或者按键松开了。</span><br></pre></td></tr></table></figure>
+<p><strong>time</strong>：时间，也就是此事件发生的时间，为 timeval 结构体类型，timeval 结构体定义如下： </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">struct timeval &#123; </span><br><span class="line">    __kernel_time_t tv_sec; &#x2F;* 秒 *&#x2F;</span><br><span class="line">    __kernel_suseconds_t tv_usec; &#x2F;* 微秒 *&#x2F;</span><br><span class="line">&#125;;</span><br><span class="line">&#x2F;&#x2F;tv_sec 和 tv_usec 这两个成员变量都为 long 类型，也就是32位。</span><br></pre></td></tr></table></figure>
+<p>input_envent 这个结构体非常重要，因为所有的输入设备最终都是按照 input_event 结构体呈现给用户的，用户应用程序可以通过 input_event 来获取到具体的输入事件或相关的值。</p>
+<h2 id="实验程序编写"><a href="#实验程序编写" class="headerlink" title="实验程序编写"></a><strong>实验程序编写</strong></h2><h3 id="驱动程序编写"><a href="#驱动程序编写" class="headerlink" title="驱动程序编写"></a><strong>驱动程序编写</strong></h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;***************************************************************</span><br><span class="line">文件名		: keyinput.c</span><br><span class="line">描述	   	: Linux按键input子系统实验</span><br><span class="line">***************************************************************&#x2F;</span><br><span class="line">&#x2F;* keyinput设备结构体 *&#x2F;</span><br><span class="line">struct keyinput_dev&#123;</span><br><span class="line">	struct input_dev *inputdev;		&#x2F;* input结构体 *&#x2F;</span><br><span class="line">&#125;;</span><br><span class="line">struct keyinput_dev keyinputdev;	&#x2F;* key input设备 *&#x2F;</span><br><span class="line"></span><br><span class="line">void timer_function(unsigned long arg)</span><br><span class="line">&#123;</span><br><span class="line">	value &#x3D; gpio_get_value(keydesc-&gt;gpio); 	&#x2F;* 读取IO值 *&#x2F;</span><br><span class="line">	if(value &#x3D;&#x3D; 0)&#123; 						&#x2F;* 按下按键 *&#x2F;</span><br><span class="line">		&#x2F;* 上报按键值 *&#x2F;</span><br><span class="line">		&#x2F;&#x2F;input_event(dev-&gt;inputdev, EV_KEY, keydesc-&gt;value, 1);</span><br><span class="line">		input_report_key(dev-&gt;inputdev, keydesc-&gt;value, 1);&#x2F;* 最后一个参数表示按下还是松开，1为按下，0为松开 *&#x2F;</span><br><span class="line">		input_sync(dev-&gt;inputdev);</span><br><span class="line">	&#125; else &#123; 									&#x2F;* 按键松开 *&#x2F;</span><br><span class="line">		&#x2F;&#x2F;input_event(dev-&gt;inputdev, EV_KEY, keydesc-&gt;value, 0);</span><br><span class="line">		input_report_key(dev-&gt;inputdev, keydesc-&gt;value, 0);</span><br><span class="line">		input_sync(dev-&gt;inputdev);</span><br><span class="line">	&#125;	</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static int keyio_init(void)</span><br><span class="line">&#123;</span><br><span class="line">	&#x2F;* 申请input_dev *&#x2F;</span><br><span class="line">	keyinputdev.inputdev &#x3D; input_allocate_device();</span><br><span class="line">	keyinputdev.inputdev-&gt;name &#x3D; KEYINPUT_NAME;</span><br><span class="line">#if 0</span><br><span class="line">	&#x2F;* 初始化input_dev，设置产生哪些事件 *&#x2F;</span><br><span class="line">	__set_bit(EV_KEY, keyinputdev.inputdev-&gt;evbit);	&#x2F;* 设置产生按键事件          *&#x2F;</span><br><span class="line">	__set_bit(EV_REP, keyinputdev.inputdev-&gt;evbit);	&#x2F;* 重复事件，比如按下去不放开，就会一直输出信息  *&#x2F;</span><br><span class="line">	&#x2F;* 初始化input_dev，设置产生哪些按键 *&#x2F;</span><br><span class="line">	__set_bit(KEY_0, keyinputdev.inputdev-&gt;keybit);	</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">#if 0</span><br><span class="line">	keyinputdev.inputdev-&gt;evbit[0] &#x3D; BIT_MASK(EV_KEY) | BIT_MASK(EV_REP);</span><br><span class="line">	keyinputdev.inputdev-&gt;keybit[BIT_WORD(KEY_0)] |&#x3D; BIT_MASK(KEY_0);</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">	keyinputdev.inputdev-&gt;evbit[0] &#x3D; BIT_MASK(EV_KEY) | BIT_MASK(EV_REP);</span><br><span class="line">	input_set_capability(keyinputdev.inputdev, EV_KEY, KEY_0);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 注册输入设备 *&#x2F;</span><br><span class="line">	ret &#x3D; input_register_device(keyinputdev.inputdev);</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static void __exit keyinput_exit(void)</span><br><span class="line">&#123;</span><br><span class="line">	&#x2F;* 释放input_dev *&#x2F;</span><br><span class="line">	input_unregister_device(keyinputdev.inputdev);</span><br><span class="line">	input_free_device(keyinputdev.inputdev);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在设备结构体中定义一个 input_dev 指针变量。</p>
+<p>在按键消抖定时器处理函数中上报输入事件，也就是使用 input_report_key函数上报按键事件以及按键值，最后使用 input_sync 函数上报一个同步事件，这一步一定得做！</p>
+<p>使用 input_allocate_device 函数申请 input_dev，然后设置相应的事件以及事件码(也就是 KEY 模拟成那个按键，设置为 KEY_0)。最后使用 input_register_device函数向 Linux 内核注册 input_dev。 </p>
+<p>当注销 input 设备驱动的时候使用 input_unregister_device 函数注销掉前面注册的 input_dev，最后使用 input_free_device 函数释放掉前面申请的 input_dev。</p>
+<h3 id="编写测试-APP"><a href="#编写测试-APP" class="headerlink" title="编写测试 APP"></a><strong>编写测试</strong> <strong>APP</strong></h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;***************************************************************</span><br><span class="line">文件名		: keyinputApp.c</span><br><span class="line">描述	   	: input子系统测试APP。</span><br><span class="line">使用方法	 ：.&#x2F;keyinputApp &#x2F;dev&#x2F;input&#x2F;event1</span><br><span class="line">***************************************************************&#x2F;</span><br><span class="line">&#x2F;* 定义一个input_event变量，存放输入事件信息 *&#x2F;</span><br><span class="line">static struct input_event inputevent;</span><br><span class="line"></span><br><span class="line">int main(int argc, char *argv[])</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">	fd &#x3D; open(filename, O_RDWR);</span><br><span class="line">	</span><br><span class="line">	while (1) &#123;</span><br><span class="line">		err &#x3D; read(fd, &amp;inputevent, sizeof(inputevent));</span><br><span class="line">        switch (inputevent.type) &#123;</span><br><span class="line">        case EV_KEY:</span><br><span class="line">            if (inputevent.code &lt; BTN_MISC) &#123; &#x2F;* 键盘键值 *&#x2F;</span><br><span class="line">            	printf(&quot;key %d %s\r\n&quot;, inputevent.code, inputevent.value);</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">            	printf(&quot;button %d %s\r\n&quot;, inputevent.code, inputevent.value);</span><br><span class="line">            &#125;</span><br><span class="line">        break;</span><br><span class="line">            &#x2F;* 其他类型的事件，自行处理 *&#x2F;</span><br><span class="line">            case EV_REL:</span><br><span class="line">            break;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125; </span><br><span class="line">	&#125;</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Linux 内核会使用 input_event 结构体来表示输入事件，所以要获取按键输入信息，那么必须借助于 input_event 结构体。</p>
+<p>向 Linux 内核成功注册 input_dev 设备以后，会在/dev/input 目录下生成一个名为“eventX(X=0….n)”的文件，这个/dev/input/eventX 就是对应的 input 设备文件。我们读取这个文件就可以获取到输入事件信息，使用read函数读取输入设备文件/dev/input/eventX，读取到的数据按照 input_event 结构体组织起来。获取到输入事件以后<br>(input_event 结构体类型)使用 switch case 语句来判断事件类型，设置的事件类型为 EV_KEY，因此只需要处理 EV_KEY 事件即可。</p>
+<h2 id="自带按键驱动程序的使用"><a href="#自带按键驱动程序的使用" class="headerlink" title="自带按键驱动程序的使用"></a>自带按键驱动程序的使用</h2><p>要使用Linux内核自带的按键驱动程序很简单，只需要根据<br>Documentation/devicetree/bindings/input/gpio-keys.txt 这个文件在设备树中添加指定的设备节点即可，节点要求如下：<br>①、节点名字为“gpio-keys”。<br>②、gpio-keys 节点的 compatible 属性值一定要设置为“gpio-keys”。<br>③、所有的 KEY 都是 gpio-keys 的子节点，每个子节点可以用如下属性描述自己：<br>    gpios：KEY 所连接的 GPIO 信息。<br>    interrupts：KEY 所使用 GPIO 中断信息，不是必须的，可以不写。<br>    label：KEY 名字<br>    linux,code：KEY 要模拟的按键，也就是示例代码 58.1.2.4 中的这些按键。<br>④、如果按键要支持连按的话要加入 autorepeat。<br>打开 imx6ull-alientek-emmc.dts，根据上面的要求创建对应的设备节点，设备节点内容如下所示：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">gpio-keys &#123; </span><br><span class="line">    compatible &#x3D; &quot;gpio-keys&quot;; </span><br><span class="line">    #address-cells &#x3D; &lt;1&gt;;</span><br><span class="line">    #size-cells &#x3D; &lt;0&gt;;</span><br><span class="line">    autorepeat; </span><br><span class="line">    key0 &#123; </span><br><span class="line">        label &#x3D; &quot;GPIO Key Enter&quot;; </span><br><span class="line">        linux,code &#x3D; &lt;KEY_ENTER&gt;;</span><br><span class="line">        gpios &#x3D; &lt;&amp;gpio1 18 GPIO_ACTIVE_LOW&gt;;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>autorepeat 表示按键支持连按。 </p>
+<p>ALPHA 开发板 KEY 按键信息，名字设置为“GPIO Key Enter”，这里将 开发板上的 KEY 按键设置为“EKY_ENTER”这个按键，也就是回车键，效果和键盘上的回车键一样。将开发板上最后设置 KEY 所使用的 IO 为 GPIO1_IO18，一定要检查一下设备树看看此 GPIO 有没有被用到其他外设上，如果有的话要删除掉相关代码！ </p>
+
+    
+
+    
+
+    
+
+  </div>
+  <div class="article-info article-info-index">
+    
+    
+    
+
+    
+    <p class="article-more-link">
+      <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-INPUT%E5%AD%90%E7%B3%BB%E7%BB%9F/">展开 >></a>
+    </p>
+    
+
+    
+    <div class="clearfix"></div>
+  </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-Linux驱动-MISC驱动" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+  
+  
+    <h1 itemprop="name">
+	
+	  <a class="article-title" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-MISC%E9%A9%B1%E5%8A%A8/" target="_blank">Linux驱动-MISC驱动</a>
+  
+    </h1>
+  
+
+
+  
+  
+<a href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-MISC%E9%A9%B1%E5%8A%A8/" class="archive-article-date">
+        <time datetime="2021-04-16T11:05:33.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-16</time>
+</a>
+
+  
+  
+    
+
+  
+  </header>
+  
+  <div class="article-entry" itemprop="articleBody">
+    
+     <a id="more"></a>
+
+<h1 id="MISC-设备驱动"><a href="#MISC-设备驱动" class="headerlink" title="MISC 设备驱动"></a><strong>MISC</strong> <strong>设备驱动</strong></h1><p>misc 的意思是混合、杂项的，因此 MISC 驱动也叫做杂项驱动，当某些外设无法进行分类的时候就可以使用 MISC 驱动。MISC 驱动其实就是最简单的字符设备驱动，通常嵌套在 platform 总线驱动中，实现复杂的驱动。</p>
+<p>所有的 MISC 设备驱动的主设备号都为 10，不同的设备使用不同的从设备号。随着 Linux字符设备驱动的不断增加，设备号变得越来越紧张，尤其是主设备号，MISC 设备驱动就用于解决此问题。MISC 设备会自动创建 cdev，不需要像我们以前那样手动创建，因此采用 MISC 设备驱动可以简化字符设备驱动的编写。</p>
+<p>需要向 Linux 注册一个 miscdevice 设备，miscdevice是一个结构体，定义在文件 include/linux/miscdevice.h 中，内容如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">struct miscdevice &#123;</span><br><span class="line">    int minor; &#x2F;* 子设备号 *&#x2F;</span><br><span class="line">    const char *name; &#x2F;* 设备名字 *&#x2F; </span><br><span class="line">    const struct file_operations *fops; &#x2F;* 设备操作集 *&#x2F;</span><br><span class="line">    struct list_head list;</span><br><span class="line">    struct device *parent;</span><br><span class="line">    struct device *this_device;</span><br><span class="line">    const struct attribute_group **groups;</span><br><span class="line">    const char *nodename;</span><br><span class="line">    umode_t mode;</span><br><span class="line">&#125;;</span><br><span class="line">&#x2F;*minor 表示子设备号，MISC 设备的主设备号为 10，这个是固定的，需要用户指定子设备号，Linux系统已经预定义了一些MISC设备的子设备号，在使用时可以从这些预定义的子设备号中挑选一个，当然也可以自己定义，只要这个子设备号没有被其他设备使用接口。*&#x2F; </span><br><span class="line">&#x2F;&#x2F;name 就是此 MISC 设备名字，当此设备注册成功以后就会在&#x2F;dev 目录下生成一个名为 name的设备文件。</span><br><span class="line">&#x2F;&#x2F;fops 就是字符设备的操作集合，MISC 设备驱动最终是需要使用用户提供的 fops 操作集合。</span><br></pre></td></tr></table></figure>
+<p>定义一个 MISC 设备(miscdevice 类型)以后需要设置 minor、name 和 fops 这三个成员变量。</p>
+<p>当设置好 miscdevice 以后就需要使用 misc_register 函数向系统中注册一个 MISC 设备，卸载设备驱动模块的时候需要调用 misc_deregister 函数来注销掉 MISC 设备</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">int misc_register(struct miscdevice * misc)</span><br><span class="line">&#x2F;&#x2F;misc：要注册的 MISC 设备。</span><br><span class="line">&#x2F;&#x2F;返回值：负数，失败；0，成功。</span><br><span class="line">int misc_deregister(struct miscdevice *misc)</span><br><span class="line">&#x2F;&#x2F;misc：要注销的 MISC 设备。</span><br><span class="line">&#x2F;&#x2F;返回值：负数，失败；0，成功。</span><br></pre></td></tr></table></figure>
+<p>misc_register 函数会自动创建 cdev、设备等等， misc_deregister 函数会自动删除此前创建的 cdev、设备等等内容。</p>
+<h1 id="实验程序编写"><a href="#实验程序编写" class="headerlink" title="实验程序编写"></a>实验程序编写</h1><p>采用 platform 加 misc 的方式编写 beep 驱动，这也是实际的 Linux 驱动中很 </p>
+<p>常用的方法。采用 platform 来实现总线、设备和驱动，misc 主要负责完成字符设备的创建。</p>
+<p><strong>修改设备树</strong> </p>
+<p><strong>驱动程序编写</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;***************************************************************</span><br><span class="line">文件名		: miscbeep.c</span><br><span class="line">描述	   	: 采用MISC的蜂鸣器驱动程序。</span><br><span class="line">***************************************************************&#x2F;</span><br><span class="line">#define MISCBEEP_MINOR		144			&#x2F;* 子设备号 *&#x2F;</span><br><span class="line"></span><br><span class="line">&#x2F;* MISC设备结构体 *&#x2F;</span><br><span class="line">static struct miscdevice beep_miscdev &#x3D; &#123;</span><br><span class="line">	.minor &#x3D; MISCBEEP_MINOR,</span><br><span class="line">	.name &#x3D; MISCBEEP_NAME,</span><br><span class="line">	.fops &#x3D; &amp;miscbeep_fops,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"> &#x2F;*</span><br><span class="line">  * @description     : flatform驱动的probe函数，当驱动与</span><br><span class="line">  *                    设备匹配以后此函数就会执行</span><br><span class="line">  * @param - dev     : platform设备</span><br><span class="line">  * @return          : 0，成功;其他负值,失败</span><br><span class="line">  *&#x2F;</span><br><span class="line">static int miscbeep_probe(struct platform_device *dev)</span><br><span class="line">&#123;</span><br><span class="line">	&#x2F;* 一般情况下会注册对应的字符设备，但是这里我们使用MISC设备</span><br><span class="line">  	 * 所以我们不需要自己注册字符设备驱动，只需要注册misc设备驱动即可</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	ret &#x3D; misc_register(&amp;beep_miscdev);</span><br><span class="line">	if(ret &lt; 0)&#123;</span><br><span class="line">		printk(&quot;misc device register failed!\r\n&quot;);</span><br><span class="line">		return -EFAULT;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description     : platform驱动的remove函数，移除platform驱动的时候此函数会执行</span><br><span class="line"> * @param - dev     : platform设备</span><br><span class="line"> * @return          : 0，成功;其他负值,失败</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int miscbeep_remove(struct platform_device *dev)</span><br><span class="line">&#123;</span><br><span class="line">	&#x2F;* 注销设备的时候关闭LED灯 *&#x2F;</span><br><span class="line">	gpio_set_value(miscbeep.beep_gpio, 1);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 注销misc设备 *&#x2F;</span><br><span class="line">	misc_deregister(&amp;beep_miscdev);</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"> &#x2F;* 匹配列表 *&#x2F;</span><br><span class="line"> static const struct of_device_id beep_of_match[] &#x3D; &#123;</span><br><span class="line">     &#123; .compatible &#x3D; &quot;atkalpha-beep&quot; &#125;,</span><br><span class="line">     &#123; &#x2F;* Sentinel *&#x2F; &#125;</span><br><span class="line"> &#125;;</span><br><span class="line"> </span><br><span class="line"> &#x2F;* platform驱动结构体 *&#x2F;</span><br><span class="line">static struct platform_driver beep_driver &#x3D; &#123;</span><br><span class="line">     .driver     &#x3D; &#123;</span><br><span class="line">         .name   &#x3D; &quot;imx6ul-beep&quot;,         &#x2F;* 驱动名字，用于和设备匹配 *&#x2F;</span><br><span class="line">         .of_match_table &#x3D; beep_of_match, &#x2F;* 设备树匹配表          *&#x2F;</span><br><span class="line">     &#125;,</span><br><span class="line">     .probe      &#x3D; miscbeep_probe,</span><br><span class="line">     .remove     &#x3D; miscbeep_remove,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 驱动出口函数</span><br><span class="line"> * @param 		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int __init miscbeep_init(void)</span><br><span class="line">&#123;</span><br><span class="line">	return platform_driver_register(&amp;beep_driver);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 驱动出口函数</span><br><span class="line"> * @param 		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">static void __exit miscbeep_exit(void)</span><br><span class="line">&#123;</span><br><span class="line">	platform_driver_unregister(&amp;beep_driver);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>MISC 设备 beep_miscdev，设置子设备号为 144，设置设备名字为“miscbeep”，这样当系统启动以后就会在/dev/目录下存在一个名为“miscbeep”的设备文件。设置 MISC 设备的操作函数集合，为 file_operations 类型。 </p>
+<p>platform 框架的 probe 函数，当驱动与设备匹配以后此函数就会执行，首先在此函数中初始化 BEEP 所使用的 IO。最后通过 misc_register 函数向 Linux 内核注册MISC 设备，也就是前面定义的 beep_miscdev。 </p>
+<p>platform 框架的 remove 函数，在此函数中调用 misc_deregister 函数来注销MISC 设备。 </p>
+<p>第 163~196，标准的 platform 驱动</p>
+
+    
+
+    
+
+    
+
+  </div>
+  <div class="article-info article-info-index">
+    
+    
+    
+
+    
+    <p class="article-more-link">
+      <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-MISC%E9%A9%B1%E5%8A%A8/">展开 >></a>
+    </p>
+    
+
+    
+    <div class="clearfix"></div>
+  </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-Linux驱动-platform设备驱动-设备树" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+  
+  
+    <h1 itemprop="name">
+	
+	  <a class="article-title" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-platform%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-%E8%AE%BE%E5%A4%87%E6%A0%91/" target="_blank">Linux驱动-platform设备驱动-设备树</a>
+  
+    </h1>
+  
+
+
+  
+  
+<a href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-platform%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-%E8%AE%BE%E5%A4%87%E6%A0%91/" class="archive-article-date">
+        <time datetime="2021-04-16T10:24:46.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-16</time>
+</a>
+
+  
+  
+    
+
+  
+  </header>
+  
+  <div class="article-entry" itemprop="articleBody">
+    
+     <a id="more"></a>
+
+<h1 id="设备树下的-platform-驱动"><a href="#设备树下的-platform-驱动" class="headerlink" title="设备树下的 platform 驱动"></a><strong>设备树下的</strong> <strong>platform</strong> <strong>驱动</strong></h1><p>platform 驱动框架分为总线、设备和驱动，其中总线不需要我们这些驱动程序员去管理，这 </p>
+<p>个是 Linux 内核提供的，我们在编写驱动的时候只要关注于设备和驱动的具体实现即可。在没 </p>
+<p>有设备树的 Linux 内核下，我们需要分别编写并注册 platform_device 和 platform_driver，分别代 </p>
+<p>表设备和驱动。在使用设备树的时候，设备的描述被放到了设备树中，因此 platform_device 就 </p>
+<p>不需要我们去编写了，我们只需要实现 platform_driver 即可。在编写基于设备树的 platform 驱 </p>
+<p>动的时候我们需要注意一下几点：</p>
+<p><strong>1、在设备树中创建设备节点</strong></p>
+<p>毫无疑问，肯定要先在设备树中创建设备节点来描述设备信息，重点是要设置好 compatible </p>
+<p>属性的值，因为 platform 总线需要通过设备节点的 compatible 属性值来匹配驱动！</p>
+<p><strong>2、编写 platform 驱动的时候要注意兼容属性</strong></p>
+<p>在使用设备树的时候 platform 驱动会通过 of_match_table 来 </p>
+<p>保存兼容性值，也就是表明此驱动兼容哪些设备。所以，of_match_table 将会尤为重要，</p>
+<p><strong>3、编写 platform 驱动</strong></p>
+<p>基于设备树的 platform 驱动和上一章无设备树的 platform 驱动基本一样，都是当驱动和设<br>备匹配成功以后就会执行 probe 函数。我们需要在 probe 函数里面执行字符设备驱动那一套，<br>当注销驱动模块的时候 remove 函数就会执行，都是大同小异的。</p>
+<h2 id="实验程序编写"><a href="#实验程序编写" class="headerlink" title="实验程序编写"></a><strong>实验程序编写</strong></h2><p>编写基于设备树的 platform 驱动，所以需要在设备树中添加设备节点，然后只需要编写 platform 驱动即可。 </p>
+<p><strong>修改设备树文件</strong> </p>
+<p><strong>platform</strong> <strong>驱动程序编写</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;***************************************************************</span><br><span class="line">文件名		: leddriver.c</span><br><span class="line">描述	   	: 设备树下的platform驱动</span><br><span class="line">***************************************************************&#x2F;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: flatform驱动的probe函数，当驱动与</span><br><span class="line"> * 					  设备匹配以后此函数就会执行</span><br><span class="line"> * @param - dev 	: platform设备</span><br><span class="line"> * @return 			: 0，成功;其他负值,失败</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int led_probe(struct platform_device *dev)</span><br><span class="line">&#123;	</span><br><span class="line">	…………</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: platform驱动的remove函数，移除platform驱动的时候此函数会执行</span><br><span class="line"> * @param - dev 	: platform设备</span><br><span class="line"> * @return 			: 0，成功;其他负值,失败</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int led_remove(struct platform_device *dev)</span><br><span class="line">&#123;</span><br><span class="line">	gpio_set_value(leddev.led0, 1); 	&#x2F;* 卸载驱动的时候关闭LED *&#x2F;</span><br><span class="line"></span><br><span class="line">	cdev_del(&amp;leddev.cdev);				&#x2F;*  删除cdev *&#x2F;</span><br><span class="line">	unregister_chrdev_region(leddev.devid, LEDDEV_CNT); &#x2F;* 注销设备号 *&#x2F;</span><br><span class="line">	device_destroy(leddev.class, leddev.devid);</span><br><span class="line">	class_destroy(leddev.class);</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;* 匹配列表 *&#x2F;</span><br><span class="line">static const struct of_device_id led_of_match[] &#x3D; &#123;</span><br><span class="line">	&#123; .compatible &#x3D; &quot;atkalpha-gpioled&quot; &#125;,</span><br><span class="line">	&#123; &#x2F;* Sentinel *&#x2F; &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">&#x2F;* platform驱动结构体 *&#x2F;</span><br><span class="line">static struct platform_driver led_driver &#x3D; &#123;</span><br><span class="line">	.driver		&#x3D; &#123;</span><br><span class="line">		.name	&#x3D; &quot;imx6ul-led&quot;,			&#x2F;* 驱动名字，用于和设备匹配 *&#x2F;</span><br><span class="line">		.of_match_table	&#x3D; led_of_match, &#x2F;* 设备树匹配表 		 *&#x2F;</span><br><span class="line">	&#125;,</span><br><span class="line">	.probe		&#x3D; led_probe,</span><br><span class="line">	.remove		&#x3D; led_remove,</span><br><span class="line">&#125;;</span><br><span class="line">		</span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 驱动模块加载函数</span><br><span class="line"> * @param 		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int __init leddriver_init(void)</span><br><span class="line">&#123;</span><br><span class="line">	return platform_driver_register(&amp;led_driver);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 驱动模块卸载函数</span><br><span class="line"> * @param 		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">static void __exit leddriver_exit(void)</span><br><span class="line">&#123;</span><br><span class="line">	platform_driver_unregister(&amp;led_driver);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">module_init(leddriver_init);</span><br><span class="line">module_exit(leddriver_exit);</span><br></pre></td></tr></table></figure>
+<p>platform 驱动的 probe 函数，当设备树中的设备节点与驱动之间匹配成功以后此函数就会执行，原来在驱动加载函数里面做的工作现在全部放到 probe 函s数里面完成。 </p>
+<p>remobe 函数，当卸载 platform 驱动的时候此函数就会执行。在此函数里面释放内存、注销字符设备等，也就是将原来驱动卸载函数里面的工作全部都放到 remove 函数中 完成。 </p>
+<p>led_of_match匹配表，描述了此驱动都和什么样的设备匹配，添加了一条值为”atkalpha-gpioled”的 compatible 属性值，当设备树中某个设备节点的 compatible 属性值也为“atkalpha-gpioled”的时候就会与此驱动匹配。 在编最后一个元素一定要为空！ </p>
+<p>platform_driver 驱动结构体，设置这个 platform 驱动的名字为“imx6ulled”，因此，当驱动加载成功以后就会在/sys/bus/platform/drivers/目录下存在一个名为“imx6uled”的文件。 设置 of_match_table 为上面的 led_of_match。 </p>
+<p>驱动模块加载函数，在此函数里面通过 platforms_driver_register 向 Linux 内核注册 led_driver 驱动。 </p>
+<p>驱动模块卸载函数，在此函数里面通过 platform_driver_unregister 从 Linux内核卸载 led_driver 驱动。 </p>
+
+    
+
+    
+
+    
+
+  </div>
+  <div class="article-info article-info-index">
+    
+    
+    
+
+    
+    <p class="article-more-link">
+      <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-platform%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-%E8%AE%BE%E5%A4%87%E6%A0%91/">展开 >></a>
+    </p>
+    
+
+    
+    <div class="clearfix"></div>
+  </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-Linux驱动-platform设备驱动-非设备树" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -846,473 +1278,6 @@
     
     <p class="article-more-link">
       <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-Linux%E4%B8%AD%E6%96%AD%E4%B8%8B%E5%8D%8A%E9%83%A8%E6%9C%BA%E5%88%B6/">展开 >></a>
-    </p>
-    
-
-    
-    <div class="clearfix"></div>
-  </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-Linux驱动-Linux中断" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-  
-  
-    <h1 itemprop="name">
-	
-	  <a class="article-title" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-Linux%E4%B8%AD%E6%96%AD/" target="_blank">Linux驱动-Linux中断</a>
-  
-    </h1>
-  
-
-
-  
-  
-<a href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-Linux%E4%B8%AD%E6%96%AD/" class="archive-article-date">
-        <time datetime="2021-04-15T13:17:29.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-15</time>
-</a>
-
-  
-  
-    
-
-  
-  </header>
-  
-  <div class="article-entry" itemprop="articleBody">
-    
-     <a id="more"></a>
-
-<p>Linux 内核提供了完善的中断框架，我们只需要申请中断，然后注册中断处理函数即可，使用非常方便，不需要一系列复杂的寄存器配置。</p>
-<h1 id="Linux-中断-API-函数"><a href="#Linux-中断-API-函数" class="headerlink" title="Linux 中断 API 函数"></a><strong>Linux</strong> <strong>中断</strong> <strong>API</strong> <strong>函数</strong></h1><p><strong>1、中断号</strong></p>
-<p>每个中断都有一个中断号，通过中断号即可区分不同的中断，有的资料也把中断号叫做中断线。在 Linux 内核中使用一个 int 变量表示中断号，关于中断号就是裸机学的中断号了。</p>
-<p><strong>2、request_irq 函数</strong></p>
-<p>在 Linux 内核中要想使用某个中断是需要申请的，request_irq 函数用于申请中断，request_irq函数可能会导致睡眠，因此不能在中断上下文或者其他禁止睡眠的代码段中使用 request_irq 函数。request_irq 函数会激活(使能)中断，所以不需要我们手动去使能中断，</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,</span><br><span class="line"> 															const char *name, void *dev)</span><br></pre></td></tr></table></figure>
-<p><strong>irq</strong>：要申请中断的中断号。 </p>
-<p><strong>handler</strong>：中断处理函数，当中断发生以后就会执行此中断处理函数。 </p>
-<p><strong>flags</strong>：中断标志。标志可以通过“|”来实现多种组合。</p>
-<p>IRQF_ONESHOT ——单次中断，中断执行一次就结束。<br>IRQF_TRIGGER_NONE ——无触发。<br>IRQF_TRIGGER_RISING ——上升沿触发。<br>IRQF_TRIGGER_FALLING ——下降沿触发。<br>IRQF_TRIGGER_HIGH ——高电平触发。<br>IRQF_TRIGGER_LOW 低电平触发。</p>
-<p><strong>name</strong>：中断名字，设置以后可以在/proc/interrupts 文件中看到对应的中断名字。 </p>
-<p><strong>dev</strong>：如果将 flags 设置为 IRQF_SHARED 的话，dev 用来区分不同的中断，一般情况下将dev 设置为设备结构体，dev 会传递给中断处理函数 irq_handler_t 的第二个参数。 </p>
-<p><strong>返回值：</strong>0 中断申请成功，其他负值 中断申请失败，如果返回-EBUSY 的话表示中断已经被申请了。 </p>
-<p><strong>3、free_irq 函数</strong></p>
-<p>使用中断的时候需要通过 request_irq 函数申请，使用完成以后就要通过 free_irq 函数释放掉相应的中断。如果中断不是共享的，那么 free_irq 会删除中断处理函数并且禁止中断。free_irq函数原型如下所示：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void free_irq(unsigned int irq, void *dev)</span><br></pre></td></tr></table></figure>
-<p>irq：要释放的中断。<br>dev：如果中断设置为共享(IRQF_SHARED)的话，此参数用来区分具体的中断。共享中断只有在释放最后中断处理函数的时候才会被禁止掉。<br>返回值：无。</p>
-<p><strong>4、中断处理函数</strong><br>使用 request_irq 函数申请中断的时候需要设置中断处理函数，中断处理函数格式如下所示：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">irqreturn_t (*irq_handler_t) (int, void *)</span><br></pre></td></tr></table></figure>
-<p>第一个参数是要中断处理函数要相应的中断号。第二个参数是一个指向 void 的指针，也就是个通用指针，需要与 request_irq 函数的 dev 参数保持一致。用于区分共享中断的不同设备，dev 也可以指向设备数据结构。中断处理函数的返回值为 irqreturn_t 类型。irqreturn_t 是个枚举类型，</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">enum irqreturn &#123;</span><br><span class="line">    IRQ_NONE &#x3D; (0 &lt;&lt; 0),</span><br><span class="line">    IRQ_HANDLED &#x3D; (1 &lt;&lt; 0),</span><br><span class="line">    IRQ_WAKE_THREAD &#x3D; (1 &lt;&lt; 1),</span><br><span class="line">&#125;;</span><br><span class="line">typedef enum irqreturn irqreturn_t;</span><br></pre></td></tr></table></figure>
-<p>一般中断服务函数返回值使用如 下形式： </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">return IRQ_RETVAL(IRQ_HANDLED)</span><br></pre></td></tr></table></figure>
-<p><strong>5、中断使能与禁止函数</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">void enable_irq(unsigned int irq)</span><br><span class="line">void disable_irq(unsigned int irq)</span><br><span class="line">void disable_irq_nosync(unsigned int irq) </span><br></pre></td></tr></table></figure>
-<p>enable_irq 和 disable_irq 用于使能和禁止指定的中断，irq 就是要禁止的中断号。disable_irq函数要等到当前正在执行的中断处理函数执行完才返回，因此使用者需要保证不会产生新的中断，并且确保所有已经开始执行的中断处理程序已经全部退出。在这种情况下，可以使用disable_irq_nosync 函数，其调用以后立即返回，不会等待当前中断处理程序执行完毕。</p>
-<p>开启或关闭全局中断，使用如下两个函数： </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">local_irq_enable()&#x2F;&#x2F; 用于使能当前处理器中断系统</span><br><span class="line">local_irq_disable()&#x2F;&#x2F;用于禁止当前处理器中断系统。</span><br></pre></td></tr></table></figure>
-<p>将中断状态恢复到以前的状态的函数：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">local_irq_save(flags) &#x2F;&#x2F;local_irq_save 函数用于禁止中断，并且将中断状态保存在 flags 中。</span><br><span class="line">local_irq_restore(flags) &#x2F;&#x2F;用于恢复中断，将中断到 flags 状态。</span><br></pre></td></tr></table></figure>
-<h1 id="设备树中断信息节点"><a href="#设备树中断信息节点" class="headerlink" title="设备树中断信息节点"></a>设备树中断信息节点</h1><p>如果使用设备树的话就需要在设备树中设置好中断属性信息，Linux 内核通过读取设备树中的中断属性信息来配置中断。打开 imx6ull.dtsi 文件，其中的 intc 节点就是I.MX6ULL 的中断控制器节点，节点内容如下所示： </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">intc: interrupt-controller@00a01000 &#123; </span><br><span class="line">    compatible &#x3D; &quot;arm,cortex-a7-gic&quot;; </span><br><span class="line">    #interrupt-cells &#x3D; &lt;3&gt;;</span><br><span class="line">    interrupt-controller;</span><br><span class="line">    reg &#x3D; &lt;0x00a01000 0x1000&gt;,</span><br><span class="line">    &lt;0x00a02000 0x100&gt;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>第 2 行，compatible 属性值为“arm,cortex-a7-gic”在 Linux 内核源码中搜索“arm,cortex-a7- gic”即可找到 GIC 中断控制器驱动文件。 </p>
-<p>第 3 行，#interrupt-cells 和#address-cells、#size-cells 一样。表示此中断控制器下设备的 cells 大小，对于设备而言，会使用 interrupts 属性描述中断信息，#interrupt-cells 描述了 interrupts 属性的 cells 大小，也就是一条信息有几个 cells。每个 cells 都是 32 位整形值，对于 ARM 处理的GIC 来说，一共有 3 个 cells，这三个 cells 的含义如下： 第一个 cells：中断类型，0 表示 SPI 中断，1 表示 PPI 中断。 </p>
-<p>第二个 cells：中断号，对于 SPI 中断来说中断号的范围为 0<del>987，对于 PPI 中断来说中断号的范围为 0</del>15。 </p>
-<p>第三个 cells：标志，bit[3:0]表示中断触发类型，为 1 的时候表示上升沿触发，为 2 的时候表示下降沿触发，为 4 的时候表示高电平触发，为 8 的时候表示低电平触发。bit[15:8]为 PPI 中断的 CPU 掩码。 </p>
-<p>第 4 行，interrupt-controller 节点为空，表示当前节点是中断控制器。</p>
-<p>对于 gpio 来说，gpio 节点也可以作为中断控制器，比如 imx6ull.dtsi 文件中的 gpio5 节点内容如下所示：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">gpio5: gpio@020ac000 &#123; </span><br><span class="line">    compatible &#x3D; &quot;fsl,imx6ul-gpio&quot;, &quot;fsl,imx35-gpio&quot;; </span><br><span class="line">    reg &#x3D; &lt;0x020ac000 0x4000&gt;;</span><br><span class="line">    interrupts &#x3D; &lt;GIC_SPI 74 IRQ_TYPE_LEVEL_HIGH&gt;,</span><br><span class="line">    &lt;GIC_SPI 75 IRQ_TYPE_LEVEL_HIGH&gt;;</span><br><span class="line">    gpio-controller; 7 #gpio-cells &#x3D; &lt;2&gt;;</span><br><span class="line">    interrupt-controller; 9 #interrupt-cells &#x3D; &lt;2&gt;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>第 4 行，interrupts 描述中断源信息，对于 gpio5 来说一共有两条信息，中断类型都是 SPI，触发电平都是 IRQ_TYPE_LEVEL_HIGH。不同之处在于中断源，一个是 74，一个是 75，GPIO5 一共用了 2 个中断号，一个是 74，一个是 75。其中 74 对应 GPIO5_IO00<del>GPIO5_IO15 这低 16 个 IO，75 对应 GPIO5_IO16</del>GPIOI5_IO31 这高 16 位 IO。 </p>
-<p>第 8 行，interrupt-controller 表明了 gpio5 节点也是个中断控制器，用于控制 gpio5 所有 IO的中断。 </p>
-<p>第 9 行，将#interrupt-cells 修改为 2。 </p>
-<p>简单总结一下与中断有关的设备树属性信息：<br>①、#interrupt-cells，指定中断源的信息 cells 个数。<br>②、interrupt-controller，表示当前节点为中断控制器。<br>③、interrupts，指定中断号，触发方式等。<br>④、interrupt-parent，指定父中断，也就是中断控制</p>
-<h1 id="获取中断号"><a href="#获取中断号" class="headerlink" title="获取中断号"></a><strong>获取中断号</strong></h1><p>编写驱动的时候需要用到中断号，我们用到中断号，中断信息已经写到了设备树里面，因此可以通过 irq_of_parse_and_map 函数从 interupts 属性中提取到对应的设备号，函数原型如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">unsigned int irq_of_parse_and_map(struct device_node *dev, int index)</span><br></pre></td></tr></table></figure>
-<p>dev：设备节点。<br>index：索引号，interrupts 属性可能包含多条中断信息，通过 index 指定要获取的信息。<br>返回值：中断号。</p>
-<p>如果使用 GPIO 的话，可以使用 gpio_to_irq 函数来获取 gpio 对应的中断号，函数原型如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int gpio_to_irq(unsigned int gpio)&#x2F;&#x2F;gpio：要获取的 GPIO 编号。返回值：GPIO 对应的中断号。</span><br></pre></td></tr></table></figure>
-<h1 id="实验程序编写"><a href="#实验程序编写" class="headerlink" title="实验程序编写"></a><strong>实验程序编写</strong></h1><p>驱动 I.MX6U-ALPHA 开发板上的 KEY0 按键，不过我们采用中断的方式， 并且采用定时器来实现按键消抖，应用程序读取按键值并且通过终端打印出来。</p>
-<h2 id="修改设备树文件"><a href="#修改设备树文件" class="headerlink" title="修改设备树文件"></a><strong>修改设备树文件</strong></h2><p>使用到了按键 KEY0，按键 KEY0 使用中断模式，因此需要在“key”节点下添加 中断相关属性</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">key &#123;</span><br><span class="line">        #address-cells &#x3D; &lt;1&gt;;</span><br><span class="line">        #size-cells &#x3D; &lt;1&gt;;</span><br><span class="line">        compatible &#x3D; &quot;atkalpha-key&quot;; </span><br><span class="line">        pinctrl-names &#x3D; &quot;default&quot;; </span><br><span class="line">        pinctrl-0 &#x3D; &lt;&amp;pinctrl_key&gt;;</span><br><span class="line">        key-gpio &#x3D; &lt;&amp;gpio1 18 GPIO_ACTIVE_LOW&gt;; &#x2F;* KEY0 *&#x2F;</span><br><span class="line">        interrupt-parent &#x3D; &lt;&amp;gpio1&gt;;</span><br><span class="line">        interrupts &#x3D; &lt;18 IRQ_TYPE_EDGE_BOTH&gt;; &#x2F;* FALLING RISING *&#x2F;</span><br><span class="line">        status &#x3D; &quot;okay&quot;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>第 8 行，设置 interrupt-parent 属性值为“gpio1”，因为 KEY0 所使用的 GPIO 为GPIO1_IO18，也就是设置 KEY0 的 GPIO 中断控制器为 gpio1。 </p>
-<p>第 9 行，设置 interrupts 属性，也就是设置中断源，第一个 cells 的 18 表示 GPIO1 组的 18号 IO。IRQ_TYPE_EDGE_BOTH 表示上升沿和下降沿同时有效， 相当于 KEY0 按下和释放都会触发中断。</p>
-<h2 id="按键中断驱动程序编写"><a href="#按键中断驱动程序编写" class="headerlink" title="按键中断驱动程序编写"></a><strong>按键中断驱动程序编写</strong></h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;***************************************************************</span><br><span class="line">文件名		: imx6uirq.c</span><br><span class="line">描述	   	: Linux中断驱动实验</span><br><span class="line">***************************************************************&#x2F;</span><br><span class="line">&#x2F;* 中断IO描述结构体 *&#x2F;</span><br><span class="line">struct irq_keydesc &#123;</span><br><span class="line">	int gpio;								&#x2F;* gpio *&#x2F;</span><br><span class="line">	int irqnum;								&#x2F;* 中断号     *&#x2F;</span><br><span class="line">	unsigned char value;					&#x2F;* 按键对应的键值 *&#x2F;</span><br><span class="line">	char name[10];							&#x2F;* 名字 *&#x2F;</span><br><span class="line">	irqreturn_t (*handler)(int, void *);	&#x2F;* 中断服务函数 *&#x2F;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">&#x2F;* imx6uirq设备结构体 *&#x2F;</span><br><span class="line">struct imx6uirq_dev&#123;</span><br><span class="line">	atomic_t keyvalue;		&#x2F;* 有效的按键键值 *&#x2F;</span><br><span class="line">	atomic_t releasekey;	&#x2F;* 标记是否完成一次完成的按键，包括按下和释放 *&#x2F;</span><br><span class="line">	struct timer_list timer;&#x2F;* 定义一个定时器*&#x2F;</span><br><span class="line">	struct irq_keydesc irqkeydesc[KEY_NUM];	&#x2F;* 按键描述数组 *&#x2F;</span><br><span class="line">	unsigned char curkeynum;				&#x2F;* 当前的按键号 *&#x2F;</span><br><span class="line">&#125;;</span><br><span class="line">struct imx6uirq_dev imx6uirq;	&#x2F;* irq设备 *&#x2F;</span><br><span class="line"></span><br><span class="line">&#x2F;* @description		: 中断服务函数，开启定时器，延时10ms，</span><br><span class="line"> *				  	  定时器用于按键消抖。</span><br><span class="line"> * @param - irq 	: 中断号 </span><br><span class="line"> * @param - dev_id	: 设备结构。</span><br><span class="line"> * @return 			: 中断执行结果</span><br><span class="line"> *&#x2F;</span><br><span class="line">static irqreturn_t key0_handler(int irq, void *dev_id)</span><br><span class="line">&#123;</span><br><span class="line">	struct imx6uirq_dev *dev &#x3D; (struct imx6uirq_dev *)dev_id;</span><br><span class="line"></span><br><span class="line">	dev-&gt;curkeynum &#x3D; 0;</span><br><span class="line">	dev-&gt;timer.data &#x3D; (volatile long)dev_id;</span><br><span class="line">	mod_timer(&amp;dev-&gt;timer, jiffies + msecs_to_jiffies(10));	&#x2F;* 10ms定时 *&#x2F;</span><br><span class="line">	return IRQ_RETVAL(IRQ_HANDLED);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;* @description	: 定时器服务函数，用于按键消抖，定时器到了以后</span><br><span class="line"> *				  再次读取按键值，如果按键还是处于按下状态就表示按键有效。</span><br><span class="line"> * @param - arg	: 设备结构变量</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void timer_function(unsigned long arg)</span><br><span class="line">&#123;</span><br><span class="line">	unsigned char value;</span><br><span class="line">	unsigned char num;</span><br><span class="line">	struct irq_keydesc *keydesc;</span><br><span class="line">	struct imx6uirq_dev *dev &#x3D; (struct imx6uirq_dev *)arg;</span><br><span class="line"></span><br><span class="line">	num &#x3D; dev-&gt;curkeynum;</span><br><span class="line">	keydesc &#x3D; &amp;dev-&gt;irqkeydesc[num];</span><br><span class="line"></span><br><span class="line">	value &#x3D; gpio_get_value(keydesc-&gt;gpio); 	&#x2F;* 读取IO值 *&#x2F;</span><br><span class="line">	if(value &#x3D;&#x3D; 0)&#123; 						&#x2F;* 按下按键 *&#x2F;</span><br><span class="line">		atomic_set(&amp;dev-&gt;keyvalue, keydesc-&gt;value);</span><br><span class="line">	&#125;</span><br><span class="line">	else&#123; 									&#x2F;* 按键松开 *&#x2F;</span><br><span class="line">		atomic_set(&amp;dev-&gt;keyvalue, 0x80 | keydesc-&gt;value);</span><br><span class="line">		atomic_set(&amp;dev-&gt;releasekey, 1);	&#x2F;* 标记松开按键，即完成一次完整的按键过程 *&#x2F;	</span><br><span class="line">	&#125;	</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 按键IO初始化</span><br><span class="line"> * @param 		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int keyio_init(void)</span><br><span class="line">&#123;</span><br><span class="line">	</span><br><span class="line">	&#x2F;* 初始化key所使用的IO，并且设置成中断模式 *&#x2F;</span><br><span class="line">	for (i &#x3D; 0; i &lt; KEY_NUM; i++) &#123;</span><br><span class="line">		memset(imx6uirq.irqkeydesc[i].name, 0, sizeof(name));	&#x2F;* 缓冲区清零 *&#x2F;</span><br><span class="line">		sprintf(imx6uirq.irqkeydesc[i].name, &quot;KEY%d&quot;, i);		&#x2F;* 组合名字 *&#x2F;</span><br><span class="line">		gpio_request(imx6uirq.irqkeydesc[i].gpio, imx6uirq.irqkeydesc[i].name);</span><br><span class="line">		gpio_direction_input(imx6uirq.irqkeydesc[i].gpio);	</span><br><span class="line">		imx6uirq.irqkeydesc[i].irqnum &#x3D; irq_of_parse_and_map(imx6uirq.nd, i);</span><br><span class="line">#if 0</span><br><span class="line">		imx6uirq.irqkeydesc[i].irqnum &#x3D; gpio_to_irq(imx6uirq.irqkeydesc[i].gpio);</span><br><span class="line">#endif</span><br><span class="line">		printk(&quot;key%d:gpio&#x3D;%d, irqnum&#x3D;%d\r\n&quot;,i, imx6uirq.irqkeydesc[i].gpio, </span><br><span class="line">                                         imx6uirq.irqkeydesc[i].irqnum);</span><br><span class="line">	&#125;</span><br><span class="line">	&#x2F;* 申请中断 *&#x2F;</span><br><span class="line">	imx6uirq.irqkeydesc[0].handler &#x3D; key0_handler;</span><br><span class="line">	imx6uirq.irqkeydesc[0].value &#x3D; KEY0VALUE;</span><br><span class="line">	</span><br><span class="line">	for (i &#x3D; 0; i &lt; KEY_NUM; i++) &#123;</span><br><span class="line">		ret &#x3D; request_irq(imx6uirq.irqkeydesc[i].irqnum, imx6uirq.irqkeydesc[i].handler, </span><br><span class="line">		                 IRQF_TRIGGER_FALLING|IRQF_TRIGGER_RISING, imx6uirq.irqkeydesc[i].name, &amp;imx6uirq);</span><br><span class="line">		if(ret &lt; 0)&#123;</span><br><span class="line">			printk(&quot;irq %d request failed!\r\n&quot;, imx6uirq.irqkeydesc[i].irqnum);</span><br><span class="line">			return -EFAULT;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 创建定时器 *&#x2F;</span><br><span class="line">	init_timer(&amp;imx6uirq.timer);</span><br><span class="line">	imx6uirq.timer.function &#x3D; timer_function;</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 驱动入口函数</span><br><span class="line"> * @param 		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int __init imx6uirq_init(void)</span><br><span class="line">&#123;</span><br><span class="line">	&#x2F;* 5、初始化按键 *&#x2F;</span><br><span class="line">	atomic_set(&amp;imx6uirq.keyvalue, INVAKEY);</span><br><span class="line">	atomic_set(&amp;imx6uirq.releasekey, 0);</span><br><span class="line">	keyio_init();</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 驱动出口函数</span><br><span class="line"> * @param 		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">static void __exit imx6uirq_exit(void)</span><br><span class="line">&#123;</span><br><span class="line">	unsigned int i &#x3D; 0;</span><br><span class="line">	&#x2F;* 删除定时器 *&#x2F;</span><br><span class="line">	del_timer_sync(&amp;imx6uirq.timer);	&#x2F;* 删除定时器 *&#x2F;</span><br><span class="line">		</span><br><span class="line">	&#x2F;* 释放中断 *&#x2F;</span><br><span class="line">	for (i &#x3D; 0; i &lt; KEY_NUM; i++) &#123;</span><br><span class="line">		free_irq(imx6uirq.irqkeydesc[i].irqnum, &amp;imx6uirq);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>结构体 irq_keydesc 为按键的中断描述结构体，gpio 为按键 GPIO 编号，irqnum为按键 IO 对应的中断号，value 为按键对应的键值，name 为按键名字，handler 为按键中断服务函数。使用 irq_keydesc 结构体即可描述一个按键中断。</p>
-<p>结构体 imx6uirq_dev 为本例程设备结构体，第 55 行的 keyvalue 保存按键值， releasekey 表示按键是否被释放，如果按键被释放表示发生了一次完整的按键过程。 timer 为按键消抖定时器，数组 irqkeydesc 为按键信息数组，数组元素个数就是开发板上的按键个数，I.MX6U-ALIPHA 开发板上只有一个按键，因此 irqkeydesc 数组只有一个元素。curkeynum 表示当前按键。</p>
-<p>key0_handler 函数，按键 KEY0 中断处理函数，参数 dev_id 为设备结构体，也就是 imx6uirq。设置 curkeynum=0，表示当前按键为 KEY0，使用 mod_timer函数启动定时器，定时器周期为 10ms。</p>
-<p>timer_function 函数，定时器定时处理函数，参数 arg 是设备结构体，也就是imx6uirq，在此函数中读取按键值。</p>
-<p>keyio_init 函数，按键 IO 初始化函数，在驱动入口函数里面会调用 keyio_init来初始化按键 IO。轮流初始化所有的按键，包括申请 IO、设置 IO 为输入模式、 从设备树中获取 IO 的中断号等等。通过 irq_of_parse_and_map 函数从设备树中获取按键 IO 对应的中断号。也可以使用 gpio_to_irq 函数将某个 IO 设置为中断状态，并且返回其中断 号。设置 KEY0 按键对应的按键中断处理函数为 key0_handler、KEY0 的按键值为 KEY0VALUE。轮流调用 request_irq 函数申请中断号，设置中断触发模式为IRQF_TRIGGER_FALLING 和 IRQF_TRIGGER_RISING，也就是上升沿和下降沿都可以触发中断。最后，初始化定时器，并且设置定时器的定时处理函数。</p>
-<p>驱动出口函数调用 del_timer_sync 函数删除定时器，轮流释放申请的所有按键中断。</p>
-
-    
-
-    
-
-    
-
-  </div>
-  <div class="article-info article-info-index">
-    
-    
-    
-
-    
-    <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-Linux%E4%B8%AD%E6%96%AD/">展开 >></a>
-    </p>
-    
-
-    
-    <div class="clearfix"></div>
-  </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-Linux驱动-内核定时器" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-  
-  
-    <h1 itemprop="name">
-	
-	  <a class="article-title" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%86%85%E6%A0%B8%E5%AE%9A%E6%97%B6%E5%99%A8/" target="_blank">Linux驱动-内核定时器</a>
-  
-    </h1>
-  
-
-
-  
-  
-<a href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%86%85%E6%A0%B8%E5%AE%9A%E6%97%B6%E5%99%A8/" class="archive-article-date">
-        <time datetime="2021-04-15T12:07:16.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-15</time>
-</a>
-
-  
-  
-    
-
-  
-  </header>
-  
-  <div class="article-entry" itemprop="articleBody">
-    
-     <a id="more"></a>
-
-<h1 id="1、内核时间管理简介"><a href="#1、内核时间管理简介" class="headerlink" title="1、内核时间管理简介"></a>1、内核时间管理简介</h1><p>Linux 要运行，需要一个系统时钟的，至于这个系统时钟是由哪个定时器提供的，这对于我们 Linux 驱动编写者来说，不需要深入研究这些具体的实现，只需要掌握相应的 API 函数即可。 </p>
-<p>硬件定时器提供时钟源，时钟源的频率可以设置， 设置好以后就周期性的产生定时中断，系统使用定时中断来计时。中断周期性产生的频率就是系统频率， 也叫做节拍率(tick rate)(有的资料也叫系统频率)，比如 1000Hz，100Hz 等等说的就是系统节拍率。系统节拍率是可以设置的，单位是 Hz，</p>
-<p>高节拍率和低节拍率的优缺点： </p>
-<p>①、高节拍率会提高系统时间精度，如果采用 100Hz 的节拍率，时间精度就是 10ms，采用1000Hz 的话时间精度就是 1ms，精度提高了 10 倍。高精度时钟的好处有很多，对于那些对时 间要求严格的函数来说，能够以更高的精度运行，时间测量也更加准确。 </p>
-<p>②、高节拍率会导致中断的产生更加频繁，频繁的中断会加剧系统的负担，1000Hz 和 100Hz 的系统节拍率相比，系统要花费 10 倍的“精力”去处理中断。中断服务函数占用处理器的时间 增加，但是现在的处理器性能都很强大，所以采用 1000Hz 的系统节拍率并不会增加太大的负载压力。</p>
-<p>Linux 内核使用全局变量 jiffies 来记录系统从启动以来的系统节拍数，系统启动的时候会将 jiffies 初始化为 0，</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">extern u64 __jiffy_data jiffies_64;&#x2F;&#x2F;定义了一个 64 位的 jiffies_64。</span><br><span class="line">extern unsigned long volatile __jiffy_data jiffies;&#x2F;&#x2F;定义一个unsigned long的32位jiffies。</span><br></pre></td></tr></table></figure>
-<p>HZ 表示每秒的节拍数，jiffies 表示系统运行的 jiffies 节拍数，所以 jiffies/HZ 就是系统运行时间，单位为秒。不管是 32 位还是 64 位的 jiffies，都有溢出的风险，溢出以后会重新从 0 开始计数，相当于绕回来了，因此有些资料也将这个现象也叫做绕回。假如 HZ 为最大值 1000 的时候，32 位的 jiffies 只需要 49.7 天就发生了绕回，对于 64 位的 jiffies 来说大概需要5.8 亿年才能绕回，因此 jiffies_64 的绕回忽略不计。处理 32 位 jiffies 的绕回显得尤为重要， Linux 内核提供了如表 所示的几个 API 函数来处理绕回。 </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">time_after(unkown, known)</span><br><span class="line">time_before(unkown, known)</span><br><span class="line">time_after_eq(unkown, known)</span><br><span class="line">time_before_eq(unkown, known)</span><br></pre></td></tr></table></figure>
-<p>unkown通常为jiffies，known通常是需要对比的值。如果 unkown 超过 known 的话，time_after 函数返回真，否则返回假。如果 unkown 没有超过 known 的话 time_before 函数返回真，否则返回假。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">unsigned long timeout;</span><br><span class="line">timeout &#x3D; jiffies + (2 * HZ); &#x2F;* 超时的时间点 *&#x2F;</span><br><span class="line">&#x2F;*************************************</span><br><span class="line">具体的代码</span><br><span class="line">************************************&#x2F;</span><br><span class="line">&#x2F;* 判断有没有超时 *&#x2F;</span><br><span class="line">if(time_before(jiffies, timeout)) &#123;</span><br><span class="line">	&#x2F;* 超时未发生 *&#x2F;</span><br><span class="line">&#125; else &#123;</span><br><span class="line">	&#x2F;* 超时发生 *&#x2F;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>timeout 就是超时时间点，如果 jiffies 大于 timeout 那就表示超时了，比如我们要判断代码执行时间是不是超过了 2 秒，那么超时时间点就是 jiffies+(2*HZ)。通过函数 time_before 来判断 jiffies 是否小于 timeout，如果小于的话就表示没有超时。 </p>
-<p>Linux 内核提供了几个 jiffies 和 ms、us、ns 之间的转换函数</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;将 jiffies 类型的参数 j 分别转换为对应的毫秒、微秒、纳秒。</span><br><span class="line">int jiffies_to_msecs(const unsigned long j)  </span><br><span class="line">int jiffies_to_usecs(const unsigned long j)</span><br><span class="line">u64 jiffies_to_nsecs(const unsigned long j)</span><br><span class="line">&#x2F;&#x2F;将毫秒、微秒、纳秒转换为 jiffies 类型。</span><br><span class="line">long msecs_to_jiffies(const unsigned int m)</span><br><span class="line">long usecs_to_jiffies(const unsigned int u)</span><br><span class="line">unsigned long nsecs_to_jiffies(u64 n)</span><br></pre></td></tr></table></figure>
-<h1 id="2、内核定时器简介"><a href="#2、内核定时器简介" class="headerlink" title="2、内核定时器简介"></a><strong>2、内核定时器简介</strong></h1><p>定时器是一个很常用的功能，需要周期性处理的工作都要用到定时器。Linux 内核定时器采用系统时钟来实现，并不是 PIT 等硬件定时器。Linux 内核定时器使用很简单，只需要提供超时时间(相当于定时值)和定时处理函数即可，当超时时间到了以后设置的定时处理函数就会执行，使用内核定时器不需要做一大堆的寄存器初始化工作。</p>
-<p>在使用内核定时器的时候要注意一点，内核定时器并不是周期性运行的，超时以后就会自动关闭，因此如果想要实现周期性定时，那么就需要在定时处理函数中重新开启定时器。</p>
-<p>Linux 内核使用 timer_list 结构体表示内核定时器。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">struct timer_list &#123;</span><br><span class="line">     struct list_head entry;</span><br><span class="line">     unsigned long expires; &#x2F;* 定时器超时时间，单位是节拍数 *&#x2F;</span><br><span class="line">     struct tvec_base *base;</span><br><span class="line">     void (*function)(unsigned long); &#x2F;* 定时处理函数 *&#x2F;</span><br><span class="line">     unsigned long data; &#x2F;* 要传递给 function 函数的参数 *&#x2F;</span><br><span class="line">     int slack;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>要使用内核定时器首先要先定义一个timer_list 变量，表示定时器，tiemr_list 结构体的expires 成员变量表示超时时间，单位为节拍数。需要定义一个周期为 2 秒的定时器，那么这个定时器的超时时间就是 jiffies+(2<em>HZ)，因此 expires=jiffies+(2</em>HZ)。function 就是定时器超时以后的定时处理函数。</p>
-<h2 id="API-函数"><a href="#API-函数" class="headerlink" title="API 函数"></a><strong>API 函数</strong></h2><p><strong>1、init_timer 函数</strong><br>init_timer 函数负责初始化 timer_list 类型变量</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void init_timer(struct timer_list *timer)</span><br></pre></td></tr></table></figure>
-<p>timer：要初始化定时器。<br>返回值：没有返回值。</p>
-<p><strong>2、add_timer 函数</strong><br>用于向 Linux 内核注册定时器，使用 add_timer 函数向内核注册定时器以后，定时器就会开始运行</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void add_timer(struct timer_list *timer)</span><br></pre></td></tr></table></figure>
-<p>timer：要注册的定时器。<br>返回值：没有返回值。</p>
-<p><strong>3、del_timer 函数</strong></p>
-<p>del_timer 函数用于删除一个定时器，不管定时器有没有被激活，都可以使用此函数删除。在多处理器系统上，定时器可能会在其他的处理器上运行，因此在调用 del_timer 函数删除定时器之前要先等待其他处理器的定时处理器函数退出。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int del_timer(struct timer_list * timer)</span><br></pre></td></tr></table></figure>
-<p>timer：要删除的定时器。<br>返回值：0，定时器还没被激活；1，定时器已经激活。</p>
-<p><strong>4、del_timer_sync 函数</strong></p>
-<p>del_timer_sync 函数是 del_timer 函数的同步版，会等待其他处理器使用完定时器再删除，del_timer_sync 不能使用在中断上下文中。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int del_timer_sync(struct timer_list *timer)</span><br></pre></td></tr></table></figure>
-<p>timer：要删除的定时器。<br>返回值：0，定时器还没被激活；1，定时器已经激活。</p>
-<p><strong>5、mod_timer 函数</strong><br>mod_timer 函数用于修改定时值，如果定时器还没有激活的话，mod_timer 函数会激活定时器！</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int mod_timer(struct timer_list *timer, unsigned long expires)</span><br></pre></td></tr></table></figure>
-<p>timer：要修改超时时间(定时值)的定时器。<br>expires：修改后的超时时间。<br>返回值：0，调用 mod_timer 函数前定时器未被激活；1，调用 mod_timer 函数前定时器已被激活。</p>
-<p><strong>使用流程</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">struct timer_list timer; &#x2F;* 定义定时器 *&#x2F;</span><br><span class="line"></span><br><span class="line">&#x2F;* 定时器回调函数 *&#x2F;</span><br><span class="line">void function(unsigned long arg)</span><br><span class="line"> &#123; </span><br><span class="line">	&#x2F;&#x2F;定时器处理代码</span><br><span class="line"></span><br><span class="line">	&#x2F;&#x2F;如果需要定时器周期性运行的话就使用 mod_timer函数重新设置超时值并且启动定时器。</span><br><span class="line">	mod_timer(&amp;dev-&gt;timertest, jiffies + msecs_to_jiffies(2000));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;* 初始化函数 *&#x2F;</span><br><span class="line">void init(void) </span><br><span class="line">&#123;</span><br><span class="line">    init_timer(&amp;timer); &#x2F;* 初始化定时器 *&#x2F;</span><br><span class="line">    timer.function &#x3D; function; &#x2F;* 设置定时处理函数 *&#x2F;</span><br><span class="line">    timer.expires&#x3D;jffies + msecs_to_jiffies(2000);&#x2F;* 超时时间 2 秒 *&#x2F;</span><br><span class="line">    timer.data &#x3D; (unsigned long)&amp;dev; &#x2F;* 将设备结构体作为参数 *&#x2F;</span><br><span class="line">    add_timer(&amp;timer); &#x2F;* 启动定时器 *&#x2F;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;* 退出函数 *&#x2F;</span><br><span class="line">void exit(void)</span><br><span class="line">&#123;</span><br><span class="line">    del_timer(&amp;timer); &#x2F;* 删除定时器 *&#x2F;</span><br><span class="line">    &#x2F;* 或者使用 *&#x2F;</span><br><span class="line">    del_timer_sync(&amp;timer);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><strong>Linux 内核短延时函数</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;Linux 内核提供毫秒、微 秒和纳秒延时函数，</span><br><span class="line">void ndelay(unsigned long nsecs)</span><br><span class="line">void udelay(unsigned long usecs)</span><br><span class="line">void mdelay(unsigned long mseces)</span><br></pre></td></tr></table></figure>
-<h1 id="3、实验程序编写"><a href="#3、实验程序编写" class="headerlink" title="3、实验程序编写"></a>3、实验程序编写</h1><p>使用内核定时器周期性的点亮和熄灭开发板上的 LED 灯，LED 灯的闪烁周期由内核定时器来设置，测试应用程序可以控制内核定时器周期。</p>
-<p><strong>驱动程序编写</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br></pre></td><td class="code"><pre><span class="line">#define CLOSE_CMD 		(_IO(0XEF, 0x1))	&#x2F;* 关闭定时器 *&#x2F;</span><br><span class="line">#define OPEN_CMD		(_IO(0XEF, 0x2))	&#x2F;* 打开定时器 *&#x2F;</span><br><span class="line">#define SETPERIOD_CMD	(_IO(0XEF, 0x3))	&#x2F;* 设置定时器周期命令 *&#x2F;</span><br><span class="line"></span><br><span class="line">&#x2F;* timer设备结构体 *&#x2F;</span><br><span class="line">struct timer_dev&#123;</span><br><span class="line">	dev_t devid;			&#x2F;* 设备号 	 *&#x2F;</span><br><span class="line">	struct cdev cdev;		&#x2F;* cdev 	*&#x2F;</span><br><span class="line">	struct class *class;	&#x2F;* 类 		*&#x2F;</span><br><span class="line">	struct device *device;	&#x2F;* 设备 	 *&#x2F;</span><br><span class="line">	int major;				&#x2F;* 主设备号	  *&#x2F;</span><br><span class="line">	int minor;				&#x2F;* 次设备号   *&#x2F;</span><br><span class="line">	struct device_node	*nd; &#x2F;* 设备节点 *&#x2F;</span><br><span class="line">	int led_gpio;			&#x2F;* key所使用的GPIO编号		*&#x2F;</span><br><span class="line">	int timeperiod; 		&#x2F;* 定时周期,单位为ms *&#x2F;</span><br><span class="line">	struct timer_list timer;&#x2F;* 定义一个定时器*&#x2F;</span><br><span class="line">	spinlock_t lock;		&#x2F;* 定义自旋锁 *&#x2F;</span><br><span class="line">&#125;;</span><br><span class="line">struct timer_dev timerdev;	&#x2F;* timer设备 *&#x2F;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 初始化LED灯IO，open函数打开驱动的时候</span><br><span class="line"> * 				  初始化LED灯所使用的GPIO引脚。</span><br><span class="line"> * @param 		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int led_init(void)</span><br><span class="line">&#123;</span><br><span class="line">	int ret &#x3D; 0;</span><br><span class="line"></span><br><span class="line">	timerdev.nd &#x3D; of_find_node_by_path(&quot;&#x2F;gpioled&quot;);</span><br><span class="line">	if (timerdev.nd&#x3D;&#x3D; NULL) &#123;</span><br><span class="line">		return -EINVAL;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	timerdev.led_gpio &#x3D; of_get_named_gpio(timerdev.nd ,&quot;led-gpio&quot;, 0);</span><br><span class="line">	if (timerdev.led_gpio &lt; 0) &#123;</span><br><span class="line">		printk(&quot;can&#39;t get led\r\n&quot;);</span><br><span class="line">		return -EINVAL;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	&#x2F;* 初始化led所使用的IO *&#x2F;</span><br><span class="line">	gpio_request(timerdev.led_gpio, &quot;led&quot;);		&#x2F;* 请求IO 	*&#x2F;</span><br><span class="line">	ret &#x3D; gpio_direction_output(timerdev.led_gpio, 1);</span><br><span class="line">	if(ret &lt; 0) &#123;</span><br><span class="line">		printk(&quot;can&#39;t set gpio!\r\n&quot;);</span><br><span class="line">	&#125;</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: 打开设备</span><br><span class="line"> * @param - inode 	: 传递给驱动的inode</span><br><span class="line"> * @param - filp 	: 设备文件，file结构体有个叫做private_data的成员变量</span><br><span class="line"> * 					  一般在open的时候将private_data指向设备结构体。</span><br><span class="line"> * @return 			: 0 成功;其他 失败</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int timer_open(struct inode *inode, struct file *filp)</span><br><span class="line">&#123;</span><br><span class="line">	int ret &#x3D; 0;</span><br><span class="line">	filp-&gt;private_data &#x3D; &amp;timerdev;	&#x2F;* 设置私有数据 *&#x2F;</span><br><span class="line"></span><br><span class="line">	timerdev.timeperiod &#x3D; 1000;		&#x2F;* 默认周期为1s *&#x2F;</span><br><span class="line">	ret &#x3D; led_init();				&#x2F;* 初始化LED IO *&#x2F;</span><br><span class="line">	if (ret &lt; 0) &#123;</span><br><span class="line">		return ret;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: ioctl函数，</span><br><span class="line"> * @param - filp 	: 要打开的设备文件(文件描述符)</span><br><span class="line"> * @param - cmd 	: 应用程序发送过来的命令</span><br><span class="line"> * @param - arg 	: 参数</span><br><span class="line"> * @return 			: 0 成功;其他 失败</span><br><span class="line"> *&#x2F;</span><br><span class="line">static long timer_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)</span><br><span class="line">&#123;</span><br><span class="line">	struct timer_dev *dev &#x3D;  (struct timer_dev *)filp-&gt;private_data;</span><br><span class="line">	int timerperiod;</span><br><span class="line">	unsigned long flags;</span><br><span class="line">	</span><br><span class="line">	switch (cmd) &#123;</span><br><span class="line">		case CLOSE_CMD:		&#x2F;* 关闭定时器 *&#x2F;</span><br><span class="line">			del_timer_sync(&amp;dev-&gt;timer);</span><br><span class="line">			break;</span><br><span class="line">		case OPEN_CMD:		&#x2F;* 打开定时器 *&#x2F;</span><br><span class="line">			spin_lock_irqsave(&amp;dev-&gt;lock, flags);</span><br><span class="line">			timerperiod &#x3D; dev-&gt;timeperiod;</span><br><span class="line">			spin_unlock_irqrestore(&amp;dev-&gt;lock, flags);</span><br><span class="line">			mod_timer(&amp;dev-&gt;timer, jiffies + msecs_to_jiffies(timerperiod));</span><br><span class="line">			break;</span><br><span class="line">		case SETPERIOD_CMD: &#x2F;* 设置定时器周期 *&#x2F;</span><br><span class="line">			spin_lock_irqsave(&amp;dev-&gt;lock, flags);</span><br><span class="line">			dev-&gt;timeperiod &#x3D; arg;</span><br><span class="line">			spin_unlock_irqrestore(&amp;dev-&gt;lock, flags);</span><br><span class="line">			mod_timer(&amp;dev-&gt;timer, jiffies + msecs_to_jiffies(arg));</span><br><span class="line">			break;</span><br><span class="line">		default:</span><br><span class="line">			break;</span><br><span class="line">	&#125;</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;* 设备操作函数 *&#x2F;</span><br><span class="line">static struct file_operations timer_fops &#x3D; &#123;</span><br><span class="line">	.owner &#x3D; THIS_MODULE,</span><br><span class="line">	.open &#x3D; timer_open,</span><br><span class="line">	.unlocked_ioctl &#x3D; timer_unlocked_ioctl,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">&#x2F;* 定时器回调函数 *&#x2F;</span><br><span class="line">void timer_function(unsigned long arg)</span><br><span class="line">&#123;</span><br><span class="line">	struct timer_dev *dev &#x3D; (struct timer_dev *)arg;</span><br><span class="line">	static int sta &#x3D; 1;</span><br><span class="line">	int timerperiod;</span><br><span class="line">	unsigned long flags;</span><br><span class="line"></span><br><span class="line">	sta &#x3D; !sta;		&#x2F;* 每次都取反，实现LED灯反转 *&#x2F;</span><br><span class="line">	gpio_set_value(dev-&gt;led_gpio, sta);</span><br><span class="line">	</span><br><span class="line">	&#x2F;* 重启定时器 *&#x2F;</span><br><span class="line">	spin_lock_irqsave(&amp;dev-&gt;lock, flags);</span><br><span class="line">	timerperiod &#x3D; dev-&gt;timeperiod;</span><br><span class="line">	spin_unlock_irqrestore(&amp;dev-&gt;lock, flags);</span><br><span class="line">	mod_timer(&amp;dev-&gt;timer, jiffies + msecs_to_jiffies(dev-&gt;timeperiod)); </span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 驱动入口函数</span><br><span class="line"> * @param 		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int __init timer_init(void)</span><br><span class="line">&#123;</span><br><span class="line">	&#x2F;* 初始化自旋锁 *&#x2F;</span><br><span class="line">	spin_lock_init(&amp;timerdev.lock);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 注册字符设备驱动 *&#x2F;</span><br><span class="line">	&#x2F;* 1、创建设备号 *&#x2F;</span><br><span class="line">	if (timerdev.major) &#123;		&#x2F;*  定义了设备号 *&#x2F;</span><br><span class="line">		timerdev.devid &#x3D; MKDEV(timerdev.major, 0);</span><br><span class="line">		register_chrdev_region(timerdev.devid, TIMER_CNT, TIMER_NAME);</span><br><span class="line">	&#125; else &#123;						&#x2F;* 没有定义设备号 *&#x2F;</span><br><span class="line">		alloc_chrdev_region(&amp;timerdev.devid, 0, TIMER_CNT, TIMER_NAME);	&#x2F;* 申请设备号 *&#x2F;</span><br><span class="line">		timerdev.major &#x3D; MAJOR(timerdev.devid);	&#x2F;* 获取分配号的主设备号 *&#x2F;</span><br><span class="line">		timerdev.minor &#x3D; MINOR(timerdev.devid);	&#x2F;* 获取分配号的次设备号 *&#x2F;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	&#x2F;* 2、初始化cdev *&#x2F;</span><br><span class="line">	timerdev.cdev.owner &#x3D; THIS_MODULE;</span><br><span class="line">	cdev_init(&amp;timerdev.cdev, &amp;timer_fops);</span><br><span class="line">	</span><br><span class="line">	&#x2F;* 3、添加一个cdev *&#x2F;</span><br><span class="line">	cdev_add(&amp;timerdev.cdev, timerdev.devid, TIMER_CNT);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 4、创建类 *&#x2F;</span><br><span class="line">	timerdev.class &#x3D; class_create(THIS_MODULE, TIMER_NAME);</span><br><span class="line">	if (IS_ERR(timerdev.class)) &#123;</span><br><span class="line">		return PTR_ERR(timerdev.class);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 5、创建设备 *&#x2F;</span><br><span class="line">	timerdev.device &#x3D; device_create(timerdev.class, NULL, timerdev.devid, NULL, TIMER_NAME);</span><br><span class="line">	if (IS_ERR(timerdev.device)) &#123;</span><br><span class="line">		return PTR_ERR(timerdev.device);</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	&#x2F;* 6、初始化timer，设置定时器处理函数,还未设置周期，所有不会激活定时器 *&#x2F;</span><br><span class="line">	init_timer(&amp;timerdev.timer);</span><br><span class="line">	timerdev.timer.function &#x3D; timer_function;</span><br><span class="line">	timerdev.timer.data &#x3D; (unsigned long)&amp;timerdev; &#x2F;* 要传递给 function 函数的参数 *&#x2F;</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 驱动出口函数</span><br><span class="line"> * @param 		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">static void __exit timer_exit(void)</span><br><span class="line">&#123;</span><br><span class="line">	</span><br><span class="line">	gpio_set_value(timerdev.led_gpio, 1);	&#x2F;* 卸载驱动的时候关闭LED *&#x2F;</span><br><span class="line">	del_timer_sync(&amp;timerdev.timer);		&#x2F;* 删除timer *&#x2F;</span><br><span class="line">#if 0</span><br><span class="line">	del_timer(&amp;timerdev.tiemr);</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>第 38~50 行，定时器设备结构体，在 48 行定义了一个定时器成员变量 timer。 </p>
-<p>第 60~82 行，LED 灯初始化函数，从设备树中获取 LED 灯信息，然后初始化相应的 IO。 </p>
-<p>第 91~102 行，函数 timer_open，对应应用程序的 open 函数，应用程序调用 open 函数打开/dev/timer 驱动文件的时候此函数就会执行。此函数设置文件私有数据为 timerdev，并且初始化定时周期默认为 1 秒，最后调用 led_init 函数初始化 LED 所使用的 IO。 </p>
-<p>第 111~137 行，函数 timer_unlocked_ioctl，对应应用程序的 ioctl 函数，应用程序调用 ioctl函数向驱动发送控制信息，此函数响应并执行。此函数ioctl**(<strong>fd</strong>,** cmd**,** arg**);** 有三个参数：filp，cmd 和 arg，其中 filp是对应的设备文件，cmd 是应用程序发送过来的命令信息，arg 是应用程序发送过来的参数，在例程中 arg 参数表示定时周期。 </p>
-<p>一共有三种命令 CLOSE_CMD，OPEN_CMD 和 SETPERIOD_CMD，这三个命令分别为关闭定时器、打开定时器、设置定时周期。这三个命令的左右如下： </p>
-<p><strong>CLOSE_CMD</strong>：关闭定时器命令<strong>，</strong>调用 del_timer_sync 函数关闭定时器。 </p>
-<p><strong>OPEN_CMD</strong>：打开定时器命令，调用 mod_timer 函数打开定时器，定时周期为 timerdev 的timeperiod 成员变量，定时周期默认是 1 秒。 </p>
-<p><strong>SETPERIOD_CMD</strong>：设置定时器周期命令，参数 arg 就是新的定时周期，设置 timerdev 的timeperiod 成员变量为 arg 所表示定时周期指。并且使用 mod_timer 重新打开定时器，使定时器以新的周期运行。 </p>
-<p>第 140~144 行，定时器驱动操作函数集 timer_fops。 </p>
-<p>第 147~162 行，函数 timer_function，定时器服务函数，此函有一个参数 arg，在本例程中arg 参数就是 timerdev 的地址，这样通过 arg 参数就可以访问到设备结构体。当定时周期到了以后此函数就会被调用。在此函数中将 LED 灯的状态取反，实现 LED 灯闪烁的效果。因为内核定时器不是循环的定时器，执行一次以后就结束了，因此在 161 行又调用了 mod_timer 函数重新开启定时器。 </p>
-<p>第 169~209 行，函数 timer_init，驱动入口函数。</p>
-<p>在第 205~207 行初始化定时器，设置定时器的定时处理函数为 timer_function，另外设置要传递给 timer_function 函数的参数为 timerdev的地址。在此函数中并没有调用 timer_add 函数来开启定时器，因此定时器默认是关闭的，除非应用程序发送打开命令。 </p>
-<p>第 216~231 行，驱动出口函数，在 219 行关闭 LED，也就是卸载驱动以后 LED 处于熄灭状态。第 220 行调用 del_timer_sync 函数删除定时器，也可以使用 del_timer 函数。 </p>
-
-    
-
-    
-
-    
-
-  </div>
-  <div class="article-info article-info-index">
-    
-    
-    
-
-    
-    <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%86%85%E6%A0%B8%E5%AE%9A%E6%97%B6%E5%99%A8/">展开 >></a>
-    </p>
-    
-
-    
-    <div class="clearfix"></div>
-  </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-Linux驱动-并发与竞争-自旋锁" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-  
-  
-    <h1 itemprop="name">
-	
-	  <a class="article-title" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E8%87%AA%E6%97%8B%E9%94%81/" target="_blank">Linux驱动-并发与竞争-自旋锁</a>
-  
-    </h1>
-  
-
-
-  
-  
-<a href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E8%87%AA%E6%97%8B%E9%94%81/" class="archive-article-date">
-        <time datetime="2021-04-15T10:41:42.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-15</time>
-</a>
-
-  
-  
-    
-
-  
-  </header>
-  
-  <div class="article-entry" itemprop="articleBody">
-    
-     <a id="more"></a>
-
-<h2 id="1、自旋锁"><a href="#1、自旋锁" class="headerlink" title="1、自旋锁"></a>1、自旋锁</h2><p>当一个线程要访问某个共享资源的时候首先要先获取相应的锁，锁只能被一个线程持有，只要此线程不释放持有的锁，那么其他的线程就不能获取此锁。对于自旋锁而言，如果自旋锁正在被线程 A 持有，线程 B 想要获取自旋锁，那么线程 B 就会处于忙循环-旋转-等待状态，线程B不会进入休眠状态或者说去做其他的处理，而是会一直傻傻的在那里“转圈圈”的等待锁可用。(类别电话亭)</p>
-<p>自旋锁的“自旋”也就是“原地打转”的意思，“原地打转”的目的是为了等待自旋锁可以用，可以访问共享资源。把自旋锁比作一个变量 a，变量 a=1 的时候表示共享资源可用，当 a=0 的时候表示共享资源不可用。现在线程 A 要访问共享资源，发现 a=0(自旋锁被其他线程持有)，那么线程 A 就会不断的查询 a 的值，直到 a=1。</p>
-<p>从这里我们可以看到自旋锁的一个缺点：那就等待自旋锁的线程会一直处于自旋状态，这样会浪费处理器时间，降低系统性能，所以自旋锁的持有时间不能太长。所以自旋锁适用于短时期的轻量级加锁，如果遇到需要长时间持有锁的场景那就需要换其他的方法了。</p>
-<p>Linux 内核使用结构体 spinlock_t 表示自旋锁，结构体定义如下所示： </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">typedef struct spinlock &#123;</span><br><span class="line">    union &#123;</span><br><span class="line">    	struct raw_spinlock rlock;</span><br><span class="line"></span><br><span class="line">#ifdef CONFIG_DEBUG_LOCK_ALLOC</span><br><span class="line"># define LOCK_PADSIZE (offsetof(struct raw_spinlock, dep_map))</span><br><span class="line">        struct &#123;</span><br><span class="line">            u8 __padding[LOCK_PADSIZE];</span><br><span class="line">            struct lockdep_map dep_map;</span><br><span class="line">        &#125;;</span><br><span class="line">#endif</span><br><span class="line">	&#125;;</span><br><span class="line">&#125; spinlock_t;</span><br><span class="line"></span><br><span class="line">spinlock_t lock; &#x2F;&#x2F;定义自旋锁</span><br></pre></td></tr></table></figure>
-<h3 id="自旋锁-API-函数"><a href="#自旋锁-API-函数" class="headerlink" title="自旋锁 API 函数"></a><strong>自旋锁</strong> <strong>API</strong> <strong>函数</strong></h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">DEFINE_SPINLOCK(spinlock_t lock) &#x2F;&#x2F;定义并初始化一个自选变量。</span><br><span class="line">int spin_lock_init(spinlock_t *lock) &#x2F;&#x2F;初始化自旋锁。</span><br><span class="line">void spin_lock(spinlock_t *lock) &#x2F;&#x2F;获取指定的自旋锁，也叫做加锁。</span><br><span class="line">void spin_unlock(spinlock_t *lock) &#x2F;&#x2F;释放指定的自旋锁。</span><br><span class="line">int spin_trylock(spinlock_t *lock) &#x2F;&#x2F;尝试获取指定的自旋锁，如果没有获取到就返回 0</span><br><span class="line">int spin_is_locked(spinlock_t *lock)</span><br><span class="line">&#x2F;&#x2F;检查指定的自旋锁是否被获取，如果没有被获取就返回非0，否则返回 0。</span><br></pre></td></tr></table></figure>
-<p>自旋锁API函数适用于SMP或支持抢占的单CPU下线程之间的并发访问，也就是用于线程与线程之间，被自旋锁保护的临界区一定不能调用任何能够引起睡眠和阻塞的API 函数，否则的话会可能会导致死锁现象的发生。</p>
-<p><strong>死锁：</strong>自旋锁会自动禁止抢占，也就说当线程 A得到锁以后会暂时禁止内核抢占。如果线程 A 在持有锁期间进入了休眠状态，那么线程 A 会自动放弃 CPU 使用权。线程 B 开始运行，线程 B 也想要获取锁，但是此时锁被 A 线程持有，而 且内核抢占还被禁止了！线程 B 无法被调度出去，那么线程 A 就无法运行，锁也就无法释放，所以死锁发生了！ </p>
-<p>API 函数用于线程之间的并发访问时，中断也想访问共享资源。中断里面可以使用自旋锁，但是在中断里面使用自旋锁的时候，在获取锁之前一定要先禁止本地中断(也就是本 CPU 中断，对于多核 SOC来说会有多个 CPU 核)，否则可能导致锁死现象的发生。线程 A 先运行，并且获取到了 lock 这个锁，当线程 A 运行 functionA 函数的时候中断发生了，中断抢走了 CPU 使用权。但是中断要执行的中断服务函数也要获取 lock 这个锁， 但是这个锁被线程 A 占有着，中断就会一直自旋，等待锁有效。但是在中断服务函数执行完之前，线程 A 是不可能执行的，线程 A 与中断僵持着，死锁发生！ 最好的解决方法就是获取锁之前关闭本地中断，Linux内核提供了相应的 API 函数</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">void spin_lock_irqsave(spinlock_t *lock, unsigned long flags)</span><br><span class="line">&#x2F;&#x2F;保存中断状态，禁止本地中断，并获取自旋锁。</span><br><span class="line">void spin_unlock_irqrestore(spinlock_t *lock, unsigned long flags)</span><br><span class="line">&#x2F;&#x2F;将中断状态恢复到以前的状态，并且激活本地中断，释放自旋锁。在释放锁的时候会恢复中断状态。</span><br></pre></td></tr></table></figure>
-<p>下半部(BH)也会竞争共享资源，有些资料也会将下半部叫做底半部。如果要在下半部里面使用自旋锁，</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">void spin_lock_bh(spinlock_t *lock) &#x2F;&#x2F;关闭下半部，并获取自旋锁。</span><br><span class="line">void spin_unlock_bh(spinlock_t *lock) &#x2F;&#x2F;打开下半部，并释放自旋锁</span><br></pre></td></tr></table></figure>
-<h3 id="其他类型的锁"><a href="#其他类型的锁" class="headerlink" title="其他类型的锁"></a><strong>其他类型的锁</strong></h3><p>在自旋锁的基础上还衍生出了其他特定场合使用的锁，这些锁在驱动中其实用的不多，更多的是在 <strong>Linux 内核</strong>中使用。</p>
-<p><strong>1、读写自旋锁</strong></p>
-<p>读写自旋锁为读和写操作提供了不同的锁，一次只能允许一个写操作，也就是只能一个线程持有写锁，而且不能进行读操作。但是当没有写操作的时候允许一个或多个线程持有读锁， 可以进行并发的读操作。也就是使用读写锁的时候读操作和写操作不能同时进行。</p>
-<p><strong>2、顺序锁</strong></p>
-<p>顺序锁在读写锁的基础上衍生而来的，使用顺序锁的话可以允许在写的时候进行读操作，也就是实现同时读写，但是不允许同时进行并发的写操作。虽然顺序锁的读和写操作可以同时进行，但是如果在读的过程中发生了写操作， 最好重新进行读取，保证数据完整性。</p>
-<p>顺序锁保护的资源不能是指针，因为如果在写操作的时候可能会导致指针无效，而这个时候恰巧有读操作访问指针的话就可能导致意外发生，比如读取野指针导致系统崩溃。</p>
-<h3 id="自旋锁使用注意事项"><a href="#自旋锁使用注意事项" class="headerlink" title="自旋锁使用注意事项"></a>自旋锁使用注意事项</h3><p>①、因为在等待自旋锁的时候处于“自旋”状态，因此锁的持有时间不能太长，一定要短，否则的话会降低系统性能。如果临界区比较大，运行时间比较长的话要选择其他的并发处理方式，比如稍后要讲的信号量和互斥体。</p>
-<p>②、自旋锁保护的临界区内不能调用任何可能导致线程休眠的 API 函数，否则的话可能导致死锁。</p>
-<p>③、不能递归申请自旋锁，因为一旦通过递归的方式申请一个你正在持有的锁，那么你就必须“自旋”，等待锁被释放，然而你正处于“自旋”状态，根本没法释放锁。结果就是自己把自己锁死了！<br>④、在编写驱动程序的时候我们必须考虑到驱动的可移植性，因此不管你用的是单核的还是多核的 SOC，都将其当做多核 SOC 来编写驱动程序。</p>
-<h2 id="2、实验程序编写"><a href="#2、实验程序编写" class="headerlink" title="2、实验程序编写"></a>2、<strong>实验程序编写</strong></h2><p>自旋锁保护的临界区要尽可能的短，因此在 open 函数中申请自旋锁，然后在 release 函 数中释放自旋锁的方法就不可取。我们可以使用一个变量来表示设备的使用情况，如果设备被使用了那么变量就加一，设备被释放以后变量就减 1，我们只需要使用自旋锁保护这个变量即可。 </p>
-<p>下面通过定义一个变量 dev_stats 表示设备的使用情况，dev_stats为 0 的时候表示设备没有被使用，dev_stats 大于 0 的时候表示设备被使用。驱动 open 函数中先判断 dev_stats 是否为 0，也就是判断设备是否可用，如果为 0 的话就使用设备，并且将 dev_stats加 1，表示设备被使用了。使用完以后在 release 函数中将 dev_stats 减 1，表示设备没有被使用 了。因此真正实现设备互斥访问的是变量 dev_stats，但是我们要使用自旋锁对 dev_stats 来做保护。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;***************************************************************</span><br><span class="line">文件名		: spinlock.c</span><br><span class="line">描述	   	: 自旋锁实验，使用自旋锁来实现对实现设备的互斥访问</span><br><span class="line">***************************************************************&#x2F;</span><br><span class="line">&#x2F;* gpioled设备结构体 *&#x2F;</span><br><span class="line">struct gpioled_dev&#123;</span><br><span class="line">	int dev_stats;			&#x2F;* 设备使用状态，0，设备未使用;&gt;0,设备已经被使用 *&#x2F;</span><br><span class="line">	spinlock_t lock;		&#x2F;* 自旋锁 *&#x2F;</span><br><span class="line">&#125;;</span><br><span class="line">struct gpioled_dev gpioled;	&#x2F;* led设备 *&#x2F;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: 打开设备</span><br><span class="line"> * @param - inode 	: 传递给驱动的inode</span><br><span class="line"> * @param - filp 	: 设备文件，file结构体有个叫做private_data的成员变量</span><br><span class="line"> * 					  一般在open的时候将private_data指向设备结构体。</span><br><span class="line"> * @return 			: 0 成功;其他 失败</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int led_open(struct inode *inode, struct file *filp)</span><br><span class="line">&#123;</span><br><span class="line">	unsigned long flags;</span><br><span class="line">	filp-&gt;private_data &#x3D; &amp;gpioled; &#x2F;* 设置私有数据 *&#x2F;</span><br><span class="line"></span><br><span class="line">	spin_lock_irqsave(&amp;gpioled.lock, flags);	&#x2F;* 上锁 *&#x2F;</span><br><span class="line">	if (gpioled.dev_stats) &#123;					&#x2F;* 如果设备被使用了 *&#x2F;</span><br><span class="line">		spin_unlock_irqrestore(&amp;gpioled.lock, flags);&#x2F;* 解锁 *&#x2F;</span><br><span class="line">		return -EBUSY;</span><br><span class="line">	&#125;</span><br><span class="line">	gpioled.dev_stats++;	&#x2F;* 如果设备没有打开，那么就标记已经打开了 *&#x2F;</span><br><span class="line">	spin_unlock_irqrestore(&amp;gpioled.lock, flags);&#x2F;* 解锁 *&#x2F;</span><br><span class="line"></span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: 关闭&#x2F;释放设备</span><br><span class="line"> * @param - filp 	: 要关闭的设备文件(文件描述符)</span><br><span class="line"> * @return 			: 0 成功;其他 失败</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int led_release(struct inode *inode, struct file *filp)</span><br><span class="line">&#123;</span><br><span class="line">	unsigned long flags;</span><br><span class="line">	struct gpioled_dev *dev &#x3D; filp-&gt;private_data;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 关闭驱动文件的时候将dev_stats减1 *&#x2F;</span><br><span class="line">	spin_lock_irqsave(&amp;dev-&gt;lock, flags);	&#x2F;* 上锁 *&#x2F;</span><br><span class="line">	if (dev-&gt;dev_stats) &#123;</span><br><span class="line">		dev-&gt;dev_stats--;</span><br><span class="line">	&#125;</span><br><span class="line">	spin_unlock_irqrestore(&amp;dev-&gt;lock, flags);&#x2F;* 解锁 *&#x2F;</span><br><span class="line"></span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 驱动入口函数</span><br><span class="line"> * @param 		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int __init led_init(void)</span><br><span class="line">&#123;</span><br><span class="line">	int ret &#x3D; 0;</span><br><span class="line"></span><br><span class="line">	&#x2F;*  初始化自旋锁 *&#x2F;</span><br><span class="line">	spin_lock_init(&amp;gpioled.lock);</span><br><span class="line">	</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>第 43 行，dev_stats 表示设备状态，如果为 0 的话表示设备还没有被使用，如果大于 0 的话就表示设备已经被使用了。 </p>
-<p>第 44 行，定义自旋锁变量 lock。 </p>
-<p>第 61~67 行，使用自旋锁实现对设备的互斥访问，第 61 行调用 spin_lock_irqsave 函数获取锁，为了考虑到驱动兼容性，这里并没有使用 spin_lock 函数来获取锁。第 62 行判断dev_stats 是否大于 0，如果是的话表示设备已经被使用了，那么就调用 spin_unlock_irqrestore函数释放锁，并且返回-EBUSY。如果设备没有被使用的话就在第 66 行将 dev_stats 加 1，表 示设备要被使用了，然后调用 spin_unlock_irqrestore 函数释放锁。自旋锁的工作就是保护dev_stats 变量，真正实现对设备互斥访问的是 dev_stats。 </p>
-<p>第 126~131 行，在 release 函数中将 dev_stats 减 1，表示设备被释放了，可以被其他的应用 程序使用。将 dev_stats 减 1 的时候需要自旋锁对其进行保护。 </p>
-<p>第 155 行，在驱动入口函数 led_init 中调用 spin_lock_init 函数初始化自旋锁。 </p>
-
-    
-
-    
-
-    
-
-  </div>
-  <div class="article-info article-info-index">
-    
-    
-    
-
-    
-    <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E8%87%AA%E6%97%8B%E9%94%81/">展开 >></a>
-    </p>
-    
-
-    
-    <div class="clearfix"></div>
-  </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-Linux驱动-并发与竞争-信号量" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-  
-  
-    <h1 itemprop="name">
-	
-	  <a class="article-title" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E4%BF%A1%E5%8F%B7%E9%87%8F/" target="_blank">Linux驱动-并发与竞争-信号量</a>
-  
-    </h1>
-  
-
-
-  
-  
-<a href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E4%BF%A1%E5%8F%B7%E9%87%8F/" class="archive-article-date">
-        <time datetime="2021-04-15T10:41:22.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-15</time>
-</a>
-
-  
-  
-    
-
-  
-  </header>
-  
-  <div class="article-entry" itemprop="articleBody">
-    
-     <a id="more"></a>
-
-<h1 id="1、信号量"><a href="#1、信号量" class="headerlink" title="1、信号量"></a>1、信号量</h1><p>信号量是同步的一种方式。Linux 内核也提供了信号量机制，信号量常常用于控制对共享资源的访问。相比于自旋锁，信号量可以使线程进入休眠状态。</p>
-<p>A 与 B、C 合租了一套房子，这个房子只有一个厕所，一次只能一个人使用。某一天早上 A 去上厕所了，过了一会 B 也想用厕所，因为 A 在厕所里面，所以 B 只能等到 A 用来了才能进去。B 要么就一直在厕所门口等着， 等 A 出来，这个时候就相当于自旋锁。B 也可以告诉 A，让 A 出来以后通知他一下，然后 B 继续回房间睡觉，这个时候相当于信号量。</p>
-<p>可以看出，使用信号量会提高处理器的使用效率，毕竟不用一直傻乎乎的在那里“自旋”等待。但是，信号量的开销要比自旋锁大，因为信号量使线程进入休眠状态以后会切换线程，切换线程就会有开销。总结一下信号量的特点：  </p>
-<p>①、因为信号量可以使等待资源线程进入休眠状态，因此适用于那些占用资源比较久的场合。 </p>
-<p>②、因此信号量不能用于中断中，因为信号量会引起休眠，中断不能休眠。 </p>
-<p>③、如果共享资源的持有时间比较短，那就不适合使用信号量了，因为频繁的休眠、切换线程引起的开销要远大于信号量带来的那点优势。</p>
-<p>信号量有一个信号量值，相当于一个房子有 10 把钥匙，这 10 把钥匙就相当于信号量值为10。因此，可以通过信号量来控制访问共享资源的访问数量，如果要想进房间，那就要先获取一把钥匙，信号量值减 1，直到 10 把钥匙都被拿走，信号量值为 0，这个时候就不允许任何人 进入房间了，因为没钥匙了。如果有人从房间出来，那他要归还他所持有的那把钥匙，信号量值加 1，此时有 1 把钥匙了，那么可以允许进去一个人。相当于通过信号量控制访问资源的线程数，在初始化的时候将信号量值设置的大于 1，那么这个信号量就是计数型信号量，计数型信号量不能用于互斥访问，因为它允许多个线程同时访问共享资源。如果要互斥的访问共享资源那么信号量的值就不能大于 1，此时的信号量就是一个二值信号量。</p>
-<h2 id="信号量-API-函数"><a href="#信号量-API-函数" class="headerlink" title="信号量 API 函数"></a><strong>信号量</strong> <strong>API</strong> <strong>函数</strong></h2><p>Linux 内核使用 semaphore 结构体表示信号量，结构体内容如下所示： </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">struct semaphore &#123;</span><br><span class="line">     raw_spinlock_t lock;</span><br><span class="line">     unsigned int count;</span><br><span class="line">     struct list_head wait_list;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">DEFINE_SEAMPHORE(name) &#x2F;&#x2F;定义一个信号量，并且设置信号量的值为 1。</span><br><span class="line">void sema_init(struct semaphore *sem, int val) &#x2F;&#x2F;初始化信号量 sem，设置信号量值为 val。</span><br><span class="line">void down(struct semaphore *sem)&#x2F;&#x2F;获取信号量，因为会导致休眠，因此不能在中断中使用。</span><br><span class="line">int down_trylock(struct semaphore *sem)</span><br><span class="line">&#x2F;&#x2F;尝试获取信号量，如果能获取到信号量就获取，并且返回 0。如果不能就返回非 0，并且不会进入休眠。</span><br><span class="line">int down_interruptible(struct semaphore *sem)</span><br><span class="line">&#x2F;&#x2F;获取信号量，使用down进入休眠状态的线程不能被信号打断。而使用此函数进入休眠以后是可以被信号打断的。</span><br><span class="line">void up(struct semaphore *sem) &#x2F;&#x2F;释放信号量</span><br></pre></td></tr></table></figure>
-<p>信号量的使用如下所示：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">struct semaphore sem; &#x2F;* 定义信号量 *&#x2F;</span><br><span class="line">sema_init(&amp;sem, 1)； &#x2F;* 初始化信号量 *&#x2F;</span><br><span class="line">down(&amp;sem); &#x2F;* 申请信号量 *&#x2F;</span><br><span class="line">&#x2F;* 临界区 *&#x2F;</span><br><span class="line">up(&amp;sem); &#x2F;* 释放信号量 *&#x2F;</span><br></pre></td></tr></table></figure>
-<h1 id="2、实验程序编写"><a href="#2、实验程序编写" class="headerlink" title="2、实验程序编写"></a>2、实验程序编写</h1><p>使用信号量实现了一次只能有一个应用程序访问 LED 灯，信号量可以导致休眠，因此信号量保护的临界区没有运行时间限制，可以在驱动的 open 函数申请信号量，然后在release 函数中释放信号量。但是信号量不能用在中断中，本节实验我们不会在中断中使用信号量。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;***************************************************************</span><br><span class="line">文件名		: semaphore.c</span><br><span class="line">描述	   	: 信号量实验，使用信号量来实现对实现设备的互斥访问</span><br><span class="line">***************************************************************&#x2F;</span><br><span class="line">&#x2F;* gpioled设备结构体 *&#x2F;</span><br><span class="line">struct gpioled_dev&#123;</span><br><span class="line">	struct semaphore sem;	&#x2F;* 信号量 *&#x2F;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">struct gpioled_dev gpioled;	&#x2F;* led设备 *&#x2F;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: 打开设备</span><br><span class="line"> * @param - inode 	: 传递给驱动的inode</span><br><span class="line"> * @param - filp 	: 设备文件，file结构体有个叫做private_data的成员变量</span><br><span class="line"> * 					  一般在open的时候将private_data指向设备结构体。</span><br><span class="line"> * @return 			: 0 成功;其他 失败</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int led_open(struct inode *inode, struct file *filp)</span><br><span class="line">&#123;</span><br><span class="line">	filp-&gt;private_data &#x3D; &amp;gpioled; &#x2F;* 设置私有数据 *&#x2F;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 获取信号量 *&#x2F;</span><br><span class="line">	if (down_interruptible(&amp;gpioled.sem)) &#123; &#x2F;* 获取信号量,进入休眠状态的进程可以被信号打断 *&#x2F;</span><br><span class="line">		return -ERESTARTSYS;</span><br><span class="line">	&#125;</span><br><span class="line">#if 0</span><br><span class="line">	down(&amp;gpioled.sem);		&#x2F;* 不能被信号打断 *&#x2F;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: 关闭&#x2F;释放设备</span><br><span class="line"> * @param - filp 	: 要关闭的设备文件(文件描述符)</span><br><span class="line"> * @return 			: 0 成功;其他 失败</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int led_release(struct inode *inode, struct file *filp)</span><br><span class="line">&#123;</span><br><span class="line">	struct gpioled_dev *dev &#x3D; filp-&gt;private_data;</span><br><span class="line"></span><br><span class="line">	up(&amp;dev-&gt;sem);		&#x2F;* 释放信号量，信号量值加1 *&#x2F;</span><br><span class="line"></span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 驱动入口函数</span><br><span class="line"> * @param 		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int __init led_init(void)</span><br><span class="line">&#123;</span><br><span class="line">	int ret &#x3D; 0;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 初始化信号量 *&#x2F;</span><br><span class="line">	sema_init(&amp;gpioled.sem, 1);</span><br><span class="line">	</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>第 43 行，在设备结构体中添加一个信号量成员变量 sem。 第 60~65行，在 open函数中申请信号量，可以使用 down 函数，也可以使用 down_interruptible函数。如果信号量值大于等于 1 就表示可用，那么应用程序就会开始使用 LED 灯。如果信号量值为 0 就表示应用程序不能使用 LED 灯，此时应用程序就会进入到休眠状态。等到信号量值大于 1 的时候应用程序就会唤醒，申请信号量，获取 LED 灯使用权。</p>
-<p>第 123 行，在 release 函数中调用 up 函数释放信号量，这样其他因为没有得到信号量而进入休眠状态的应用程序就会唤醒，获取信号量。</p>
-<p>第 147 行，在驱动入口函数中调用 sema_init 函数初始化信号量 sem 的值为 1，相当于 sem是个二值信号量。</p>
-<p>总结一下，当信号量 sem 为 1 的时候表示 LED 灯还没有被使用，如果应用程序 A 要使用LED 灯，先调用 open 函数打开/dev/gpioled，这个时候会获取信号量 sem，获取成功以后 sem 的值减 1 变为 0。如果此时应用程序 B 也要使用 LED 灯，调用 open 函数打开/dev/gpioled 就会因为信号量无效(值为 0)而进入休眠状态。当应用程序 A 运行完毕，调用 close 函数关闭/dev/gpioled的时候就会释放信号量 sem，此时信号量 sem 的值就会加 1，变为 1。信号量 sem 再次有效，表示其他应用程序可以使用 LED 灯了，此时在休眠状态的应用程序 A 就会获取到信号量 sem，获取成功以后就开始使用 LED 灯。</p>
-
-    
-
-    
-
-    
-
-  </div>
-  <div class="article-info article-info-index">
-    
-    
-    
-
-    
-    <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E4%BF%A1%E5%8F%B7%E9%87%8F/">展开 >></a>
     </p>
     
 

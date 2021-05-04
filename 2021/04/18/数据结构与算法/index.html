@@ -19,7 +19,7 @@
 <meta property="og:locale">
 <meta property="og:image" content="https://guoqiang-gump.github.io/2021/04/18/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95.assets/1618755737702.png">
 <meta property="article:published_time" content="2021-04-18T12:37:24.000Z">
-<meta property="article:modified_time" content="2021-04-20T10:13:02.032Z">
+<meta property="article:modified_time" content="2021-04-20T16:19:13.313Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -226,7 +226,7 @@
       <!-- 百度字体平台:http://fontstore.baidu.com/static/editor/index.html -->
       <i class="icon-statistics"></i>
       <span class="post-meta-item-text"> 字数统计:</span>
-      <span class="post-count">1.4k字</span>
+      <span class="post-count">2.2k字</span>
     </span>
   </span>
 
@@ -235,7 +235,7 @@
     <span class="post-meta-item-icon">
       <i class="icon-book icon"></i>
       <span class="post-meta-item-text"> 阅读时长≈</span>
-      <span class="post-count">4分</span>
+      <span class="post-count">8分</span>
     </span>
   </span>
 </div>
@@ -283,7 +283,22 @@
 <p>将单链表中终端结点的指针端由空指针改为指向头结点,就使整个单链表形成一个环,这种头尾相接的单链表称为单循环链表,简称循环链表( circular linked list)。</p>
 <p>双向链表</p>
 <p>双向链表double linked list)是在单链表的每个结点中,再设置一个指向其前驱结点的指针域。所以在双向链表中的结点都有两个指针域,一个指向直接后继,另一个指向直接前驱。</p>
-<h1 id="受限线性表"><a href="#受限线性表" class="headerlink" title="受限线性表"></a><strong>受限线性表</strong></h1>
+<h1 id="受限线性表"><a href="#受限线性表" class="headerlink" title="受限线性表"></a><strong>受限线性表</strong></h1><h1 id="栈stack"><a href="#栈stack" class="headerlink" title="栈stack"></a>栈stack</h1><p>栈的基本特性<br>   具有后进先出的特性(Last In First Out=LIFO)<br>   具有先进后出的特性(First In Last Out=FILO)<br>   栈的操作只能操作栈顶！类比弹匣<br>   入栈又称压栈<br>   出栈又称弹栈</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">typedef struct stack &#123;</span><br><span class="line">    int *arr; &#x2F;&#x2F;数组的首地址</span><br><span class="line">    int cap; &#x2F;&#x2F;栈的容量大小</span><br><span class="line">    int top; &#x2F;&#x2F;栈顶</span><br><span class="line">&#125;stack_t;</span><br></pre></td></tr></table></figure>
+<h1 id="队列queue"><a href="#队列queue" class="headerlink" title="队列queue"></a>队列queue</h1><p>特性：先进先出(First In First Out=FIFO),取数从队列的开头取,存储从队列尾部存<br>              第一个元素又称首元素,最后一个元素又称尾元素</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">typedef struct queue &#123;</span><br><span class="line">    int *arr; &#x2F;&#x2F;首地址</span><br><span class="line">    int cap; &#x2F;&#x2F;容量</span><br><span class="line">    int size; &#x2F;&#x2F;有效数据的个数</span><br><span class="line">    int front; &#x2F;&#x2F;前端(出队)</span><br><span class="line">    int rear; &#x2F;&#x2F;后端(入队)</span><br><span class="line">&#125;queue_t;</span><br></pre></td></tr></table></figure>
+<h1 id="链表list"><a href="#链表list" class="headerlink" title="链表list"></a>链表list</h1><h2 id="单链表"><a href="#单链表" class="headerlink" title="单链表"></a>单链表</h2><p>特点：体现一对一的前后关系</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;声明描述每个节点信息的数据结构</span><br><span class="line">typedef struct node &#123;</span><br><span class="line">    int data; &#x2F;&#x2F;数据</span><br><span class="line">    struct node *next; &#x2F;&#x2F;保存下一个节点的首地址</span><br><span class="line">&#125;node_t;</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F;声明描述整个单链表的数据结构</span><br><span class="line">typedef struct list &#123;</span><br><span class="line">    struct node *head; &#x2F;&#x2F;指向头节点</span><br><span class="line">    struct node *tail; &#x2F;&#x2F;指向尾节点</span><br><span class="line">&#125;list_t;</span><br></pre></td></tr></table></figure>
+<p>​     注意：每个节点的内存不一定连续,不像数组一样连续</p>
+<h2 id="双链表"><a href="#双链表" class="headerlink" title="双链表"></a>双链表</h2><p> 一个有序的结点序列，每个链表元素既有指向下一个元素的指针，又有指向前一个元素的指针，其中每个结点都有两种指针，即<strong>front</strong>和<strong>tail</strong>，<strong>front</strong>指针指向左边结点，<strong>tail</strong>指针指向右边结点 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;*声明描述节点信息的结构体*&#x2F;</span><br><span class="line">typedef struct node &#123;</span><br><span class="line">    int data; &#x2F;&#x2F;数据</span><br><span class="line">    struct node *next; &#x2F;&#x2F;指向下一个节点</span><br><span class="line">    struct node *prev; &#x2F;&#x2F;指向上一个节点</span><br><span class="line">&#125;node_t;</span><br><span class="line"></span><br><span class="line">&#x2F;*声明描述整个链表的结构体*&#x2F;</span><br><span class="line">typedef struct list &#123;</span><br><span class="line">    struct node head; &#x2F;&#x2F;头节点</span><br><span class="line">    struct node tail; &#x2F;&#x2F;尾节点</span><br><span class="line">&#125;list_t;</span><br></pre></td></tr></table></figure>
+<h2 id="循环链表"><a href="#循环链表" class="headerlink" title="循环链表"></a>循环链表</h2><p>指的是在单向链表和双向链表的基础上，将两种链表的最后一个结点指向第一个结点从而实现循环</p>
+<h1 id="树tree"><a href="#树tree" class="headerlink" title="树tree"></a>树tree</h1><h2 id="二叉树"><a href="#二叉树" class="headerlink" title="二叉树"></a>二叉树</h2><p>二叉树是一种特殊的树</p>
+<p>1.每个节点最多有两个子节点(可以没有,可以有一个)<br>      2.单根,每个子节点有且仅有一个父节点,整棵树只有一个根节点<br>         左子树：根节点左边的子树<br>         右子树：根节点右边的子树<br>      3.一般用递归函数来处理</p>
+<h3 id="二叉查找树-有序二叉树"><a href="#二叉查找树-有序二叉树" class="headerlink" title="二叉查找树(有序二叉树)"></a>二叉查找树(有序二叉树)</h3><p>有序二叉树定义：一般来说,当左子树不为空时,左子树的元素值小于根节点 当右子树不为空时,右子树的元素值大于根节点</p>
+<p>三种遍历方式：<br>   先序遍历(又称前序遍历):处理节点自己的数据-&gt;处理左节点-&gt;处理右节点<br>   中序遍历(重点):处理左节点-&gt;处理节点自己的数据-&gt;处理右节点<br>   后序遍历:处理左节点-&gt;处理右节点-&gt;处理节点自己的数据</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;声明描述节点的数据结构</span><br><span class="line">typedef struct node &#123;</span><br><span class="line">    int data; &#x2F;&#x2F;数据</span><br><span class="line">    struct node *left; &#x2F;&#x2F;左子树地址</span><br><span class="line">    struct node *right; &#x2F;&#x2F;右子树地址</span><br><span class="line">&#125;node_t;</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F;声明描述整颗树的数据结构、</span><br><span class="line">typedef struct tree &#123;</span><br><span class="line">    node_t *root; &#x2F;&#x2F;根节点地址</span><br><span class="line">    int cnt; &#x2F;&#x2F;节点个数</span><br><span class="line">&#125;tree_t;</span><br></pre></td></tr></table></figure>
+
     
 
     
@@ -407,6 +422,15 @@
 
 
 <nav id="article-nav">
+  
+    <a href="/2021/05/03/UinxC-IO%E7%BC%96%E7%A8%8B2/" id="article-nav-newer" class="article-nav-link-wrap">
+      <i class="icon-circle-left"></i>
+      <div class="article-nav-title">
+        
+          UinxC-IO编程2
+        
+      </div>
+    </a>
   
   
     <a href="/2021/04/18/Linux%E9%A9%B1%E5%8A%A8-%E7%94%B5%E5%AE%B9%E8%A7%A6%E6%91%B8%E5%B1%8F%E9%A9%B1%E5%8A%A8/" id="article-nav-older" class="article-nav-link-wrap">

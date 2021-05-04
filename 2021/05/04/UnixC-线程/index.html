@@ -6,17 +6,19 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="https://guoqiang-gump.github.io">
-  <title>Archives: 2021 | 国强-阿甘</title>
+  <title>UnixC-线程 | 国强-阿甘</title>
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="国强-阿甘_技术博客">
-<meta property="og:type" content="website">
-<meta property="og:title" content="国强-阿甘">
-<meta property="og:url" content="https://guoqiang-gump.github.io/archives/2021/page/6/index.html">
+  <meta name="description" content="十四、多线程1.什么是线程？源代码 -编译和链接-&gt; 程序 -加载到内存中-&gt; 进程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="UnixC-线程">
+<meta property="og:url" content="https://guoqiang-gump.github.io/2021/05/04/UnixC-%E7%BA%BF%E7%A8%8B/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="国强-阿甘_技术博客">
+<meta property="og:description" content="十四、多线程1.什么是线程？源代码 -编译和链接-&gt; 程序 -加载到内存中-&gt; 进程">
 <meta property="og:locale">
+<meta property="article:published_time" content="2021-05-04T14:32:47.000Z">
+<meta property="article:modified_time" content="2021-05-04T15:41:11.846Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -189,462 +191,312 @@
               class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-  
+            <article id="post-UnixC-线程" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2021" class="archive-year">2021</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/04/11/IMX6U-GPT%E5%AE%9A%E6%97%B6%E5%99%A8/" class="archive-article-date">
-        <time datetime="2021-04-11T08:46:40.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-11</time>
-</a>
-
-        </div>
-    	 
+      <header class="article-header">
   
-    <h1 itemprop="name">
-	
-	  <a class="archive-article-title" href="/2021/04/11/IMX6U-GPT%E5%AE%9A%E6%97%B6%E5%99%A8/" target="_blank">IMX6U-GPT定时器</a>
   
+    <h1 class="article-title" itemprop="name">
+      UnixC-线程
     </h1>
   
 
 
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
   
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/04/11/IMX6U-EPIT%E5%AE%9A%E6%97%B6%E5%99%A8/" class="archive-article-date">
-        <time datetime="2021-04-11T08:06:21.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-11</time>
+  
+        
+        <span id="busuanzi_container_page_pv" style='display:none' class="archive-article-date">
+              <i class="icon-smile icon"></i> 阅读数：<span id="busuanzi_value_page_pv"></span>次
+        </span>
+
+<a href="/2021/05/04/UnixC-%E7%BA%BF%E7%A8%8B/" class="archive-article-date">
+        <time datetime="2021-05-04T14:32:47.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-05-04</time>
 </a>
 
+  
+  
+    
+<div style="margin-top:10px;">
+  <span class="post-time">
+    <span class="post-meta-item-icon">
+      <!-- fonts.scss -->
+      <!-- 百度字体平台:http://fontstore.baidu.com/static/editor/index.html -->
+      <i class="icon-statistics"></i>
+      <span class="post-meta-item-text"> 字数统计:</span>
+      <span class="post-count">4.4k字</span>
+    </span>
+  </span>
+
+  <span class="post-time">
+    &nbsp; | &nbsp;
+    <span class="post-meta-item-icon">
+      <i class="icon-book icon"></i>
+      <span class="post-meta-item-text"> 阅读时长≈</span>
+      <span class="post-count">15分</span>
+    </span>
+  </span>
+</div>
+
+
+  
+  </header>
+  
+  <div class="article-entry" itemprop="articleBody">
+    
+    <h1 id="十四、多线程"><a href="#十四、多线程" class="headerlink" title="十四、多线程"></a>十四、多线程</h1><h2 id="1-什么是线程？"><a href="#1-什么是线程？" class="headerlink" title="1.什么是线程？"></a>1.什么是线程？</h2><p>源代码 -编译和链接-&gt; 程序 -加载到内存中-&gt; 进程</p>
+<a id="more"></a>
+
+<p>​                                       |                                  |<br>​                                    文件                             内存<br>​                                                                        /   <br>​                                                                 代码 &lt;- 执行<br>​                                                                 数据 &lt;- 处理<br>​                                                                    |            | &lt;- CPU<br>​                                                                 静态      动态<br>​                                                                    |            |<br>​                                                                 资源      线程<br>线程就是进程的执行过程，即进程内部的控制序列，或者说是进程中的一个任务。<br>一个进程可以同时拥有多个线程，即同时被系统调度的多个执行路径，但至少要有一个主线程——main函数及被其调用的其它函数。<br>一个进程的所有线程都共享进程的代码区、数据区、BSS区、堆区、环境变量和命令行参数区、文件描述符表、信号处理函数、当前工作目录、用户和组的各种ID等。但是栈区不是共享的，一个进程的每个线程都拥有自己独立的栈区。</p>
+<p><strong>线程调度：</strong><br>1)系统内核中专门负责线程调度的处理单元被称为调度器；<br>2)调度器将所有处于就绪状态(没有阻塞在任何系统调用上)的线程排成一个队列，即所谓就绪队列；<br>3)调度器从就绪队列中获取队首线程，为其分配一个时间片，并令处理器执行该线程，过了一段时间：</p>
+<ul>
+<li>该线程的时间片耗尽，调度器立即终止该线程，并将其排到就绪队列的尾端，接着从队首获取下一个线程；</li>
+<li>该线程的时间片未耗尽，但需阻塞于某系统调用，比如等待I/O或者睡眠。调度器会中止该线程，并将其从就绪队列中移至等待队列，直到其等待的条件满足后，再被移回就绪队列；</li>
+</ul>
+<p>4)在低优先级线程执行期间，有高优先级线程就绪，后者会抢占前者的时间片；<br>5)若就绪队列为空，则系统内核进入空闲状态，直至其非空；<br>6)象Linux这样的多任务分时系统，基本的调度单位是线程；<br>7)为线程分配的时间片不宜过长，因为时间片太长会导致没有获得处理机的线程等候时间过久，降低系统运行的并行性，用户会感觉到明显的响应延迟；时间片也不宜过短，因为过短的时间片会增加在线程之间切换上下文的频率，降低系统的运行性能。</p>
+<h2 id="2-线程的基本特点"><a href="#2-线程的基本特点" class="headerlink" title="2.线程的基本特点"></a>2.线程的基本特点</h2><p>1)线程是进程中的独立实体，可以拥有自己的资源，可以被独立标识——线程ID，同时也被作为基本调用单元，参与时间片的分配。<br>2)线程有不同的状态，如创建、运行、终止、暂停、恢复、取消等。<br>3)线程可以使用的大部分资源还是隶属于进程的，因此线程作为进程的一部分不能脱离进程独立存在。<br>4)一个进程可以同时执行多个线程，这些线程可以执行相同的代码，完成相同的任务，也可以执行不同的代码，完成不同的任务。<br>5)创建一个线程所花费的开销远小于创建进程的开销。线程也称为轻量级进程。因此在解决诸如并发问题等问题时，优先考虑多线程，其次才是多进程。<br>6)多线程的问题在于因为太多的资源被共享，极易导致冲突，为了解决冲突可能需要增加额外的开销，因此多进程仍然有它的优势。</p>
+<ul>
+<li>进程，特点：内存壁垒，重点关注：通信。</li>
+<li>线程，特点：内存共享，重点关注：同步。</li>
+</ul>
+<h2 id="3-POSIX线程"><a href="#3-POSIX线程" class="headerlink" title="3.POSIX线程"></a>3.POSIX线程</h2><p>#include &lt;pthread.h&gt;<br>-lpthread -&gt; libpthread.so//需要链接动态库</p>
+<h2 id="4-创建线程"><a href="#4-创建线程" class="headerlink" title="4.创建线程"></a>4.创建线程</h2><p>线程过程函数：在一个线程中被内核调用的函数，对该函数的调用过程就是线程的执行过程，从该函数中返回就意味着线程的结束。因此，main函数其实就是一个进程的主线程的线程过程函数。所有自创建的线程都必须有一个对应线程过程函数。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">void* 线程过程函数(void* 线程参数指针) &#123;</span><br><span class="line">    线程的执行过程</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int pthread_create(pthread_t* tid, const pthread_attr_t* attr,</span><br><span class="line">    void* (*start_routine)(void*), void* arg);</span><br><span class="line">成功返回0，失败返回错误码。</span><br><span class="line">tid - 输出线程标识(TID)。</span><br><span class="line">attr - 线程属性，NULL表示缺省属性。</span><br><span class="line">start_routine - 线程过程函数指针</span><br><span class="line">arg - 线程参数指针</span><br></pre></td></tr></table></figure>
+<p>pthread_create<br>    -&gt;创建一个新线程<br>        -&gt;调用线程过程函数(start_routine) 并传入线程参数指针(arg)<br>被创建的子线程和创建该子线程的父线程是并行的关系，其调度顺序无法预知，因此当pthread_create函数返回时子线程执行的位置无从确定，其线程过程函数可能尚未被调用，也可能正在执行，甚至可能已经返回。传递给线程的参数对象，一定要在线程过程函数不再使用它的情况下才能被释放。</p>
+<p>主线程和通过pthread_create函数创建的多个子线程，在时间上“同时”运行，如果不附加任何同步条件，则它们每一个执行步骤的先后顺序完全无法预知，这就叫做自由并发。</p>
+<p>为了让线程过程函数的实现更加灵活，可以通过线程参数传递特定的信息，帮助线程过程函数执行不同的任务。</p>
+<h2 id="5-汇合线程"><a href="#5-汇合线程" class="headerlink" title="5.汇合线程"></a>5.汇合线程</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">       创建点     汇合点</span><br><span class="line">--------+---------+-------&gt; 主线程</span><br><span class="line">        \________&#x2F; 子线程</span><br><span class="line">int phread_join(pthread_t tid, void** retval);</span><br><span class="line">成功返回0，失败返回错误码。</span><br><span class="line">tid - 线程标识</span><br><span class="line">retval - 线程退出码</span><br><span class="line">当调用pthread_join函数时：</span><br><span class="line">tid线程已经终止，立刻返回，返回线程退出码。</span><br><span class="line">tid线程尚未终止，阻塞等待，直到被汇合线程终止。</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">void* 线程过程函数(void* 线程参数指针) &#123;</span><br><span class="line">    线程的执行过程</span><br><span class="line">    return p;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>线程过程函数返回一个指针P，内核将p传给 retval-&gt;q[ ]，汇合线程函数phread_join(…, &amp;q);就可以得到线程过程函数返回的内容。</p>
+<p>phread_join主要做的工作：</p>
+<ul>
+<li>等待子线程终止</li>
+<li>清理线程的资源</li>
+<li>获得线程过程函数的返回值</li>
+</ul>
+<h2 id="6-分离线程"><a href="#6-分离线程" class="headerlink" title="6.分离线程"></a>6.分离线程</h2><p>在有些时候作为子线程的创建者，父线程可能并不关心子线程何时终止，同时父线程也不需要获得子线程的返回值。这种情况下，就可将子线程设置为分离线程，这样的线程一旦终止，它们的资源会被系统自动回收，而无需在其父线程中调用pthread_join函数。</p>
+<p>方法一：pthread_detach函数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">int pthread_detach(pthread_t tid);</span><br><span class="line">成功返回0，失败返回错误码。</span><br><span class="line">tid - 线程标识</span><br></pre></td></tr></table></figure>
+<p>方法二：通过设置线程属性</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">pthread_attr_t attr;&#x2F;&#x2F;线程属性</span><br><span class="line">pthread_attr_init(&amp;attr); &#x2F;&#x2F; 用缺省值初始化线程属性</span><br><span class="line">pthread_attr_setdetachstat(&amp;attr, PTHREAD_CREATE_DETACHED);&#x2F;&#x2F;设置分离线程属性</span><br><span class="line">pthread_create(..., &amp;attr, ...);&#x2F;&#x2F;在创建的时候就可以使线程为分离线程</span><br><span class="line">pthread_attr_destroy(&amp;attr);</span><br></pre></td></tr></table></figure>
+<h2 id="7-线程ID"><a href="#7-线程ID" class="headerlink" title="7.线程ID"></a>7.线程ID</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">pthread_t tid;</span><br><span class="line">pthread_create(&amp;tid, ...); </span><br><span class="line">tid：输出子线程的TID</span><br><span class="line"></span><br><span class="line">pthread_self();&#x2F;&#x2F; 返回调用线程的TID</span><br><span class="line"></span><br><span class="line">int pthread_equal(pthread_t tid1, pthread_t tid2);&#x2F;&#x2F;比较两个线程tid</span><br><span class="line">两个TID相等返回非零，否则返回0。</span><br></pre></td></tr></table></figure>
+<p>通过pthread_self函数返回的线程ID和pthread_create函数输出的线程ID一样都是由PTHREAD库内部维护的虚拟(伪)线程ID，可用于其它需要提供线程ID的PTHREAD函数。系统内核维护的真实线程ID，可通syscall(SYS_gettid)获得：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;unistd.h&gt; &#x2F;&#x2F; 声明syscall函数</span><br><span class="line">#include &lt;syscall.h&gt; &#x2F;&#x2F; 定义SYS_gettid宏</span><br><span class="line">syscall(SYS_gettid);&#x2F;&#x2F;获取系统内核维护的真实线程ID</span><br></pre></td></tr></table></figure>
+<p>在Linux系统中，一个进程的PID实际上就是其主线程的TID。</p>
+<h2 id="8-终止线程-自己"><a href="#8-终止线程-自己" class="headerlink" title="8.终止线程(自己)"></a>8.终止线程(自己)</h2><p>1)从线程过程函数中返回，执行该过程函数的线程即终止。其返回值可通过pthread_join函数的第二参数输出给调用者。<br>2)在线程过程函数及被其调用的任何函数中都可以调用pthread_exit函数终止当前线程：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void pthread_exit(void* retval);</span><br></pre></td></tr></table></figure>
+<p>retval就相当于线程过程函数的返回值，同样可被pthread_join的第二个参数输出给调用。</p>
+<p>注意：在子线程中调用pthread_exit，只会终止调用线程自己，对其其它兄弟线程和主线程没有影响。但如果在主线程中调用pthread_exit，被终止的将是整个进程及其所包含的全部线程。</p>
+<h2 id="9-取消-其它-线程"><a href="#9-取消-其它-线程" class="headerlink" title="9.取消(其它)线程"></a>9.取消(其它)线程</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">int pthread_cancel(pthread_t tid);</span><br><span class="line">成功返回0，失败返回错误码。</span><br><span class="line">tid - 被取消线程的TID。</span><br></pre></td></tr></table></figure>
+<p>该函数只是向特定线程发出取消请求，并不等待其终止运行。缺省情况下，线程在收到取消请求以后，并不会立即终止，而是仍继续运行，直到达到某个取消点。在取消点处，线程检查其自身是否已被取消，若是则立即终止。取消点通常出现在一些特定的系统调用中。</p>
+<p><strong>设置调用线程的取消状态为接受或忽略取消请求：</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">int pthread_setcancelstate(int state, int* oldstate);</span><br><span class="line">state - 取消状态，可取以下值：</span><br><span class="line">PTHREAD_CANCEL_ENABLE - 接受取消请求(缺省)</span><br><span class="line">PTHREAD_CANCEL_DISABLE - 忽略取消请求</span><br><span class="line">old_state - 输出原取消状态，可取NULL。</span><br></pre></td></tr></table></figure>
+<p><strong>设置调用线程的取消类型为延迟取消或立即取消：</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">int pthread_setcanceltype(int type, int* oldtype);</span><br><span class="line">type - 取消类型，可取以下值：</span><br><span class="line">    PTHREAD_CANCEL_DEFERRED - 延迟取消(缺省)，接到取消请求，如果不是忽略的话，继续运行一段时间，直到执行取消点时再终止。</span><br><span class="line">    PTHREAD_CANEL_ASYNCHRONOUS - 立即取消，接到取消请求，如果不是忽略的话，立刻终止运行。</span><br><span class="line">old_type - 输出原取消类型，可取NULL。</span><br></pre></td></tr></table></figure>
+<h2 id="10-线程冲突"><a href="#10-线程冲突" class="headerlink" title="10.线程冲突"></a>10.线程冲突</h2><p>g = 0<br>线程1                                   线程2<br>把内存(g=0)中的值读入寄存器(eax=0)<br>把寄存器(eax=0-&gt;1)中的值加1<br>把寄存器(eax=1)中的值存入内存(g=1)<br>                                  把内存(g=1)中的值读入寄存器(eax=1)<br>                                  把寄存器(eax=1-&gt;2)中的值加1<br>                                  把寄存器(eax=2)中的值存入内存(g=2)<br>线程1                                   线程2<br>把内存(g=0)中的值读入寄存器(eax=0)<br>                                  把内存(g=0)中的值读入寄存器(eax=0)<br>把寄存器(eax=0-&gt;1)中的值加1<br>                                  把寄存器(eax=0-&gt;1)中的值加1<br>把寄存器(eax=1)中的值存入内存(g=1)<br>                                  把寄存器(eax=1)中的值存入内存(g=1)</p>
+<p>当两个或两个的线程同时以非原子化的方式访问同一个对象时，极有可能导致对象的最终状态不稳定，这就是所谓的线程冲突。解决冲突的基本原则就是敏感操作的原子化，即保证一个线程完成这组敏感操作以后，再允许另个线程执行类似的操作，位于与共享资源有关的操作代码，在任何时候都只允许一个线程执行。</p>
+<h2 id="11-互斥锁"><a href="#11-互斥锁" class="headerlink" title="11.互斥锁"></a>11.互斥锁</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">静态初始化</span><br><span class="line">pthread_mutex_t mutex &#x3D; PTHREAD_MUTEX_INITIALIZER;</span><br><span class="line"></span><br><span class="line">动态初始化</span><br><span class="line">pthread_mutex_t mutex;</span><br><span class="line"></span><br><span class="line">pthread_mutex_init(&amp;mutex, NULL); &#x2F;&#x2F; 分配内核资源</span><br><span class="line">pthread_mutex_destroy(&amp;mutex); &#x2F;&#x2F; 释放内核资源</span><br><span class="line"></span><br><span class="line">pthread_mutex_lock(&amp;mutex); &#x2F;&#x2F; 锁定互斥锁</span><br><span class="line">pthread_mutex_unlock(&amp;mutex); &#x2F;&#x2F; 解锁互斥锁</span><br></pre></td></tr></table></figure>
+<p>任何时刻只会有一个线程对特定的互斥锁锁定成功，其它试图对其锁定的线程会在此函数中阻塞等待，直到该互斥锁的持有者线程将其解锁为止。</p>
+<p>对特定互斥锁对象锁定成功的线程通过pthread_mutex_unlock函数将其解锁，那些阻塞于对该互斥锁对象试图锁定的线程中的一个会被唤醒，得到该互斥锁，并从pthread_mutex_lock函数中返回。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">示例：</span><br><span class="line">void* thread1(void* arg) &#123;</span><br><span class="line">    ...</span><br><span class="line">    pthread_mutex_lock(&amp;mutex);</span><br><span class="line">    执行操作，访问共享对象</span><br><span class="line">    pthread_mutex_unlock(&amp;mutex);</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line">void* thread2(void* arg) &#123;</span><br><span class="line">    ...</span><br><span class="line">    pthread_mutex_lock(&amp;mutex);</span><br><span class="line">    执行操作，访问共享对象</span><br><span class="line">    pthread_mutex_unlock(&amp;mutex);</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>互斥锁在保证数据一致性和防止并发冲突的同时，也牺牲了多线程应用的并发性，因此在设计上，应尽量少地使用互斥锁，或者说只有在需要被互斥锁保护的操作过程中，使用它，而对于保护需求不明显的场合尽量不用。</p>
+<h2 id="12-信号量"><a href="#12-信号量" class="headerlink" title="12.信号量"></a>12.信号量</h2><p>功能和用法与XSI/IPC对象中的信号量集非常类似，但是XSI/IPC对象中的信号量集只能用于进程，而这里的信号量既可以用于进程，也可以用于线程。<br><strong>初始化信号量：</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">int sem_init(sem_t* sem, int pshared, unsigned int value);</span><br><span class="line">成功返回0，失败返回-1。</span><br><span class="line">sem - 信号量。</span><br><span class="line">pshared - 用0和非0分别表示该信号量用于线程或是进程。</span><br><span class="line">value - 信号量的初值，即初始空闲资源数。</span><br></pre></td></tr></table></figure>
+<p>当pshared参数取0，信号量仅用于一个进程中的多个线程，其本质就是一个普通的全局变量，但如果改参数取值为非0，则信号量可用于不同的进程，其存储位置在可为这些进程所访问的共享内存中。</p>
+<p><strong>销毁信号量：</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">int sem_destroy(sem_t* sem);</span><br><span class="line">成功返回0，失败返回-1。</span><br><span class="line">sem - 信号量。</span><br></pre></td></tr></table></figure>
+<p><strong>等待信号量</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">int sem_wait(sem_t* sem);</span><br><span class="line">成功返回0，失败返回-1。</span><br><span class="line">sem - 信号量。</span><br></pre></td></tr></table></figure>
+<p>如果信号量的当前值大于0，则将其减1并立即返回0，表示获得资源。如果该信号量的当前值等于0，这就意味着已经没有空闲资源可供分配，调用该该函数的线程或进程将被阻塞，直到因资源被释放信号量的值够减1为止。</p>
+<p><strong>释放信号量</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int sem_post(sem_t* sem);</span><br><span class="line">成功返回0，失败返回-1。</span><br></pre></td></tr></table></figure>
+<p>将信号量的值加1。那些正阻塞于针对该信号量的sem_wait函数调用中的一个线程或进程将被唤醒，并在对信号量减1之后从sem_wait函数中返回。</p>
+<p><strong>获取信号量的当前值</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">int sem_getvalue(sem_t* sem, int* sval);</span><br><span class="line">成功返回0，失败返回-1。</span><br><span class="line">sem - 信号量</span><br><span class="line">sval - 输出信号量的当前值，即当前可分配资源数</span><br></pre></td></tr></table></figure>
+<h2 id="13-条件变量"><a href="#13-条件变量" class="headerlink" title="13.条件变量"></a>13.条件变量</h2><p>线程1<br>    …<br>    if (后续操作所依赖的条件不满足)<br>        睡眠于条件变量;<br>    后续操作<br>    …<br>线程2<br>    …<br>    创建出后续操作所依赖的条件<br>    唤醒在条件变量中睡眠的线程<br>    …</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">静态初始化</span><br><span class="line">pthread_cond_t cond &#x3D; PTHREAD_COND_INITIALIZER;</span><br><span class="line"></span><br><span class="line">动态初始化</span><br><span class="line">pthread_cond_init(&amp;cond, NULL);&#x2F;&#x2F;动态创建</span><br><span class="line">...</span><br><span class="line">pthread_cond_destroy(&amp;cond);&#x2F;&#x2F;销毁</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">等待条件变量，即在条件变量中睡眠：</span><br><span class="line">int pthread_cond_wait(pthread_cond_t* cond, pthread_mutex_t* mutex);</span><br><span class="line">当调用线程在cond条件变量中睡眠期间mutex互斥会被解锁，直到该线程从条件变量中苏醒，即从该函数中返回再重新拥有该互斥锁。</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int pthread_cond_signal(pthread_cond_t* cond);</span><br><span class="line">唤醒在条件变量cond中睡眠的第一个线程，即条件等待队列的队首线程，待其重新获得互斥锁以后从pthread_cond_wait函数中返回。</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int pthread_cond_broadcast(pthread_cond_t* cond);</span><br><span class="line">唤醒在条件变量cond中睡眠的所有线程，只有重新获得互斥锁的线程会从pthread_cond_wait函数中返回。</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">生产者——消费者模型：</span><br><span class="line">硬件&#x2F;网络-&gt;生产者线程-数据-&gt;消费者线程</span><br><span class="line">          \__________________&#x2F;</span><br><span class="line">                 刚性耦合</span><br><span class="line">硬件&#x2F;网络-&gt;生产者线程-数据-&gt;缓冲区-数据-&gt;消费者线程</span><br><span class="line">          \________________________________&#x2F;</span><br><span class="line">                 柔性耦合</span><br></pre></td></tr></table></figure>
+<p>理想缓冲区：永远不满且不空<br>实际缓冲区：满不能放入——撑死，空不能提取——饿死。<br>生产者线程：<br>    if (缓冲区满)<br>        睡入非满条件变量，释放缓冲区锁<br>        被唤醒，离开条件等候队列，重新获得缓冲区锁<br>    生产-&gt;非空<br>    唤醒在非空条件变量中睡眠的消费者线程<br>消费者线程：<br>    if (缓冲区空)<br>        睡入非空条件变量，释放缓冲区锁<br>        被唤醒，离开条件等候队列，重新获得缓冲区锁<br>    消费-&gt;非满<br>    唤醒在非满条件变量中睡眠的生产者线程</p>
+<h2 id="14-死锁"><a href="#14-死锁" class="headerlink" title="14.死锁"></a>14.死锁</h2><p>死锁的四个必要条件：</p>
+<ol>
+<li>独占排它：线程以独占的方式使用其所获得的资源，即在一个段时间内不允许其它线程使用该资源。这段时间内，任何试图请求该资源的线程只能在阻塞中等待，直到资源被其拥有者主动释放。</li>
+<li>请求保持：线程已经拥有了至少一份资源，但又试图获取已被其它线程拥有的资源，因此只能在阻塞中等待，同时对自己已经获取的资源又坚守不放。</li>
+<li>不可剥夺：线程已经获得的资源，在其未被使用完之前，不可被强制剥夺，而只能由其拥有者自己释放。</li>
+<li>循环等待：线程集合{T0,T1,Tn}中，T0等待T1占有的资源，T1等待T2占有的资源，…，Tn等待T0占有的资源，形成环路。</li>
+</ol>
+
+    
+
+    
+    <div class="page-reward">
+      <a href="javascript:void(0);" class="page-reward-btn tooltip-top" target="_self">
+        <div class="tooltip tooltip-east">
+          <span class="tooltip-item">
+            赏
+          </span>
+          <span class="tooltip-content">
+            <span class="tooltip-text">
+              <span class="tooltip-inner">
+                <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i
+                    class="icon icon-quo-right"></i></p>
+                <div class="reward-box">
+                  
+                  <div class="reward-box-item">
+                    <img class="reward-img" src="/img/alipay.jpg">
+                    <span class="reward-type">支付宝</span>
+                  </div>
+                  
+                  
+                  <div class="reward-box-item">
+                    <img class="reward-img" src="/img/weixinpay.jpg">
+                    <span class="reward-type">微信</span>
+                  </div>
+                  
+                </div>
+              </span>
+            </span>
+          </span>
         </div>
-    	 
-  
-    <h1 itemprop="name">
-	
-	  <a class="archive-article-title" href="/2021/04/11/IMX6U-EPIT%E5%AE%9A%E6%97%B6%E5%99%A8/" target="_blank">IMX6U-EPIT定时器</a>
-  
-    </h1>
-  
+      </a>
+    </div>
+    
 
+    
+    <div class="declare"> 
+      <ul class="post-copyright">
+        <li>
+          <strong>本文作者：</strong>
+          GUMP
+        </li>
+        <li>
+          <strong>本文链接：</strong>
+          <a href="https://guoqiang-gump.github.io/2021/05/04/UnixC-线程/" title="UnixC-线程" target="_blank">https://guoqiang-gump.github.io/2021/05/04/UnixC-线程/</a>
+        </li>
+        <li>
+          <strong>版权声明： </strong>
+          本博客所有文章除特别声明外，均采用 <a href="https://www.apache.org/licenses/LICENSE-2.0.html" rel="external nofollow" target="_blank">Apache License 2.0</a> 许可协议。转载请注明出处！
+        </li>
+      </ul>
+    </div>
+    
 
-        <div class="article-info info-on-right">
-          
-          
+  </div>
+  <div class="article-info article-info-index">
+    
+    
+    
 
+    
+
+    
+    
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <!-- <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a> -->
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+     <!-- <img src="//pan.baidu.com/share/qrcode?url=https://guoqiang-gump.github.io/2021/05/04/UnixC-%E7%BA%BF%E7%A8%8B/" alt="微信分享二维码"> -->
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+
+    
+    <div class="clearfix"></div>
+  </div>
   </div>
 </article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/04/11/IMX6U%E4%B8%AD%E6%96%AD/" class="archive-article-date">
-        <time datetime="2021-04-11T04:26:49.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-11</time>
-</a>
 
+
+<nav id="article-nav">
+  
+    <a href="/2021/05/04/UnixC-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" id="article-nav-newer" class="article-nav-link-wrap">
+      <i class="icon-circle-left"></i>
+      <div class="article-nav-title">
+        
+          UnixC-网络编程
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2021/05/04/UnixC-%E8%BF%9B%E7%A8%8B/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">UnixC-进程</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
         </div>
-    	 
-  
-    <h1 itemprop="name">
-	
-	  <a class="archive-article-title" href="/2021/04/11/IMX6U%E4%B8%AD%E6%96%AD/" target="_blank">IMX6U中断</a>
-  
-    </h1>
-  
+        
+        
+    </div>
+</aside>
 
 
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/04/10/IMX6U%E5%90%AF%E5%8A%A8%E6%96%B9%E5%BC%8F%E8%AF%A6%E8%A7%A3/" class="archive-article-date">
-        <time datetime="2021-04-10T13:09:13.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-10</time>
-</a>
-
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-	
-	  <a class="archive-article-title" href="/2021/04/10/IMX6U%E5%90%AF%E5%8A%A8%E6%96%B9%E5%BC%8F%E8%AF%A6%E8%A7%A3/" target="_blank">I.MX6U启动方式详解</a>
-  
-    </h1>
-  
 
 
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/04/10/IMX6U-GPIO%E8%AF%A6%E8%A7%A3/" class="archive-article-date">
-        <time datetime="2021-04-10T12:00:19.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-10</time>
-</a>
-
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-	
-	  <a class="archive-article-title" href="/2021/04/10/IMX6U-GPIO%E8%AF%A6%E8%A7%A3/" target="_blank">I.MX6U的GPIO详解</a>
-  
-    </h1>
-  
 
 
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/04/10/ARM%E6%B1%87%E7%BC%96%E5%9F%BA%E7%A1%80/" class="archive-article-date">
-        <time datetime="2021-04-10T09:47:50.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-10</time>
-</a>
-
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-	
-	  <a class="archive-article-title" href="/2021/04/10/ARM%E6%B1%87%E7%BC%96%E5%9F%BA%E7%A1%80/" target="_blank">ARM汇编基础</a>
-  
-    </h1>
-  
 
 
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/04/10/Cortex-A7_MPCore/" class="archive-article-date">
-        <time datetime="2021-04-10T09:20:48.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-10</time>
-</a>
-
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-	
-	  <a class="archive-article-title" href="/2021/04/10/Cortex-A7_MPCore/" target="_blank">Cortex-A7架构</a>
-  
-    </h1>
-  
 
 
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">linux</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">ARM</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/Linux//" class="article-tag-list-link color1">Linux</a>
-        		</li>
-      		
-		</ul>
-	</div>
 
 
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/03/04/IMX6U-I2C-ap3216c/" class="archive-article-date">
-        <time datetime="2021-03-03T16:22:32.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-03-04</time>
-</a>
-
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-	
-	  <a class="archive-article-title" href="/2021/03/04/IMX6U-I2C-ap3216c/" target="_blank">IMX6U_I2C_ap3216c</a>
-  
-    </h1>
-  
-
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">linux</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">IMX6U</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">I2C</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/Linux//" class="article-tag-list-link color1">Linux</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/03/04/IMX6U%E4%B8%B2%E5%8F%A3/" class="archive-article-date">
-        <time datetime="2021-03-03T16:10:18.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-03-04</time>
-</a>
-
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-	
-	  <a class="archive-article-title" href="/2021/03/04/IMX6U%E4%B8%B2%E5%8F%A3/" target="_blank">IMX6U串口</a>
-  
-    </h1>
-  
-
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">linux</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">IMX6U</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">串口</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/Linux//" class="article-tag-list-link color1">Linux</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/03/04/IMX6U%E5%AE%9A%E6%97%B6/" class="archive-article-date">
-        <time datetime="2021-03-03T16:00:25.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-03-04</time>
-</a>
-
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-	
-	  <a class="archive-article-title" href="/2021/03/04/IMX6U%E5%AE%9A%E6%97%B6/" target="_blank">IMX6U定时</a>
-  
-    </h1>
-  
-
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">linux</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">IMX6U</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">蜂鸣器</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/Linux//" class="article-tag-list-link color1">Linux</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-  
-    </div></section>
-  
-
-    
-    <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/archives/2021/page/5/">&amp;laquo; Prev</a><a class="page-number" href="/archives/2021/">1</a><span class="space">&hellip;</span><a class="page-number" href="/archives/2021/page/4/">4</a><a class="page-number" href="/archives/2021/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/archives/2021/page/7/">7</a><a class="extend next" rel="next" href="/archives/2021/page/7/">Next &amp;raquo;</a>
-    </nav>
-  
 
 
           </div>
@@ -685,8 +537,8 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
-		isArchive: true,
+		isPost: true,
+		isArchive: false,
 		isTag: false,
 		isCategory: false,
 		open_in_new: true,
