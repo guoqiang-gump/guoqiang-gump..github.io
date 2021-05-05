@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="Linux 是一个庞大而完善的系统， 尤其是驱动框架，像 GPIO 这种最基本的驱动不可能采用“原始”的裸机驱动开发方式，Linux 内核提供了 pinctrl 和 gpio 子系统用于GPIO 驱动。 pinctrl 子系统pinctrl 子系统简介Linux 驱动讲究驱动分离与分层，pinctrl 和 gpio 子系统就是驱动分离与分层思想下的产物，驱动分离与分层其实就是按照面向对象编程">
+  <meta name="description" content="Linux 是一个庞大而完善的系统， 尤其是驱动框架，像 GPIO 这种最基本的驱动不可能采用“原始”的裸机驱动开发方式，Linux 内核提供了 pinctrl 和 gpio 子系统用于GPIO 驱动。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux驱动-pinctrl和gpio子系统">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-pinctrl%E5%92%8Cgpio%E5%AD%90%E7%B3%BB%E7%BB%9F/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="Linux 是一个庞大而完善的系统， 尤其是驱动框架，像 GPIO 这种最基本的驱动不可能采用“原始”的裸机驱动开发方式，Linux 内核提供了 pinctrl 和 gpio 子系统用于GPIO 驱动。 pinctrl 子系统pinctrl 子系统简介Linux 驱动讲究驱动分离与分层，pinctrl 和 gpio 子系统就是驱动分离与分层思想下的产物，驱动分离与分层其实就是按照面向对象编程">
+<meta property="og:description" content="Linux 是一个庞大而完善的系统， 尤其是驱动框架，像 GPIO 这种最基本的驱动不可能采用“原始”的裸机驱动开发方式，Linux 内核提供了 pinctrl 和 gpio 子系统用于GPIO 驱动。">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-14T13:11:33.000Z">
-<meta property="article:modified_time" content="2021-04-20T09:40:40.163Z">
+<meta property="article:modified_time" content="2021-05-05T04:44:42.050Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,9 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
+    <p>Linux 是一个庞大而完善的系统， 尤其是驱动框架，像 GPIO 这种最基本的驱动不可能采用“原始”的裸机驱动开发方式，Linux 内核提供了 pinctrl 和 gpio 子系统用于GPIO 驱动。</p>
+ <a id="more"></a> 
 
-<p>Linux 是一个庞大而完善的系统， 尤其是驱动框架，像 GPIO 这种最基本的驱动不可能采用“原始”的裸机驱动开发方式，Linux 内核提供了 pinctrl 和 gpio 子系统用于GPIO 驱动。</p>
 <h1 id="pinctrl-子系统"><a href="#pinctrl-子系统" class="headerlink" title="pinctrl 子系统"></a><strong>pinctrl</strong> <strong>子系统</strong></h1><h2 id="pinctrl-子系统简介"><a href="#pinctrl-子系统简介" class="headerlink" title="pinctrl 子系统简介"></a><strong>pinctrl</strong> <strong>子系统简介</strong></h2><p>Linux 驱动讲究驱动分离与分层，pinctrl 和 gpio 子系统就是驱动分离与分层思想下的产物，驱动分离与分层其实就是按照面向对象编程的设计思想而设计的设备驱动框架。</p>
 <p>传统的配置 pin 的方式就是直接操作相应的寄存器，但是这种配置 方式比较繁琐、而且容易出问题(比如 pin 功能冲突)。pinctrl 子系统就是为了解决这个问题而引入的，pinctrl 子系统主要工作内容如下： </p>
 <p>①、获取设备树中 pin 信息。 </p>

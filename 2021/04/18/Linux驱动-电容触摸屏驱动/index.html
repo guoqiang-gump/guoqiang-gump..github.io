@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="①、电容触摸屏是 IIC 接口的，需要触摸 IC，所谓的电容触摸驱动就是 IIC 设备驱动。②、触摸 IC 提供了中断信号引脚(INT)，可以通过中断来获取触摸信息。③、电容触摸屏得到的是触摸位置绝对信息以及触摸屏是否有按下。④、电容触摸屏不需要校准，     电容触摸屏驱动其实就是以下几种 linux 驱动框架的组合：①、IIC 设备驱动，因为电容触摸 IC 基本都是 IIC 接口的，因此大">
+  <meta name="description" content="①、电容触摸屏是 IIC 接口的，需要触摸 IC，所谓的电容触摸驱动就是 IIC 设备驱动。②、触摸 IC 提供了中断信号引脚(INT)，可以通过中断来获取触摸信息。③、电容触摸屏得到的是触摸位置绝对信息以及触摸屏是否有按下。④、电容触摸屏不需要校准，">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux驱动-电容触摸屏驱动">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/18/Linux%E9%A9%B1%E5%8A%A8-%E7%94%B5%E5%AE%B9%E8%A7%A6%E6%91%B8%E5%B1%8F%E9%A9%B1%E5%8A%A8/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="①、电容触摸屏是 IIC 接口的，需要触摸 IC，所谓的电容触摸驱动就是 IIC 设备驱动。②、触摸 IC 提供了中断信号引脚(INT)，可以通过中断来获取触摸信息。③、电容触摸屏得到的是触摸位置绝对信息以及触摸屏是否有按下。④、电容触摸屏不需要校准，     电容触摸屏驱动其实就是以下几种 linux 驱动框架的组合：①、IIC 设备驱动，因为电容触摸 IC 基本都是 IIC 接口的，因此大">
+<meta property="og:description" content="①、电容触摸屏是 IIC 接口的，需要触摸 IC，所谓的电容触摸驱动就是 IIC 设备驱动。②、触摸 IC 提供了中断信号引脚(INT)，可以通过中断来获取触摸信息。③、电容触摸屏得到的是触摸位置绝对信息以及触摸屏是否有按下。④、电容触摸屏不需要校准，">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-18T02:57:18.000Z">
-<meta property="article:modified_time" content="2021-04-20T10:13:25.879Z">
+<meta property="article:modified_time" content="2021-05-05T04:42:49.253Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,12 +244,8 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <a id="more"></a>
-
-<p>①、电容触摸屏是 IIC 接口的，需要触摸 IC，所谓的电容触摸驱动就是 IIC 设备驱动。<br>②、触摸 IC 提供了中断信号引脚(INT)，可以通过中断来获取触摸信息。<br>③、电容触摸屏得到的是触摸位置绝对信息以及触摸屏是否有按下。<br>④、电容触摸屏不需要校准，</p>
-<!--more-->
-
-<!--more-->
+    <p>①、电容触摸屏是 IIC 接口的，需要触摸 IC，所谓的电容触摸驱动就是 IIC 设备驱动。<br>②、触摸 IC 提供了中断信号引脚(INT)，可以通过中断来获取触摸信息。<br>③、电容触摸屏得到的是触摸位置绝对信息以及触摸屏是否有按下。<br>④、电容触摸屏不需要校准，</p>
+<a id="more"></a>
 
 <p>电容触摸屏驱动其实就是以下几种 linux 驱动框架的组合：<br>①、IIC 设备驱动，因为电容触摸 IC 基本都是 IIC 接口的，因此大框架就是 IIC 设备驱动。<br>②、通过中断引脚(INT)向 linux 内核上报触摸信息，因此需要用到 linux 中断驱动框架。坐标的上报在中断服务函数中完成。<br>③、触摸屏的坐标信息、屏幕按下和抬起信息都属于 linux 的 input 子系统，因此向 linux 内核上报触摸屏坐标信息就得使用 input 子系统。只是，我们得按照 linux 内核规定的规则来上报坐标信息。</p>
 <h1 id="多点触摸-MT-协议详解"><a href="#多点触摸-MT-协议详解" class="headerlink" title="多点触摸(MT)协议详解"></a>多点触摸(MT)协议详解</h1><p>多点电容触摸的(Multi-touch，简称 MT)，MT 协议被分为两种类型，TypeA 和 TypeB，这两种类型的区别如下：<br>TypeA：适用于触摸点不能被区分或者追踪，此类型的设备上报原始数据(此类型在实际使用中非常少！)。 Type B：适用于有硬件追踪并能区分触摸点的触摸设备，此类型设备通过 slot 更新某一个触摸点的信息，FT5426 就属于此类型，一般的多点电容触摸屏 IC 都有此能力。</p>

@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="一、RGBLCD显示原理简介1、像素点RGBLCD屏幕他都是有由一个个的彩色小灯构成的。彩色点阵屏每个像素点有三个小灯，红色、绿色和蓝色，也叫做RGB。RGB就是光的三原色。通过调整RGB三种颜色的比例，就可以实现姹紫千红的世界。 2、分辨率​    要想显示文字，图片，视频等等就需要很多个像素点，分辨率说的就是像素点的个数，1080P、720P、2K、4K，8K。1080P&#x3D;1920108">
+  <meta name="description" content="一、RGBLCD显示原理简介1、像素点RGBLCD屏幕他都是有由一个个的彩色小灯构成的。彩色点阵屏每个像素点有三个小灯，红色、绿色和蓝色，也叫做RGB。RGB就是光的三原色。通过调整RGB三种颜色的比例，就可以实现姹紫千红的世界。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="IMX6U-LCD显示">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/11/IMX6U-LCD%E6%98%BE%E7%A4%BA/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="一、RGBLCD显示原理简介1、像素点RGBLCD屏幕他都是有由一个个的彩色小灯构成的。彩色点阵屏每个像素点有三个小灯，红色、绿色和蓝色，也叫做RGB。RGB就是光的三原色。通过调整RGB三种颜色的比例，就可以实现姹紫千红的世界。 2、分辨率​    要想显示文字，图片，视频等等就需要很多个像素点，分辨率说的就是像素点的个数，1080P、720P、2K、4K，8K。1080P&#x3D;1920108">
+<meta property="og:description" content="一、RGBLCD显示原理简介1、像素点RGBLCD屏幕他都是有由一个个的彩色小灯构成的。彩色点阵屏每个像素点有三个小灯，红色、绿色和蓝色，也叫做RGB。RGB就是光的三原色。通过调整RGB三种颜色的比例，就可以实现姹紫千红的世界。">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-11T12:14:42.000Z">
-<meta property="article:modified_time" content="2021-04-20T09:36:48.614Z">
+<meta property="article:modified_time" content="2021-05-05T04:39:30.583Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,9 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
+    <h1 id="一、RGBLCD显示原理简介"><a href="#一、RGBLCD显示原理简介" class="headerlink" title="一、RGBLCD显示原理简介"></a>一、RGBLCD显示原理简介</h1><h2 id="1、像素点"><a href="#1、像素点" class="headerlink" title="1、像素点"></a>1、像素点</h2><p>RGBLCD屏幕他都是有由一个个的彩色小灯构成的。彩色点阵屏每个像素点有三个小灯，红色、绿色和蓝色，也叫做RGB。RGB就是光的三原色。通过调整RGB三种颜色的比例，就可以实现姹紫千红的世界。</p>
+ <a id="more"></a> 
 
-<h1 id="一、RGBLCD显示原理简介"><a href="#一、RGBLCD显示原理简介" class="headerlink" title="一、RGBLCD显示原理简介"></a>一、RGBLCD显示原理简介</h1><h2 id="1、像素点"><a href="#1、像素点" class="headerlink" title="1、像素点"></a>1、像素点</h2><p>RGBLCD屏幕他都是有由一个个的彩色小灯构成的。彩色点阵屏每个像素点有三个小灯，红色、绿色和蓝色，也叫做RGB。RGB就是光的三原色。通过调整RGB三种颜色的比例，就可以实现姹紫千红的世界。</p>
 <h2 id="2、分辨率"><a href="#2、分辨率" class="headerlink" title="2、分辨率"></a>2、分辨率</h2><p>​    要想显示文字，图片，视频等等就需要很多个像素点，分辨率说的就是像素点的个数，1080P、720P、2K、4K，8K。1080P=1920<em>1080，表示一行有1920个像素点，一列有1080个。显示器有尺寸！24村，27村、55寸。尺寸不变的情况下，分辨率越高，显示效果越精细。4K=3840</em>2160相当于4个1080P</p>
 <h2 id="3、像素格式"><a href="#3、像素格式" class="headerlink" title="3、像素格式"></a>3、像素格式</h2><p>​    如何将RGB三种颜色进行量化，每种颜色用8bit表示，RGB就需要888共24bit。可以描述出2^24=中颜色16777216=1677万种颜色。现在流行10bit，HDR10，支持HDR效果的10bit面板，RGB10 10 10。在RGB888的基础上在加上8bit的ALPHA通道，也就是透明通道，ARGB8888=32位。</p>
 <h2 id="4、LCD屏幕接口"><a href="#4、LCD屏幕接口" class="headerlink" title="4、LCD屏幕接口"></a>4、LCD屏幕接口</h2><p>RGB格式的屏幕，一般叫做RGB接口屏。屏幕接口有：MIPI、LVDS、MCU、RGB接口。</p>

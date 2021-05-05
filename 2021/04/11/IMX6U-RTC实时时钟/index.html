@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="实时时钟是很常用的一个外设，通过实时时钟我们就可以知道年、月、日和时间等信息。  因此在需要记录时间的场合就需要实时时钟，可以使用专用的实时时钟芯片来完成此功能，I.MX6U 内部的  SNVS 就提供了 RTC 功能。 一、RTC原理详解6U内部自带到了一个RTC外设，确切的说是SNVC。6U的RTC分为LP和HP。LP叫做SRTC，HP是RTC，但是HP的RTC掉电以后数据就丢失了，即使">
+  <meta name="description" content="实时时钟是很常用的一个外设，通过实时时钟我们就可以知道年、月、日和时间等信息。因此在需要记录时间的场合就需要实时时钟，可以使用专用的实时时钟芯片来完成此功能，I.MX6U 内部的SNVS 就提供了 RTC 功能。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="IMX6U-RTC实时时钟">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/11/IMX6U-RTC%E5%AE%9E%E6%97%B6%E6%97%B6%E9%92%9F/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="实时时钟是很常用的一个外设，通过实时时钟我们就可以知道年、月、日和时间等信息。  因此在需要记录时间的场合就需要实时时钟，可以使用专用的实时时钟芯片来完成此功能，I.MX6U 内部的  SNVS 就提供了 RTC 功能。 一、RTC原理详解6U内部自带到了一个RTC外设，确切的说是SNVC。6U的RTC分为LP和HP。LP叫做SRTC，HP是RTC，但是HP的RTC掉电以后数据就丢失了，即使">
+<meta property="og:description" content="实时时钟是很常用的一个外设，通过实时时钟我们就可以知道年、月、日和时间等信息。因此在需要记录时间的场合就需要实时时钟，可以使用专用的实时时钟芯片来完成此功能，I.MX6U 内部的SNVS 就提供了 RTC 功能。">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-11T15:07:12.000Z">
-<meta property="article:modified_time" content="2021-04-20T09:36:56.500Z">
+<meta property="article:modified_time" content="2021-05-05T04:39:53.422Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,11 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
+    <p>实时时钟是很常用的一个外设，通过实时时钟我们就可以知道年、月、日和时间等信息。因此在需要记录时间的场合就需要实时时钟，可以使用专用的实时时钟芯片来完成此功能，I.MX6U 内部的SNVS 就提供了 RTC 功能。</p>
+ <a id="more"></a> 
 
-<p>实时时钟是很常用的一个外设，通过实时时钟我们就可以知道年、月、日和时间等信息。 </p>
-<p>因此在需要记录时间的场合就需要实时时钟，可以使用专用的实时时钟芯片来完成此功能，I.MX6U 内部的 </p>
-<p>SNVS 就提供了 RTC 功能。</p>
 <h1 id="一、RTC原理详解"><a href="#一、RTC原理详解" class="headerlink" title="一、RTC原理详解"></a>一、RTC原理详解</h1><p>6U内部自带到了一个RTC外设，确切的说是SNVC。6U的RTC分为LP和HP。LP叫做SRTC，HP是RTC，但是HP的RTC掉电以后数据就丢失了，即使用了纽扣电池也没用。所以必须要使用LP，也就是SRTC。<br>RTC分为SNVS_LP和SNVS_HP，<br>如果做产品，建议使用外置RTC芯片，PCF8563。<br>RTC很类似定时器，外接32.768KHz的晶振，然后就开始计时，RTC使用两个寄存器来保存计数值。</p>
 <p>其实不管是 SNVS_HP 里面的 RTC，还是 SNVS_LP 里面的 SRTC，其本质就是一个定时器，和EPIT 定时器一样，只要给它提供时钟，它就会一直运行。SRTC 需要 外界提供一个 32.768KHz 的时钟，I.MX6U-ALPHA 核心板上的 32.768KHz 的晶振就是提供这个时钟的。寄存器 SNVS_LPSRTCMR 和 SNVS_LPSRTCLR 保存着秒数，直接读取这两个寄存 器的值就知道过了多长时间了。一般以 1970 年 1 月 1 日为起点，加上经过的秒数即可得到现在 的时间和日期，原理还是很简单的。SRTC 也是带有闹钟功能的，可以在寄存器 SNVS_LPAR 中 写入闹钟时间值，当时钟值和闹钟值匹配的时候就会产生闹钟中断，要使用时钟功能的话还需要进行一些设置，</p>
 <p>RTC使用很简单，打开RTC，然后RTC就开始工作，我们要做的就是不断地读取RTC计数寄存器，获取时间值，或者向RTC计数器写入时间值，也就是调整时间。<br>SNVS_HPCOMR的bit31置1，表示所有的软件都可以访问SNVS所有寄存器。Bit8也是和安全有关的，我们置1，也可以不置1.<br>    SNVS_LPCR寄存器，bit0置1，开始SRTC功能。<br>    SNVS_LPSRTCMR的bit14:0为RTC计数寄存器的高15位<br>    SNVS_LPSRTCLR是低32为RTC计数器，与LPSRTCMR共同组成了SRTC计数器，，每1秒数据加1。<br>    6U的RTC模式从1970年1月1日0时0点0分0秒。</p>

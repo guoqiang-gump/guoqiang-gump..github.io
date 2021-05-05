@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="一、Linux顶层Makefile基本流程​    hdr-arch  &#x3D; arm 二、make xxx_defconfig过程​    %config: scripts_basic outputmakefile FORCE ​    $(Q)$(MAKE) $(build)&#x3D;scripts&#x2F;kconfig $@ scripts_basic: ​    $(Q)$(MAKE) $(build">
+  <meta name="description" content="一、Linux顶层Makefile基本流程​    hdr-arch  &#x3D; arm">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux移植-内核Makefile详解">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8Makefile%E8%AF%A6%E8%A7%A3/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="一、Linux顶层Makefile基本流程​    hdr-arch  &#x3D; arm 二、make xxx_defconfig过程​    %config: scripts_basic outputmakefile FORCE ​    $(Q)$(MAKE) $(build)&#x3D;scripts&#x2F;kconfig $@ scripts_basic: ​    $(Q)$(MAKE) $(build">
+<meta property="og:description" content="一、Linux顶层Makefile基本流程​    hdr-arch  &#x3D; arm">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-13T07:31:04.000Z">
-<meta property="article:modified_time" content="2021-04-20T09:41:40.841Z">
+<meta property="article:modified_time" content="2021-05-05T04:47:35.177Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,9 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
+    <h1 id="一、Linux顶层Makefile基本流程"><a href="#一、Linux顶层Makefile基本流程" class="headerlink" title="一、Linux顶层Makefile基本流程"></a>一、Linux顶层Makefile基本流程</h1><p>​    hdr-arch  = arm</p>
+ <a id="more"></a> 
 
-<h1 id="一、Linux顶层Makefile基本流程"><a href="#一、Linux顶层Makefile基本流程" class="headerlink" title="一、Linux顶层Makefile基本流程"></a>一、Linux顶层Makefile基本流程</h1><p>​    hdr-arch  = arm</p>
 <h1 id="二、make-xxx-defconfig过程"><a href="#二、make-xxx-defconfig过程" class="headerlink" title="二、make xxx_defconfig过程"></a>二、make xxx_defconfig过程</h1><p>​    %config: scripts_basic outputmakefile FORCE</p>
 <p>​    $(Q)$(MAKE) $(build)=scripts/kconfig $@</p>
 <p>scripts_basic:</p>

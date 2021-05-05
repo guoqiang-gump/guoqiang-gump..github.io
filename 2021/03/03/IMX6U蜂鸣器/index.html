@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="硬件原理图分析有源蜂鸣器内部带有震荡源，所以有源蜂鸣器只要通电就会叫。I.MX6U-ALPHA 开发板使用的是有源蜂鸣器，因此只要给其供电就会工作。 BEEP控制IO为SNVS_TAMPER1，当输出高电平的时候蜂鸣器关闭，输出低电平的时候蜂鸣器打开。 实验程序编写​    1、初始化SNVS_TAMPER1这个IO复用为GPIO5_IO01 ​    2、设置SNVS_TAMPER1这个I">
+  <meta name="description" content="硬件原理图分析有源蜂鸣器内部带有震荡源，所以有源蜂鸣器只要通电就会叫。I.MX6U-ALPHA 开发板使用的是有源蜂鸣器，因此只要给其供电就会工作。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="IMX6U蜂鸣器">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/03/03/IMX6U%E8%9C%82%E9%B8%A3%E5%99%A8/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="硬件原理图分析有源蜂鸣器内部带有震荡源，所以有源蜂鸣器只要通电就会叫。I.MX6U-ALPHA 开发板使用的是有源蜂鸣器，因此只要给其供电就会工作。 BEEP控制IO为SNVS_TAMPER1，当输出高电平的时候蜂鸣器关闭，输出低电平的时候蜂鸣器打开。 实验程序编写​    1、初始化SNVS_TAMPER1这个IO复用为GPIO5_IO01 ​    2、设置SNVS_TAMPER1这个I">
+<meta property="og:description" content="硬件原理图分析有源蜂鸣器内部带有震荡源，所以有源蜂鸣器只要通电就会叫。I.MX6U-ALPHA 开发板使用的是有源蜂鸣器，因此只要给其供电就会工作。">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-03-02T16:11:05.000Z">
-<meta property="article:modified_time" content="2021-04-20T09:37:42.684Z">
+<meta property="article:modified_time" content="2021-05-05T04:41:17.812Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="linux">
 <meta property="article:tag" content="IMX6U">
@@ -246,9 +246,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
+    <h1 id="硬件原理图分析"><a href="#硬件原理图分析" class="headerlink" title="硬件原理图分析"></a>硬件原理图分析</h1><p>有源蜂鸣器内部带有震荡源，所以有源蜂鸣器只要通电就会叫。I.MX6U-ALPHA 开发板使用的是有源蜂鸣器，因此只要给其供电就会工作。</p>
+ <a id="more"></a> 
 
-<h1 id="硬件原理图分析"><a href="#硬件原理图分析" class="headerlink" title="硬件原理图分析"></a>硬件原理图分析</h1><p>有源蜂鸣器内部带有震荡源，所以有源蜂鸣器只要通电就会叫。I.MX6U-ALPHA 开发板使用的是有源蜂鸣器，因此只要给其供电就会工作。</p>
 <p>BEEP控制IO为SNVS_TAMPER1，当输出高电平的时候蜂鸣器关闭，输出低电平的时候蜂鸣器打开。</p>
 <h1 id="实验程序编写"><a href="#实验程序编写" class="headerlink" title="实验程序编写"></a>实验程序编写</h1><p>​    1、初始化SNVS_TAMPER1这个IO复用为GPIO5_IO01</p>
 <p>​    2、设置SNVS_TAMPER1这个IO的电气属性。</p>

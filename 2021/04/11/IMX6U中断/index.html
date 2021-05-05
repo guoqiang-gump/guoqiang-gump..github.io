@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="1、中断向量偏移​    我们的裸机历程都是从0X87800000开始的，因此要设置中断向量偏移。 2、中断服务函数的编写一个是IRQ中断服务函数的编写，另一个就是在IRQ中断服务函数里面去查找并运行的具体的外设中断服务函数。 3、修改start.S​    添加中断向量表，编写复位中断服务函数和IRQ中断服务函数。 ​    编写复位中断服务函数，内容如下： ​    ①、关闭I,D Ca">
+  <meta name="description" content="1、中断向量偏移​    我们的裸机历程都是从0X87800000开始的，因此要设置中断向量偏移。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="IMX6U中断">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/11/IMX6U%E4%B8%AD%E6%96%AD/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="1、中断向量偏移​    我们的裸机历程都是从0X87800000开始的，因此要设置中断向量偏移。 2、中断服务函数的编写一个是IRQ中断服务函数的编写，另一个就是在IRQ中断服务函数里面去查找并运行的具体的外设中断服务函数。 3、修改start.S​    添加中断向量表，编写复位中断服务函数和IRQ中断服务函数。 ​    编写复位中断服务函数，内容如下： ​    ①、关闭I,D Ca">
+<meta property="og:description" content="1、中断向量偏移​    我们的裸机历程都是从0X87800000开始的，因此要设置中断向量偏移。">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-11T04:26:49.000Z">
-<meta property="article:modified_time" content="2021-04-20T09:38:10.294Z">
+<meta property="article:modified_time" content="2021-05-05T04:41:50.961Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,9 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
+    <h2 id="1、中断向量偏移"><a href="#1、中断向量偏移" class="headerlink" title="1、中断向量偏移"></a>1、中断向量偏移</h2><p>​    我们的裸机历程都是从0X87800000开始的，因此要设置中断向量偏移。</p>
+ <a id="more"></a> 
 
-<h2 id="1、中断向量偏移"><a href="#1、中断向量偏移" class="headerlink" title="1、中断向量偏移"></a>1、中断向量偏移</h2><p>​    我们的裸机历程都是从0X87800000开始的，因此要设置中断向量偏移。</p>
 <h2 id="2、中断服务函数的编写"><a href="#2、中断服务函数的编写" class="headerlink" title="2、中断服务函数的编写"></a>2、中断服务函数的编写</h2><p>一个是IRQ中断服务函数的编写，另一个就是在IRQ中断服务函数里面去查找并运行的具体的外设中断服务函数。</p>
 <h2 id="3、修改start-S"><a href="#3、修改start-S" class="headerlink" title="3、修改start.S"></a>3、修改start.S</h2><p>​    添加中断向量表，编写复位中断服务函数和IRQ中断服务函数。</p>
 <p>​    编写复位中断服务函数，内容如下：</p>

@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="一、NXP官方开发板Linux内核编译编译NXP官方EVK开发板对应的Linux系统，默认配置文件存放路径arch&#x2F;arm&#x2F;configs。最终编译出：zImage，和 imx6ull-14x14-evk-emmc.dtb，imx6ull-14x14-evk.dtb。将zImage和 imx6ull-14x14-evk-emmc.dtb拷贝到tftpboot目录下，然后在uboot中通过tf">
+  <meta name="description" content="一、NXP官方开发板Linux内核编译编译NXP官方EVK开发板对应的Linux系统，默认配置文件存放路径arch&#x2F;arm&#x2F;configs。最终编译出：zImage，和 imx6ull-14x14-evk-emmc.dtb，imx6ull-14x14-evk.dtb。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux移植-内核移植">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8%E7%A7%BB%E6%A4%8D/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="一、NXP官方开发板Linux内核编译编译NXP官方EVK开发板对应的Linux系统，默认配置文件存放路径arch&#x2F;arm&#x2F;configs。最终编译出：zImage，和 imx6ull-14x14-evk-emmc.dtb，imx6ull-14x14-evk.dtb。将zImage和 imx6ull-14x14-evk-emmc.dtb拷贝到tftpboot目录下，然后在uboot中通过tf">
+<meta property="og:description" content="一、NXP官方开发板Linux内核编译编译NXP官方EVK开发板对应的Linux系统，默认配置文件存放路径arch&#x2F;arm&#x2F;configs。最终编译出：zImage，和 imx6ull-14x14-evk-emmc.dtb，imx6ull-14x14-evk.dtb。">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-13T09:02:30.000Z">
-<meta property="article:modified_time" content="2021-04-20T09:41:36.259Z">
+<meta property="article:modified_time" content="2021-05-05T04:47:23.253Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,9 +244,10 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
+    <h1 id="一、NXP官方开发板Linux内核编译"><a href="#一、NXP官方开发板Linux内核编译" class="headerlink" title="一、NXP官方开发板Linux内核编译"></a>一、NXP官方开发板Linux内核编译</h1><p>编译NXP官方EVK开发板对应的Linux系统，默认配置文件存放路径arch/arm/configs。最终编译出：zImage，和 imx6ull-14x14-evk-emmc.dtb，imx6ull-14x14-evk.dtb。</p>
+ <a id="more"></a> 
 
-<h1 id="一、NXP官方开发板Linux内核编译"><a href="#一、NXP官方开发板Linux内核编译" class="headerlink" title="一、NXP官方开发板Linux内核编译"></a>一、NXP官方开发板Linux内核编译</h1><p>编译NXP官方EVK开发板对应的Linux系统，默认配置文件存放路径arch/arm/configs。最终编译出：zImage，和 imx6ull-14x14-evk-emmc.dtb，imx6ull-14x14-evk.dtb。<br>将zImage和 imx6ull-14x14-evk-emmc.dtb拷贝到tftpboot目录下，然后在uboot中通过tftp服务启动。</p>
+<p>将zImage和 imx6ull-14x14-evk-emmc.dtb拷贝到tftpboot目录下，然后在uboot中通过tftp服务启动。</p>
 <h1 id="二、使能8线EMMC"><a href="#二、使能8线EMMC" class="headerlink" title="二、使能8线EMMC"></a>二、使能8线EMMC</h1><p>Linux 内核驱动里面 EMMC 默认是 4 线模式的，4 线模式肯定没有 8 线模式的速度快，所以将 EMMC 的驱动修改为 8 线模式。修改设备树，imx6ull-alientek-emmc.dts。节点usdhc2。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&amp;usdhc2 &#123;</span><br><span class="line">	pinctrl-names &#x3D; &quot;default&quot;, &quot;state_100mhz&quot;, &quot;state_200mhz&quot;;</span><br><span class="line">	pinctrl-0 &#x3D; &lt;&amp;pinctrl_usdhc2_8bit&gt;;</span><br><span class="line">	pinctrl-1 &#x3D; &lt;&amp;pinctrl_usdhc2_8bit_100mhz&gt;;</span><br><span class="line">	pinctrl-2 &#x3D; &lt;&amp;pinctrl_usdhc2_8bit_200mhz&gt;;</span><br><span class="line">	bus-width &#x3D; &lt;8&gt;;</span><br><span class="line">	non-removable;</span><br><span class="line">	status &#x3D; &quot;okay&quot;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <h1 id="三、网络驱动修改"><a href="#三、网络驱动修改" class="headerlink" title="三、网络驱动修改"></a>三、网络驱动修改</h1><p>为何要一开始就修改网络驱动？？在做Linux驱动开发的时候一般都是通过网络调试的。<br>修改网络复位IO和PHY ID以后，Linux内核内部通用PHY驱动已经正常工作。</p>

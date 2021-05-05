@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="根据电平的不同，串口分为 TTL 和 RS232。不管是什么样的接口电平，其驱动程序都是一样的，通过外接 RS485 这样的芯片就可以将串口转换为 RS485 信号，正点原子的 I.MX6U-ALPHA 开发板就是这么做的。对于正点原子的 I.MX6U-ALPHA 开发板而言， RS232、RS485 以及 GPS 模 块接口通通连接到了 I.MX6U 的 UART3 接口上，因此这些外设最">
+  <meta name="description" content="根据电平的不同，串口分为 TTL 和 RS232。不管是什么样的接口电平，其驱动程序都是一样的，通过外接 RS485 这样的芯片就可以将串口转换为 RS485 信号，正点原子的 I.MX6U-ALPHA 开发板就是这么做的。对于正点原子的 I.MX6U-ALPHA 开发板而言， RS232、RS485 以及 GPS 模 块接口通通连接到了 I.MX6U 的 UART3 接口上，因此这些外设最终都归">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux驱动-串口驱动">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/18/Linux%E9%A9%B1%E5%8A%A8-%E4%B8%B2%E5%8F%A3%E9%A9%B1%E5%8A%A8/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="根据电平的不同，串口分为 TTL 和 RS232。不管是什么样的接口电平，其驱动程序都是一样的，通过外接 RS485 这样的芯片就可以将串口转换为 RS485 信号，正点原子的 I.MX6U-ALPHA 开发板就是这么做的。对于正点原子的 I.MX6U-ALPHA 开发板而言， RS232、RS485 以及 GPS 模 块接口通通连接到了 I.MX6U 的 UART3 接口上，因此这些外设最">
+<meta property="og:description" content="根据电平的不同，串口分为 TTL 和 RS232。不管是什么样的接口电平，其驱动程序都是一样的，通过外接 RS485 这样的芯片就可以将串口转换为 RS485 信号，正点原子的 I.MX6U-ALPHA 开发板就是这么做的。对于正点原子的 I.MX6U-ALPHA 开发板而言， RS232、RS485 以及 GPS 模 块接口通通连接到了 I.MX6U 的 UART3 接口上，因此这些外设最终都归">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-18T02:23:45.000Z">
-<meta property="article:modified_time" content="2021-04-20T09:38:37.568Z">
+<meta property="article:modified_time" content="2021-05-05T04:42:36.752Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,9 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
+    <p>根据电平的不同，串口分为 TTL 和 RS232。不管是什么样的接口电平，其驱动程序都是一样的，通过外接 RS485 这样的芯片就可以将串口转换为 RS485 信号，正点原子的 I.MX6U-ALPHA 开发板就是这么做的。对于正点原子的 I.MX6U-ALPHA 开发板而言， RS232、RS485 以及 GPS 模 块接口通通连接到了 I.MX6U 的 UART3 接口上，因此这些外设最终都归结为 UART3 的串口驱动。学习一下如何驱动 I.MX6U-ALPHA 开发板上的 UART3 串口，进而实现 RS232、RS485 以及 GSP 驱动。</p>
+ <a id="more"></a> 
 
-<p>根据电平的不同，串口分为 TTL 和 RS232。不管是什么样的接口电平，其驱动程序都是一样的，通过外接 RS485 这样的芯片就可以将串口转换为 RS485 信号，正点原子的 I.MX6U-ALPHA 开发板就是这么做的。对于正点原子的 I.MX6U-ALPHA 开发板而言， RS232、RS485 以及 GPS 模 块接口通通连接到了 I.MX6U 的 UART3 接口上，因此这些外设最终都归结为 UART3 的串口驱动。学习一下如何驱动 I.MX6U-ALPHA 开发板上的 UART3 串口，进而实现 RS232、RS485 以及 GSP 驱动。</p>
 <h1 id="Linux-下-UART-驱动框架"><a href="#Linux-下-UART-驱动框架" class="headerlink" title="Linux 下 UART 驱动框架"></a><strong>Linux</strong> <strong>下</strong> <strong>UART</strong> <strong>驱动框架</strong></h1><h2 id="1、uart-driver-注册与注销"><a href="#1、uart-driver-注册与注销" class="headerlink" title="1、uart_driver 注册与注销"></a>1、uart_driver 注册与注销</h2><p>同 I2C、SPI 一样，Linux 也提供了串口驱动框架，我们只需要按照相应的串口框架编写驱动程序即可。串口驱动没有什么主机端和设备端之分，就只有一个串口驱动，而且这个驱动已经由 NXP 官方已经编写好了，我们真正要做的就是在设备树中添加所要使用的串口节点信息。当系统启动以后串口驱动和设备匹配成功，相应的串口就会被驱动起来，生成/dev/ttymxcX(X=0….n)文件。</p>
 <p>uart_driver 结构体表示 UART 驱动，uart_driver 定义在 include/linux/serial_core.h 文件中，内容如下：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">struct uart_driver &#123;</span><br><span class="line">    struct module *owner; &#x2F;* 模块所属者 *&#x2F;</span><br><span class="line">    const char *driver_name; &#x2F;* 驱动名字 *&#x2F;</span><br><span class="line">    const char *dev_name; &#x2F;* 设备名字 *&#x2F;</span><br><span class="line">    int major; &#x2F;* 主设备号 *&#x2F;</span><br><span class="line">    int minor; &#x2F;* 次设备号 *&#x2F;</span><br><span class="line">    int nr; &#x2F;* 设备数 *&#x2F;</span><br><span class="line">    struct console *cons; &#x2F;* 控制台 *&#x2F;</span><br><span class="line">    struct uart_state *state; </span><br><span class="line">    struct tty_driver *tty_driver;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>

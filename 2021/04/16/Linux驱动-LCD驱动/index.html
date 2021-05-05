@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="Framebuffer 设备裸机 LCD 驱动编写流程如下：①、初始化 I.MX6U 的 eLCDIF 控制器，重点是 LCD 屏幕宽(width)、高(height)、hspw、hbp、hfp、vspw、vbp 和 vfp 等信息。②、初始化 LCD 像素时钟。③、设置 RGBLCD 显存。④、应用程序直接通过操作显存来操作 LCD，实现在 LCD 上显示字符、图片等信息。 在 Linux">
+  <meta name="description" content="Framebuffer 设备裸机 LCD 驱动编写流程如下：①、初始化 I.MX6U 的 eLCDIF 控制器，重点是 LCD 屏幕宽(width)、高(height)、hspw、hbp、hfp、vspw、vbp 和 vfp 等信息。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux驱动-LCD驱动">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-LCD%E9%A9%B1%E5%8A%A8/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="Framebuffer 设备裸机 LCD 驱动编写流程如下：①、初始化 I.MX6U 的 eLCDIF 控制器，重点是 LCD 屏幕宽(width)、高(height)、hspw、hbp、hfp、vspw、vbp 和 vfp 等信息。②、初始化 LCD 像素时钟。③、设置 RGBLCD 显存。④、应用程序直接通过操作显存来操作 LCD，实现在 LCD 上显示字符、图片等信息。 在 Linux">
+<meta property="og:description" content="Framebuffer 设备裸机 LCD 驱动编写流程如下：①、初始化 I.MX6U 的 eLCDIF 控制器，重点是 LCD 屏幕宽(width)、高(height)、hspw、hbp、hfp、vspw、vbp 和 vfp 等信息。">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-16T15:59:08.000Z">
-<meta property="article:modified_time" content="2021-04-20T09:40:07.876Z">
+<meta property="article:modified_time" content="2021-05-05T04:44:02.116Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,9 +244,10 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
+    <h1 id="Framebuffer-设备"><a href="#Framebuffer-设备" class="headerlink" title="Framebuffer 设备"></a><strong>Framebuffer</strong> <strong>设备</strong></h1><p>裸机 LCD 驱动编写流程如下：<br>①、初始化 I.MX6U 的 eLCDIF 控制器，重点是 LCD 屏幕宽(width)、高(height)、hspw、hbp、hfp、vspw、vbp 和 vfp 等信息。</p>
+ <a id="more"></a> 
 
-<h1 id="Framebuffer-设备"><a href="#Framebuffer-设备" class="headerlink" title="Framebuffer 设备"></a><strong>Framebuffer</strong> <strong>设备</strong></h1><p>裸机 LCD 驱动编写流程如下：<br>①、初始化 I.MX6U 的 eLCDIF 控制器，重点是 LCD 屏幕宽(width)、高(height)、hspw、hbp、hfp、vspw、vbp 和 vfp 等信息。<br>②、初始化 LCD 像素时钟。<br>③、设置 RGBLCD 显存。<br>④、应用程序直接通过操作显存来操作 LCD，实现在 LCD 上显示字符、图片等信息。</p>
+<p>②、初始化 LCD 像素时钟。<br>③、设置 RGBLCD 显存。<br>④、应用程序直接通过操作显存来操作 LCD，实现在 LCD 上显示字符、图片等信息。</p>
 <p>在 Linux 中应用程序最终也是通过操作 RGB LCD 的显存来实现在 LCD 上显示字符、图片<br>等信息。在裸机中我们可以随意的分配显存，但是在 Linux 系统中内存的管理很严格，显存是<br>需要申请的，不是你想用就能用的。而且因为虚拟内存的存在，驱动程序设置的显存和应用程<br>序访问的显存要是同一片物理内存。</p>
 <p>为了解决上述问题，Framebuffer 诞生了， Framebuffer 翻译过来就是帧缓冲，简称 fb，以后的 Linux 学习中见到“Framebuffer”或者“fb”的话第一反应应该想到 RGBLCD或者显示设备。fb 是一种机制，将系统中所有跟显示有关的硬件以及软件集合起来，虚拟出一个 fb 设备，当编写好 LCD 驱动以后会生成一个名为/dev/fbX(X=0~n)的设备，应用程序通过访问/dev/fbX 这个设备就可以访问 LCD。</p>
 <p>/dev/fbX是个字符设备，因此肯定有file_operations 操作集，fb 的 file_operations 操作集定义在 drivers/video/fbdev/core/fbmem.c 文件中。</p>

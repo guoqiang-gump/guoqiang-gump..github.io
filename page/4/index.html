@@ -224,30 +224,10 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
-
-<h1 id="一、设备树LED驱动原理"><a href="#一、设备树LED驱动原理" class="headerlink" title="一、设备树LED驱动原理"></a>一、设备树LED驱动原理</h1><p>使用设备树来向 Linux 内核传递相关的寄存器物理地址，Linux 驱动文件使用OF函数从设备树中获取所需的属性值，然后使用获取到的属性值来初始化相关的 IO。重点内容如下： </p>
-<p>①、在 imx6ull-alientek-emmc.dts 文件中创建相应的设备节点。 </p>
-<p>②、编写驱动程序(在第四十二章实验基础上完成)，获取设备树中的相关属性值。 </p>
-<p>③、使用获取到的有关属性值来初始化 LED 所使用的 GPIO。</p>
-<h1 id="二、修改设备树文件"><a href="#二、修改设备树文件" class="headerlink" title="二、修改设备树文件"></a>二、修改设备树文件</h1><p>在根节点“/”下创建一个名为“alphaled”的子节点，打开 imx6ull-alientek-emmc.dts 文件， 在根节点“/”最后面输入如下所示内容： </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">1 alphaled &#123; 2 #address-cells &#x3D; &lt;1&gt;;</span><br><span class="line">3 #size-cells &#x3D; &lt;1&gt;;</span><br><span class="line">4 compatible &#x3D; &quot;atkalpha-led&quot;; 5 status &#x3D; &quot;okay&quot;; 6 reg &#x3D; &lt; 0X020C406C 0X04 &#x2F;* CCM_CCGR1_BASE *&#x2F;</span><br><span class="line">7 0X020E0068 0X04 &#x2F;* SW_MUX_GPIO1_IO03_BASE *&#x2F;</span><br><span class="line">8 0X020E02F4 0X04 &#x2F;* SW_PAD_GPIO1_IO03_BASE *&#x2F;</span><br><span class="line">9 0X0209C000 0X04 &#x2F;* GPIO1_DR_BASE *&#x2F;</span><br><span class="line">10 0X0209C004 0X04 &gt;; &#x2F;* GPIO1_GDIR_BASE *&#x2F;</span><br><span class="line">11 &#125;;</span><br></pre></td></tr></table></figure>
-<p>第 2、3 行，属性#address-cells 和#size-cells 都为 1，表示 reg 属性中起始地址占用一个字长 </p>
-<p>(cell)，地址长度也占用一个字长(cell)。 </p>
-<p>第 4 行，属性 compatbile 设置 alphaled 节点兼容性为“atkalpha-led”。 </p>
-<p>第 5 行，属性 status 设置状态为“okay”。 </p>
-<p>第 6~10 行，reg 属性，非常重要！reg 属性设置了驱动里面所要使用的寄存器物理地址，比 </p>
-<p>如第 6 行的“0X020C406C 0X04”表示 I.MX6ULL 的 CCM_CCGR1 寄存器，其中寄存器首地 </p>
-<p>址为 0X020C406C，长度为 4 个字节。 </p>
-<h1 id="三、编写驱动"><a href="#三、编写驱动" class="headerlink" title="三、编写驱动"></a>三、编写驱动</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;* dtsled设备结构体 *&#x2F;</span><br><span class="line">struct dtsled_dev&#123;</span><br><span class="line">	………………</span><br><span class="line">	struct device_node	*nd; &#x2F;* 设备节点 *&#x2F;</span><br><span class="line">&#125;;</span><br><span class="line">………………</span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 驱动出口函数</span><br><span class="line"> * @param 		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int __init led_init(void)</span><br><span class="line">&#123;</span><br><span class="line">	u32 val &#x3D; 0;</span><br><span class="line">	int ret;</span><br><span class="line">	u32 regdata[14];</span><br><span class="line">	const char *str;</span><br><span class="line">	struct property *proper;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 获取设备树中的属性数据 *&#x2F;</span><br><span class="line">	&#x2F;* 1、获取设备节点：alphaled *&#x2F;</span><br><span class="line">	dtsled.nd &#x3D; of_find_node_by_path(&quot;&#x2F;alphaled&quot;);</span><br><span class="line">	if(dtsled.nd &#x3D;&#x3D; NULL) &#123;</span><br><span class="line">		printk(&quot;alphaled node nost find!\r\n&quot;);</span><br><span class="line">		return -EINVAL;</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		printk(&quot;alphaled node find!\r\n&quot;);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 2、获取compatible属性内容 *&#x2F;</span><br><span class="line">	proper &#x3D; of_find_property(dtsled.nd, &quot;compatible&quot;, NULL);</span><br><span class="line">	if(proper &#x3D;&#x3D; NULL) &#123;</span><br><span class="line">		printk(&quot;compatible property find failed\r\n&quot;);</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		printk(&quot;compatible &#x3D; %s\r\n&quot;, (char*)proper-&gt;value);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 3、获取status属性内容 *&#x2F;</span><br><span class="line">	ret &#x3D; of_property_read_string(dtsled.nd, &quot;status&quot;, &amp;str);</span><br><span class="line">	if(ret &lt; 0)&#123;</span><br><span class="line">		printk(&quot;status read failed!\r\n&quot;);</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		printk(&quot;status &#x3D; %s\r\n&quot;,str);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 4、获取reg属性内容 *&#x2F;</span><br><span class="line">	ret &#x3D; of_property_read_u32_array(dtsled.nd, &quot;reg&quot;, regdata, 10);</span><br><span class="line">	if(ret &lt; 0) &#123;</span><br><span class="line">		printk(&quot;reg property read failed!\r\n&quot;);</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		u8 i &#x3D; 0;</span><br><span class="line">		printk(&quot;reg data:\r\n&quot;);</span><br><span class="line">		for(i &#x3D; 0; i &lt; 10; i++)</span><br><span class="line">			printk(&quot;%#X &quot;, regdata[i]);</span><br><span class="line">		printk(&quot;\r\n&quot;);</span><br><span class="line">	&#125;</span><br><span class="line">	IMX6U_CCM_CCGR1 &#x3D; of_iomap(dtsled.nd, 0);</span><br><span class="line">	SW_MUX_GPIO1_IO03 &#x3D; of_iomap(dtsled.nd, 1);</span><br><span class="line">  	SW_PAD_GPIO1_IO03 &#x3D; of_iomap(dtsled.nd, 2);</span><br><span class="line">	GPIO1_DR &#x3D; of_iomap(dtsled.nd, 3);</span><br><span class="line">	GPIO1_GDIR &#x3D; of_iomap(dtsled.nd, 4);</span><br><span class="line">	&#x2F;* 2、使能GPIO1时钟 *&#x2F;</span><br><span class="line">	val &#x3D; readl(IMX6U_CCM_CCGR1);</span><br><span class="line">	val &amp;&#x3D; ~(3 &lt;&lt; 26);	&#x2F;* 清楚以前的设置 *&#x2F;</span><br><span class="line">	val |&#x3D; (3 &lt;&lt; 26);	&#x2F;* 设置新值 *&#x2F;</span><br><span class="line">	writel(val, IMX6U_CCM_CCGR1);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 3、设置GPIO1_IO03的复用功能，将其复用为</span><br><span class="line">	 *    GPIO1_IO03，最后设置IO属性。</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	writel(5, SW_MUX_GPIO1_IO03);</span><br><span class="line">	</span><br><span class="line">	&#x2F;*寄存器SW_PAD_GPIO1_IO03设置IO属性</span><br><span class="line">	 *bit 16:0 HYS关闭</span><br><span class="line">	 *bit [15:14]: 00 默认下拉</span><br><span class="line">     *bit [13]: 0 kepper功能</span><br><span class="line">     *bit [12]: 1 pull&#x2F;keeper使能</span><br><span class="line">     *bit [11]: 0 关闭开路输出</span><br><span class="line">     *bit [7:6]: 10 速度100Mhz</span><br><span class="line">     *bit [5:3]: 110 R0&#x2F;6驱动能力</span><br><span class="line">     *bit [0]: 0 低转换率</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	writel(0x10B0, SW_PAD_GPIO1_IO03);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 4、设置GPIO1_IO03为输出功能 *&#x2F;</span><br><span class="line">	val &#x3D; readl(GPIO1_GDIR);</span><br><span class="line">	val &amp;&#x3D; ~(1 &lt;&lt; 3);	&#x2F;* 清除以前的设置 *&#x2F;</span><br><span class="line">	val |&#x3D; (1 &lt;&lt; 3);	&#x2F;* 设置为输出 *&#x2F;</span><br><span class="line">	writel(val, GPIO1_GDIR);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 5、默认关闭LED *&#x2F;</span><br><span class="line">	val &#x3D; readl(GPIO1_DR);</span><br><span class="line">	val |&#x3D; (1 &lt;&lt; 3);	</span><br><span class="line">	writel(val, GPIO1_DR);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 注册字符设备驱动 *&#x2F;</span><br><span class="line">	&#x2F;* 1、创建设备号 *&#x2F;</span><br><span class="line">	if (dtsled.major) &#123;		&#x2F;*  定义了设备号 *&#x2F;</span><br><span class="line">		dtsled.devid &#x3D; MKDEV(dtsled.major, 0);</span><br><span class="line">		register_chrdev_region(dtsled.devid, DTSLED_CNT, DTSLED_NAME);</span><br><span class="line">	&#125; else &#123;						&#x2F;* 没有定义设备号 *&#x2F;</span><br><span class="line">		alloc_chrdev_region(&amp;dtsled.devid, 0, DTSLED_CNT, DTSLED_NAME);	&#x2F;* 申请设备号 *&#x2F;</span><br><span class="line">		dtsled.major &#x3D; MAJOR(dtsled.devid);	&#x2F;* 获取分配号的主设备号 *&#x2F;</span><br><span class="line">		dtsled.minor &#x3D; MINOR(dtsled.devid);	&#x2F;* 获取分配号的次设备号 *&#x2F;</span><br><span class="line">	&#125;</span><br><span class="line">	printk(&quot;dtsled major&#x3D;%d,minor&#x3D;%d\r\n&quot;,dtsled.major, dtsled.minor);	</span><br><span class="line">	</span><br><span class="line">	&#x2F;* 2、初始化cdev *&#x2F;</span><br><span class="line">	dtsled.cdev.owner &#x3D; THIS_MODULE;</span><br><span class="line">	cdev_init(&amp;dtsled.cdev, &amp;dtsled_fops);</span><br><span class="line">	</span><br><span class="line">	&#x2F;* 3、添加一个cdev *&#x2F;</span><br><span class="line">	cdev_add(&amp;dtsled.cdev, dtsled.devid, DTSLED_CNT);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 4、创建类 *&#x2F;</span><br><span class="line">	dtsled.class &#x3D; class_create(THIS_MODULE, DTSLED_NAME);</span><br><span class="line">	if (IS_ERR(dtsled.class)) &#123;</span><br><span class="line">		return PTR_ERR(dtsled.class);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 5、创建设备 *&#x2F;</span><br><span class="line">	dtsled.device &#x3D; device_create(dtsled.class, NULL, dtsled.devid, NULL, DTSLED_NAME);</span><br><span class="line">	if (IS_ERR(dtsled.device)) &#123;</span><br><span class="line">		return PTR_ERR(dtsled.device);</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>在设备结构体 dtsled_dev 中添加了成员变量 nd，nd 是 device_node 结构体类型指针，表示设备节点。如果我们要读取设备树某个节点的属性值，首先要先得到这个节点，一般在设备结构体中添加 device_node 指针变量来存放这个节点。</p>
-<p>通过 of_find_node_by_path 函数得到 alphaled 节点，后续其他的 OF 函数要使用 device_node。 </p>
-<p>通过 of_find_property 函数获取 alphaled 节点的 compatible 属性，返回值为 property 结构体类型指针变量，property 的成员变量 value 表示属性值。 </p>
-<p>通过 of_property_read_string 函数获取 alphaled 节点的 status 属性值。</p>
-<p>通过 of_property_read_u32_array 函数获取 alphaled 节点的 reg 属性所有值，并且将获取到的值都存放到 regdata 数组中</p>
-<p>第 192 行将获取到的 reg 属性值依次输出到终端上。 </p>
-<p>使用 of_iomap 函数一次性完成读取 reg 属性以及内存映射，of_iomap 函数是设备树推荐使用的 OF 函数。</p>
-
+    <h1 id="一、设备树LED驱动原理"><a href="#一、设备树LED驱动原理" class="headerlink" title="一、设备树LED驱动原理"></a>一、设备树LED驱动原理</h1><p>使用设备树来向 Linux 内核传递相关的寄存器物理地址，Linux 驱动文件使用OF函数从设备树中获取所需的属性值，然后使用获取到的属性值来初始化相关的 IO。重点内容如下： </p>
+    
+    <a class="article-more-a" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-Linux%E8%AE%BE%E5%A4%87%E6%A0%91LED/#more">more >></a>
+    
     
 
     
@@ -321,121 +301,10 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
-
-<h1 id="一、设备树简介"><a href="#一、设备树简介" class="headerlink" title="一、设备树简介"></a>一、设备树简介</h1><p>设备树(Device Tree)，将这个词分开就是“设备”和“树”，描述设备树的文件叫做 DTS(Device Tree Source)，这个 DTS 文件采用树形结构描述板级设备，也就是开发板上的设备信息，比如CPU 数量、 内存基地址、IIC 接口上接了哪些设备、SPI 接口上接了哪些设备等等。板级信息文件都是.c 或.h 文件，如果都编码进 Linux 内核中，会导致 Linux 内核“虚胖”臃肿。</p>
-<p>ARM 社区就引入了 设备树(Flattened Device Tree)，将这些描述板级硬件信息的内容都从 Linux 内中分离开来，用一个专属的文件格式来描述，这个专属的文件就叫做设备树，文件扩展名为.dts。</p>
-<p>一个 SOC 可以作出很多不同的板子，这些不同的板子肯定是有共同的信息，将这些共同的信息提取出来作为一个通用的文件.dtsi ，.dtsi 描述 SOC 级信息(也就是 SOC 有 几个 CPU、主频是多少、各个外设控制器信息等)。,类似于 C 语言中的头文件。一般.dts 描述板级信息(也就是开发板上有哪些 IIC 设备、SPI 设备等)。</p>
-<h1 id="二、DTS、DTB-和-DTC"><a href="#二、DTS、DTB-和-DTC" class="headerlink" title="二、DTS、DTB 和 DTC"></a>二、DTS、DTB 和 DTC</h1><p>DTS 是设备树源码文件，DTB 是将DTS 编译以后得到的二进制文件。将.dts 编译为.dtb 需要用到 DTC 工具！如果要编译 DTS 文件的话只需要进入到 Linux 源码根目录下，然后执行如下命令： </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make dtbs</span><br></pre></td></tr></table></figure>
-<h1 id="三、DTS-语法"><a href="#三、DTS-语法" class="headerlink" title="三、DTS 语法"></a>三、<strong>DTS</strong> <strong>语法</strong></h1><h2 id="1、-dtsi-头文件"><a href="#1、-dtsi-头文件" class="headerlink" title="1、 .dtsi 头文件"></a>1、 <strong>.dtsi</strong> <strong>头文件</strong></h2><p>设备树也支持头文件，设备树的头文件扩展名为.dtsi。使用“#include”来引用“imx6ull.dtsi”这个.dtsi 头文件。 因此在.dts 设备树文件中，可以通过 “#include”来引用.h、.dtsi 和.dts 文件。只是，我们在编写设备树头文件的时候最好选择.dtsi 后缀。 一般.dtsi 文件用于描述 SOC 的内部外设信息，比如 CPU 架构、主频、外设寄存器地址范围，如 UART、IIC 等。</p>
-<h2 id="2、设备节点"><a href="#2、设备节点" class="headerlink" title="2、设备节点"></a><strong>2、设备节点</strong></h2><p>设备树是采用树形结构来描述板子上的设备信息的文件，每个设备都是一个节点，叫做设备节点，每个节点都通过一些属性信息来描述节点信息，属性就是键—值对。</p>
-<p>在设备树中节点命名格式如下： </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">node-name@unit-address </span><br></pre></td></tr></table></figure>
-<p>其中“node-name”是节点名字，为 ASCII 字符串，节点名字应该能够清晰的描述出节点的功能，比如“uart1”就表示这个节点是 UART1 外设。“unit-address”一般表示设备的地址或寄存器首地址，如果某个节点没有地址或者寄存器的话“unit-address”可以不要，比如“cpu@0”、 “interrupt-controller@00a01000”。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">label: node-name@unit-address </span><br></pre></td></tr></table></figure>
-<p>用“：”隔开成了两部分，“：” 前面的是节点标签(label)，“：”后面的是节点名字。引入 label 的目的就是为了方便访问节点，可以直接通过&amp;label 来访问这个节点。</p>
-<p>设备树源码中常用的几种数据形式如下所示： </p>
-<p><strong>①、字符串</strong>  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">compatible &#x3D; &quot;arm,cortex-a7&quot;; </span><br></pre></td></tr></table></figure>
-<p>上述代码设置 compatible 属性的值为字符串“arm,cortex-a7”。 </p>
-<p><strong>②、32 位无符号整数</strong> </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">reg &#x3D; &lt;0&gt;; </span><br></pre></td></tr></table></figure>
-<p>上述代码设置 reg 属性的值为 0，reg 的值也可以设置为一组值，比如：reg = &lt;0 0x123456 100&gt;; </p>
-<p><strong>③、字符串列表</strong> </p>
-<p>属性值也可以为字符串列表，字符串和字符串之间采用“,”隔开，如下所示： </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">compatible &#x3D; &quot;fsl,imx6ull-gpmi-nand&quot;, &quot;fsl, imx6ul-gpmi-nand&quot;; </span><br></pre></td></tr></table></figure>
-<h2 id="3、标准属性"><a href="#3、标准属性" class="headerlink" title="3、标准属性"></a><strong>3、标准属性</strong></h2><p>节点是由一堆的属性组成，节点都是具体的设备，不同的设备需要的属性不同，用户可以自定义属性。</p>
-<p><strong>1、compatible 属性</strong></p>
-<p>compatible 属性也叫做“兼容性”属性，这是非常重要的一个属性！compatible 属性的值是一个字符串列表，compatible 属性用于将设备和驱动绑定起来。字符串列表用于选择设备所要使用的驱动程。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">compatible &#x3D; &quot;manufacturer,model&quot; </span><br></pre></td></tr></table></figure>
-<p> manufacturer 表示厂商，model 一般是模块对应的驱动名字。一般驱动程序文件都会有一个 OF 匹配表，此 OF 匹配表保存着一些 compatible 值，如果设备节点的 compatible 属性值和 OF 匹配表中的任何一个值相等，那么就表示设备可以使用这个驱动。</p>
-<p><strong>2、model 属性</strong><br>model 属性值也是一个字符串，一般 model 属性描述设备模块信息，比如名字什么的，比如：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">model &#x3D; &quot;wm8960-audio&quot;;</span><br></pre></td></tr></table></figure>
-<p><strong>3、status 属性</strong><br>status 属性看名字就知道是和设备状态有关的，status 属性值也是字符串，字符串是设备的状态信息。</p>
-<p>“okay”                 ——表明设备是可操作的。 </p>
-<p>“disabled”         ——表明设备当前是不可操作的，但是在未来可以变为可操作的，比如热插拔设备插入以后。至于                                     disabled 的具体含义还要看设备的绑定文档。 </p>
-<p>“fail”                     ——表明设备不可操作，设备检测到了一系列的错误，而且设备也不大可能变得可操作。 </p>
-<p>“fail-sss”             ——含义和“fail”相同，后面的 sss 部分是检测到的错误内容。 </p>
-<p><strong>4、#address-cells 、#size-cells 、reg 属性</strong><br>这两个属性的值都是无符号 32 位整形，#address-cells 和#size-cells 这两个属性可以用在任何拥有子节点的设备中，用于描述子节点的地址信息。#address-cells 属性值决定了子节点 reg 属性中地址信息所占用的字长(32 位)，#size-cells 属性值决定了子节点 reg 属性中长度信息所占的字长(32 位)。#address-cells 和#size-cells 表明了子节点应该如何编写 reg 属性值。</p>
-<p> reg 一般用于描述设备地址空间资源信息，一般都是某个外设的寄存器地址范围信息，所以reg属性都是和地址有关的内容。和地址相关的信息有两种：起始地址和地址长度，reg 属性的格式一为： </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">reg &#x3D; &lt;address1 length1 address2 length2 address3 length3……&gt; </span><br></pre></td></tr></table></figure>
-<p>每个“address length”组合表示一个地址范围，其中 address 是起始地址，length 是地址长度，#address-cells 表明 address 这个数据所占用的字长，#size-cells 表明 length 这个数据所占用字长。</p>
-<p><strong>5、ranges 属性</strong><br>ranges属性值可以为空或者按照(child-bus-address,parent-bus-address,length)格式编写的数字矩阵，ranges 是一个地址映射/转换表，ranges 属性每个项目由子地址、父地址和地址空间长度这三部分组成：<br>child-bus-address：子总线地址空间的物理地址，由父节点的#address-cells 确定此物理地址所占用的字长。<br>parent-bus-address：父总线地址空间的物理地址，同样由父节点的#address-cells 确定此物理地址所占用的字长。<br>length：子地址空间的长度，由父节点的#size-cells 确定此地址长度所占用的字长。<br>如果 ranges 属性值为空值，说明子地址空间和父地址空间完全相同，不需要进行地址转换，对于I.MX6ULL 来说，子地址空间和父地址空间完全相同。</p>
-<h2 id="4、特殊节点"><a href="#4、特殊节点" class="headerlink" title="4、特殊节点"></a><strong>4、特殊节点</strong></h2><p>“/”是根节点，每个设备树文件只有一个根节点。在根节点“/”中有两个特殊的子节点：aliases 和 chosen。</p>
-<p><strong>aliases</strong> <strong>子节点</strong> </p>
-<p>单词 aliases 的意思是“别名”，因此 aliases 节点的主要功能就是定义别名，定义别名的目的就是为了方便访问节点。不过一般会在节点命名的时候会加上 label，然后通过&amp;label来访问节点，这样也很方便，而且设备树里面大量的使用&amp;label 的形式来访问节点。 </p>
-<p><strong>chosen</strong> <strong>子节点</strong></p>
-<p>chosen 并不是一个真实的设备，chosen 节点主要是为了 uboot 向 Linux 内核传递数据，重点是 bootargs 参数。一般.dts 文件中 chosen 节点通常为空或者内容很少。</p>
-<p>在启动 Linux 内核之前，只有 uboot 设置bootargs 环境变量的值，并且 uboot也知道.dtb 设备树文件在 DRAM 中的位置。uboot 中的 fdt_chosen 函数在设备树的 chosen 节点中加入了 bootargs属性，并且还设置了 bootargs 属性值。</p>
-<h1 id="四、设备树常用-OF-操作函数"><a href="#四、设备树常用-OF-操作函数" class="headerlink" title="四、设备树常用 OF 操作函数"></a><strong>四、设备树常用</strong> <strong>OF</strong> <strong>操作函数</strong></h1><p>Linux 内核给我们提供了一系列的函数来获取设备树中的节点或者属性信息，这一系列的函数都有一个统一的前缀“of_”，所以在很多资料里面也被叫做 OF 函数。</p>
-<h2 id="查找节点的-OF-函数"><a href="#查找节点的-OF-函数" class="headerlink" title="查找节点的 OF 函数"></a><strong>查找节点的</strong> <strong>OF</strong> <strong>函数</strong></h2><p>设备都是以节点的形式“挂”到设备树上的，因此要想获取这个设备的其他属性信息，必须先获取到这个设备的节点。Linux 内核使用 device_node 结构体来描述一个节点，</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">struct device_node &#123;</span><br><span class="line">    const char *name; &#x2F;* 节点名字 *&#x2F;</span><br><span class="line">    const char *type; &#x2F;* 设备类型 *&#x2F;</span><br><span class="line">    phandle phandle;</span><br><span class="line">    const char *full_name; &#x2F;* 节点全名 *&#x2F;</span><br><span class="line">    struct fwnode_handle fwnode;</span><br><span class="line"></span><br><span class="line">    struct property *properties; &#x2F;* 属性 *&#x2F;</span><br><span class="line">    struct property *deadprops; &#x2F;* removed 属性 *&#x2F;</span><br><span class="line">    struct device_node *parent; &#x2F;* 父节点 *&#x2F;</span><br><span class="line">    struct device_node *child; &#x2F;* 子节点 *&#x2F;</span><br><span class="line">    struct device_node *sibling;</span><br><span class="line">    struct kobject kobj;</span><br><span class="line">    unsigned long _flags;</span><br><span class="line">    void *data;</span><br><span class="line">#if defined(CONFIG_SPARC)</span><br><span class="line">    const char *path_component_name;</span><br><span class="line">    unsigned int unique_id;</span><br><span class="line">    struct of_irq_controller *irq_trans;</span><br><span class="line">#endif</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p><strong>1、of_find_node_by_name 函数</strong><br>of_find_node_by_name 函数通过节点名字查找指定的节点，函数原型如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">struct device_node *of_find_node_by_name(struct device_node *from,const char *name);</span><br></pre></td></tr></table></figure>
-<p>from：开始查找的节点，如果为 NULL 表示从根节点开始查找整个设备树。<br>name：要查找的节点名字。<br>返回值：找到的节点，如果为 NULL 表示查找失败</p>
-<p><strong>2、of_find_node_by_type 函数</strong><br>of_find_node_by_type 函数通过 device_type 属性查找指定的节点，函数原型如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">struct device_node *of_find_node_by_type(struct device_node *from, const char *type)</span><br></pre></td></tr></table></figure>
-<p>from：开始查找的节点，如果为 NULL 表示从根节点开始查找整个设备树。<br>type：要查找的节点对应的 type 字符串，也就是 device_type 属性值。<br>返回值：找到的节点，如果为 NULL 表示查找失败。</p>
-<p><strong>3、of_find_compatible_node 函数</strong><br>of_find_compatible_node 函数根据 device_type 和 compatible 这两个属性查找指定的节点，</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">struct device_node *of_find_compatible_node(struct device_node *from,const char *type, </span><br><span class="line">									const char *compatible)</span><br></pre></td></tr></table></figure>
-<p>from：开始查找的节点，如果为 NULL 表示从根节点开始查找整个设备树。<br>type：要查找的节点对应的 type 字符串，也就是 device_type 属性值，可以为 NULL，表示忽略掉 device_type 属性。<br>compatible：要查找的节点所对应的 compatible 属性列表。<br>返回值：找到的节点，如果为 NULL 表示查找失败</p>
-<p><strong>4、of_find_matching_node_and_match 函数</strong><br>of_find_matching_node_and_match 函数通过 of_device_id 匹配表来查找指定的节点</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">struct device_node *of_find_matching_node_and_match(struct device_node *from,</span><br><span class="line"> 	const struct of_device_id *matches, const struct of_device_id **match)</span><br></pre></td></tr></table></figure>
-<p>from：开始查找的节点，如果为 NULL 表示从根节点开始查找整个设备树。<br>matches：of_device_id 匹配表，也就是在此匹配表里面查找节点。<br>match：找到的匹配的 of_device_id。<br>返回值：找到的节点，如果为 NULL 表示查找失败</p>
-<p><strong>5、of_find_node_by_path 函数</strong><br>of_find_node_by_path 函数通过路径来查找指定的节点，函数原型如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">inline struct device_node *of_find_node_by_path(const char *path)</span><br></pre></td></tr></table></figure>
-<p>path：带有全路径的节点名，可以使用节点的别名，比如“/backlight”就是 backlight 这个节点的全路径。<br>返回值：找到的节点，如果为 NULL 表示查找失败</p>
-<h2 id="查找父-子节点的-OF-函数"><a href="#查找父-子节点的-OF-函数" class="headerlink" title="查找父/子节点的 OF 函数"></a>查找父/子节点的 OF 函数</h2><p><strong>1、of_get_parent 函数</strong><br>of_get_parent 函数用于获取指定节点的父节点(如果有父节点的话)，函数原型如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">struct device_node *of_get_parent(const struct device_node *node)</span><br></pre></td></tr></table></figure>
-<p>node：要查找的父节点的节点。<br>返回值：找到的父节点</p>
-<p><strong>2、of_get_next_child 函数</strong><br>of_get_next_child 函数用迭代的查找子节点，函数原型如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">struct device_node *of_get_next_child(const struct device_node *node,</span><br><span class="line">										struct device_node *prev)</span><br></pre></td></tr></table></figure>
-<p>node：父节点。<br>prev：前一个子节点，也就是从哪一个子节点开始迭代的查找下一个子节点。可设置为NULL，表示从第一个子节点开始。<br>返回值：找到的下一个子节点。</p>
-<h2 id="提取属性值的-OF-函数"><a href="#提取属性值的-OF-函数" class="headerlink" title="提取属性值的 OF 函数"></a>提取属性值的 OF 函数</h2><p>节点的属性信息里面保存了驱动所需要的内容，因此对于属性值的提取非常重要，Linux 内核中使用结构体 property 表示属性，</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">struct property &#123;</span><br><span class="line">    char *name; &#x2F;* 属性名字 *&#x2F;</span><br><span class="line">    int length; &#x2F;* 属性长度 *&#x2F;</span><br><span class="line">    void *value; &#x2F;* 属性值 *&#x2F;</span><br><span class="line">    struct property *next; &#x2F;* 下一个属性 *&#x2F;</span><br><span class="line">    unsigned long _flags;</span><br><span class="line">    unsigned int unique_id;</span><br><span class="line">    struct bin_attribute attr;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p><strong>1、of_find_property 函数</strong><br>of_find_property 函数用于查找指定的属性，函数原型如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">property *of_find_property(const struct device_node *np, const char *name, int *lenp)</span><br></pre></td></tr></table></figure>
-<p>np：设备节点。<br>name： 属性名字。<br>lenp：属性值的字节数<br>返回值：找到的属性。</p>
-<p><strong>2、of_property_count_elems_of_size 函数</strong><br>用于获取属性中元素的数量，比如 reg 属性值是一个数组，那么使用此函数可以获取到这个数组的大小：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int of_property_count_elems_of_size(const struct device_node *np,</span><br><span class="line">										const char *propname, int elem_size)</span><br></pre></td></tr></table></figure>
-<p>np：设备节点。<br>proname： 需要统计元素数量的属性名字。<br>elem_size：元素长度。<br>返回值：得到的属性元素数量。</p>
-<p><strong>3、of_property_read_u32_index 函数</strong><br>of_property_read_u32_index 函数用于从属性中获取指定标号的 u32 类型数据值(无符号 32 位)，比如某个属性有多个 u32 类型的值，那么就可以使用此函数来获取指定标号的数据值，</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int of_property_read_u32_index(const struct device_node *np,const char *propname,</span><br><span class="line"> 															u32 index,  u32 *out_value)</span><br></pre></td></tr></table></figure>
-<p>np：设备节点。<br>proname： 要读取的属性名字。<br>index：要读取的值标号。<br>out_value：读取到的值<br>返回值：0 读取成功，负值，读取失败，-EINVAL 表示属性不存在，-ENODATA 表示没有要读取的数据，-EOVERFLOW 表示属性值列表太小。</p>
-<p><strong>4、of_property_read_u32_array 函数</strong></p>
-<p>读取属性中 u32 类型的数组数据，</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int of_property_read_u32_array(const struct device_node *np,const char *propname, </span><br><span class="line"> 															u32 *out_values,size_t sz)</span><br></pre></td></tr></table></figure>
-<p>np：设备节点。<br>proname： 要读取的属性名字。<br>out_value：读取到的数组值，分别为 u8、u16、u32 和 u64。<br>sz：要读取的数组元素数量。<br>返回值：0，读取成功，负值，读取失败，-EINVAL 表示属性不存在，-ENODATA 表示没有要读取的数据，-EOVERFLOW 表示属性值列表太小。</p>
-<p><strong>5、of_property_read_u32 函数</strong></p>
-<p>有些属性只有一个整形值，这四个函数就是用于读取这种只有一个整形值的属性，用于读取 u32类型属性值，</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int of_property_read_u32(const struct device_node *np, </span><br><span class="line">										const char *propname, u32 *out_value)</span><br></pre></td></tr></table></figure>
-<p>np：设备节点。<br>proname： 要读取的属性名字。<br>out_value：读取到的数组值。<br>返回值：0，读取成功，负值，读取失败，-EINVAL 表示属性不存在，-ENODATA 表示没有要读取的数据，-EOVERFLOW 表示属性值列表太小。</p>
-<p><strong>6、of_property_read_string 函数</strong><br>of_property_read_string 函数用于读取属性中字符串值，函数原型如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int of_property_read_string(struct device_node *np, const char *propname,</span><br><span class="line"> 															const char **out_string)</span><br></pre></td></tr></table></figure>
-<p>np：设备节点。<br>proname： 要读取的属性名字。<br>out_string：读取到的字符串值。<br>返回值：0，读取成功，负值，读取失败。</p>
-<p><strong>7、of_n_addr_cells 函数、of_n_size_cells 函数</strong><br>of_n_addr_cells 函数用于获取#address-cells 属性值，of_size_cells 函数用于获取#size-cells 属性值</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int of_n_addr_cells(struct device_node *np)</span><br><span class="line">int of_n_size_cells(struct device_node *np)</span><br></pre></td></tr></table></figure>
-<p>np：设备节点。<br>返回值：获取到的#address-cells/size-cells 属性值。</p>
-<h2 id="其他常用的-OF-函数"><a href="#其他常用的-OF-函数" class="headerlink" title="其他常用的 OF 函数"></a>其他常用的 OF 函数</h2><p><strong>1、of_device_is_compatible 函数</strong><br>用于查看节点的 compatible 属性是否有包含 compat 指定的字符串，也就是检查设备节点的兼容性</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int of_device_is_compatible(const struct device_node *device, const char *compat)</span><br></pre></td></tr></table></figure>
-<p>device：设备节点。<br>compat：要查看的字符串。<br>返回值：0，节点的 compatible 属性中不包含 compat 指定的字符串；正数，包含 compat 指定的字符串。</p>
-<p><strong>2、of_get_address 函数</strong><br>of_get_address 函数用于获取地址相关属性，主要是“reg”或者“assigned-addresses”属性值，函数属性如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">const __be32 *of_get_address(struct device_node *dev, int index, </span><br><span class="line">												u64 *size, unsigned int *flags)</span><br></pre></td></tr></table></figure>
-<p>dev：设备节点。<br>index：要读取的地址标号。<br>size：地址长度。<br>flags：参数，比如 IORESOURCE_IO、IORESOURCE_MEM 等<br>返回值：读取到的地址数据首地址，为 NULL 的话表示读取失败</p>
-<p><strong>3、of_translate_address 函数</strong><br>of_translate_address 函数负责将从设备树读取到的地址转换为物理地址，函数原型如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">u64 of_translate_address(struct device_node *dev,const __be32 *in_addr)</span><br></pre></td></tr></table></figure>
-<p>函数参数和返回值含义如下：<br>dev：设备节点。<br>in_addr：要转换的地址。<br>返回值：得到的物理地址，如果为 OF_BAD_ADDR 的话表示转换失败</p>
-<p><strong>4、of_address_to_resource 函数</strong><br>IIC、SPI、GPIO 等这些外设都有对应的寄存器，这些寄存器其实就是一组内存空间，Linux内核使用 resource 结构体来描述一段内存空间，“resource”翻译出来就是“资源”，因此用 resource结构体描述的都是设备资源信息。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">struct resource &#123;</span><br><span class="line">    resource_size_t start;</span><br><span class="line">    resource_size_t end;</span><br><span class="line">    const char *name;</span><br><span class="line">    unsigned long flags;</span><br><span class="line">    struct resource *parent, *sibling, *child;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>对于 32 位的 SOC 来说，resource_size_t 是 u32 类型的。其中 start 表示开始地址，end 表示结束地址，name 是这个资源的名字，flags 是资源标志位，一般表示资源类型，最常见的资源标志就 是 IORESOURCE_MEM 、 IORESOURCE_REG 和IORESOURCE_IRQ 等。</p>
-<p>of_address_to_resource 函数看名字像是从设备树里面提取资源值，但是本质上就是将 reg 属性值，然后将其转换为 resource 结构体类型</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int of_address_to_resource(struct device_node *dev, int index, struct resource *r)</span><br></pre></td></tr></table></figure>
-<p>dev：设备节点。<br>index：地址资源标号。<br>r：得到的 resource 类型的资源值。<br>返回值：0，成功；负值，失败。</p>
-<p><strong>5、of_iomap 函数</strong><br>of_iomap 函数用于直接内存映射，以前我们会通过 ioremap 函数来完成物理地址到虚拟地址的映射，采用设备树以后就可以直接通过 of_iomap 函数来获取内存地址所对应的虚拟地址，不需要使用 ioremap 函数了。在采用设备树以后，大部分的驱动都使用 of_iomap 函数了。of_iomap 函数本质上也是将 reg 属性中地址信息转换为虚拟地址，如果 reg 属性有多段的话，可以通过 index 参数指定要完成内存映射的是哪一段。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void __iomem *of_iomap(struct device_node *np, int index)</span><br></pre></td></tr></table></figure>
-<p>np：设备节点。<br>index：reg 属性中要完成内存映射的段，如果 reg 属性只有一段的话 index 就设置为 0。<br>返回值：经过内存映射后的虚拟内存首地址，如果为 NULL 的话表示内存映射失败。</p>
-
+    <h1 id="一、设备树简介"><a href="#一、设备树简介" class="headerlink" title="一、设备树简介"></a>一、设备树简介</h1><p>设备树(Device Tree)，将这个词分开就是“设备”和“树”，描述设备树的文件叫做 DTS(Device Tree Source)，这个 DTS 文件采用树形结构描述板级设备，也就是开发板上的设备信息，比如CPU 数量、 内存基地址、IIC 接口上接了哪些设备、SPI 接口上接了哪些设备等等。板级信息文件都是.c 或.h 文件，如果都编码进 Linux 内核中，会导致 Linux 内核“虚胖”臃肿。</p>
+    
+    <a class="article-more-a" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-Linux%E8%AE%BE%E5%A4%87%E6%A0%91/#more">more >></a>
+    
     
 
     
@@ -509,45 +378,10 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
-
-<h1 id="编写实验程序"><a href="#编写实验程序" class="headerlink" title="编写实验程序"></a>编写实验程序</h1><h1 id="一、编写实验程序"><a href="#一、编写实验程序" class="headerlink" title="一、编写实验程序"></a>一、编写实验程序</h1><h2 id="1、驱动设备程序"><a href="#1、驱动设备程序" class="headerlink" title="1、驱动设备程序"></a>1、驱动设备程序</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;***************************************************************</span><br><span class="line">文件名		: newchrled.c</span><br><span class="line">描述	   	: LED驱动文件。</span><br><span class="line">***************************************************************&#x2F;</span><br><span class="line">#define NEWCHRLED_CNT			1		  	&#x2F;* 设备号个数 *&#x2F;</span><br><span class="line">#define NEWCHRLED_NAME			&quot;newchrled&quot;	&#x2F;* 名字 *&#x2F;</span><br><span class="line">#define LEDOFF 					0			&#x2F;* 关灯 *&#x2F;</span><br><span class="line">#define LEDON 					1			&#x2F;* 开灯 *&#x2F;</span><br><span class="line"> </span><br><span class="line">&#x2F;* 寄存器物理地址 *&#x2F;</span><br><span class="line">#define CCM_CCGR1_BASE				(0X020C406C)	</span><br><span class="line">#define SW_MUX_GPIO1_IO03_BASE		(0X020E0068)</span><br><span class="line">#define SW_PAD_GPIO1_IO03_BASE		(0X020E02F4)</span><br><span class="line">#define GPIO1_DR_BASE				(0X0209C000)</span><br><span class="line">#define GPIO1_GDIR_BASE				(0X0209C004)</span><br><span class="line"></span><br><span class="line">&#x2F;* 映射后的寄存器虚拟地址指针 *&#x2F;</span><br><span class="line">static void __iomem *IMX6U_CCM_CCGR1;</span><br><span class="line">static void __iomem *SW_MUX_GPIO1_IO03;</span><br><span class="line">static void __iomem *SW_PAD_GPIO1_IO03;</span><br><span class="line">static void __iomem *GPIO1_DR;</span><br><span class="line">static void __iomem *GPIO1_GDIR;</span><br><span class="line"></span><br><span class="line">&#x2F;* newchrled设备结构体 *&#x2F;</span><br><span class="line">struct newchrled_dev&#123;</span><br><span class="line">	dev_t devid;			&#x2F;* 设备号 	 *&#x2F;</span><br><span class="line">	struct cdev cdev;		&#x2F;* cdev 	*&#x2F;</span><br><span class="line">	struct class *class;		&#x2F;* 类 		*&#x2F;</span><br><span class="line">	struct device *device;	&#x2F;* 设备 	 *&#x2F;</span><br><span class="line">	int major;				&#x2F;* 主设备号	  *&#x2F;</span><br><span class="line">	int minor;				&#x2F;* 次设备号   *&#x2F;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">struct newchrled_dev newchrled;	&#x2F;* led设备 *&#x2F;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: LED打开&#x2F;关闭</span><br><span class="line"> * @param - sta 	: LEDON(0) 打开LED，LEDOFF(1) 关闭LED</span><br><span class="line"> * @return 			: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void led_switch(u8 sta)</span><br><span class="line">&#123;</span><br><span class="line">	u32 val &#x3D; 0;</span><br><span class="line">	if(sta &#x3D;&#x3D; LEDON) &#123;</span><br><span class="line">		val &#x3D; readl(GPIO1_DR);</span><br><span class="line">		val &amp;&#x3D; ~(1 &lt;&lt; 3);	</span><br><span class="line">		writel(val, GPIO1_DR);</span><br><span class="line">	&#125;else if(sta &#x3D;&#x3D; LEDOFF) &#123;</span><br><span class="line">		val &#x3D; readl(GPIO1_DR);</span><br><span class="line">		val|&#x3D; (1 &lt;&lt; 3);	</span><br><span class="line">		writel(val, GPIO1_DR);</span><br><span class="line">	&#125;	</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: 打开设备</span><br><span class="line"> * @param - inode 	: 传递给驱动的inode</span><br><span class="line"> * @param - filp 	: 设备文件，file结构体有个叫做private_data的成员变量</span><br><span class="line"> * 					  一般在open的时候将private_data指向设备结构体。</span><br><span class="line"> * @return 			: 0 成功;其他 失败</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int led_open(struct inode *inode, struct file *filp)</span><br><span class="line">&#123;</span><br><span class="line">	filp-&gt;private_data &#x3D; &amp;newchrled; &#x2F;* 设置私有数据 *&#x2F;</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: 从设备读取数据 </span><br><span class="line"> * @param - filp 	: 要打开的设备文件(文件描述符)</span><br><span class="line"> * @param - buf 	: 返回给用户空间的数据缓冲区</span><br><span class="line"> * @param - cnt 	: 要读取的数据长度</span><br><span class="line"> * @param - offt 	: 相对于文件首地址的偏移</span><br><span class="line"> * @return 			: 读取的字节数，如果为负值，表示读取失败</span><br><span class="line"> *&#x2F;</span><br><span class="line">static ssize_t led_read(struct file *filp, char __user *buf, size_t cnt, loff_t *offt)</span><br><span class="line">&#123;</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: 向设备写数据 </span><br><span class="line"> * @param - filp 	: 设备文件，表示打开的文件描述符</span><br><span class="line"> * @param - buf 	: 要写给设备写入的数据</span><br><span class="line"> * @param - cnt 	: 要写入的数据长度</span><br><span class="line"> * @param - offt 	: 相对于文件首地址的偏移</span><br><span class="line"> * @return 			: 写入的字节数，如果为负值，表示写入失败</span><br><span class="line"> *&#x2F;</span><br><span class="line">static ssize_t led_write(struct file *filp, const char __user *buf, size_t cnt, loff_t *offt)</span><br><span class="line">&#123;</span><br><span class="line">	int retvalue;</span><br><span class="line">	unsigned char databuf[1];</span><br><span class="line">	unsigned char ledstat;</span><br><span class="line"></span><br><span class="line">	retvalue &#x3D; copy_from_user(databuf, buf, cnt);</span><br><span class="line">	if(retvalue &lt; 0) &#123;</span><br><span class="line">		printk(&quot;kernel write failed!\r\n&quot;);</span><br><span class="line">		return -EFAULT;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	ledstat &#x3D; databuf[0];		&#x2F;* 获取状态值 *&#x2F;</span><br><span class="line"></span><br><span class="line">	if(ledstat &#x3D;&#x3D; LEDON) &#123;	</span><br><span class="line">		led_switch(LEDON);		&#x2F;* 打开LED灯 *&#x2F;</span><br><span class="line">	&#125; else if(ledstat &#x3D;&#x3D; LEDOFF) &#123;</span><br><span class="line">		led_switch(LEDOFF);	&#x2F;* 关闭LED灯 *&#x2F;</span><br><span class="line">	&#125;</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: 关闭&#x2F;释放设备</span><br><span class="line"> * @param - filp 	: 要关闭的设备文件(文件描述符)</span><br><span class="line"> * @return 			: 0 成功;其他 失败</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int led_release(struct inode *inode, struct file *filp)</span><br><span class="line">&#123;</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;* 设备操作函数 *&#x2F;</span><br><span class="line">static struct file_operations newchrled_fops &#x3D; &#123;</span><br><span class="line">	.owner &#x3D; THIS_MODULE,</span><br><span class="line">	.open &#x3D; led_open,</span><br><span class="line">	.read &#x3D; led_read,</span><br><span class="line">	.write &#x3D; led_write,</span><br><span class="line">	.release &#x3D; 	led_release,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 驱动出口函数</span><br><span class="line"> * @param 		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int __init led_init(void)</span><br><span class="line">&#123;</span><br><span class="line">	u32 val &#x3D; 0;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 初始化LED *&#x2F;</span><br><span class="line">	&#x2F;* 1、寄存器地址映射 *&#x2F;</span><br><span class="line">  	IMX6U_CCM_CCGR1 &#x3D; ioremap(CCM_CCGR1_BASE, 4);</span><br><span class="line">	SW_MUX_GPIO1_IO03 &#x3D; ioremap(SW_MUX_GPIO1_IO03_BASE, 4);</span><br><span class="line">  	SW_PAD_GPIO1_IO03 &#x3D; ioremap(SW_PAD_GPIO1_IO03_BASE, 4);</span><br><span class="line">	GPIO1_DR &#x3D; ioremap(GPIO1_DR_BASE, 4);</span><br><span class="line">	GPIO1_GDIR &#x3D; ioremap(GPIO1_GDIR_BASE, 4);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 2、使能GPIO1时钟 *&#x2F;</span><br><span class="line">	val &#x3D; readl(IMX6U_CCM_CCGR1);</span><br><span class="line">	val &amp;&#x3D; ~(3 &lt;&lt; 26);	&#x2F;* 清楚以前的设置 *&#x2F;</span><br><span class="line">	val |&#x3D; (3 &lt;&lt; 26);	&#x2F;* 设置新值 *&#x2F;</span><br><span class="line">	writel(val, IMX6U_CCM_CCGR1);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 3、设置GPIO1_IO03的复用功能，将其复用为</span><br><span class="line">	 *    GPIO1_IO03，最后设置IO属性。</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	writel(5, SW_MUX_GPIO1_IO03);</span><br><span class="line">	</span><br><span class="line">	&#x2F;*寄存器SW_PAD_GPIO1_IO03设置IO属性</span><br><span class="line">	 *bit 16:0 HYS关闭</span><br><span class="line">	 *bit [15:14]: 00 默认下拉</span><br><span class="line">     *bit [13]: 0 kepper功能</span><br><span class="line">     *bit [12]: 1 pull&#x2F;keeper使能</span><br><span class="line">     *bit [11]: 0 关闭开路输出</span><br><span class="line">     *bit [7:6]: 10 速度100Mhz</span><br><span class="line">     *bit [5:3]: 110 R0&#x2F;6驱动能力</span><br><span class="line">     *bit [0]: 0 低转换率</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	writel(0x10B0, SW_PAD_GPIO1_IO03);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 4、设置GPIO1_IO03为输出功能 *&#x2F;</span><br><span class="line">	val &#x3D; readl(GPIO1_GDIR);</span><br><span class="line">	val &amp;&#x3D; ~(1 &lt;&lt; 3);	&#x2F;* 清除以前的设置 *&#x2F;</span><br><span class="line">	val |&#x3D; (1 &lt;&lt; 3);	&#x2F;* 设置为输出 *&#x2F;</span><br><span class="line">	writel(val, GPIO1_GDIR);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 5、默认关闭LED *&#x2F;</span><br><span class="line">	val &#x3D; readl(GPIO1_DR);</span><br><span class="line">	val |&#x3D; (1 &lt;&lt; 3);	</span><br><span class="line">	writel(val, GPIO1_DR);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 注册字符设备驱动 *&#x2F;</span><br><span class="line">	&#x2F;* 1、创建设备号 *&#x2F;</span><br><span class="line">	if (newchrled.major) &#123;		&#x2F;*  定义了设备号 *&#x2F;</span><br><span class="line">		newchrled.devid &#x3D; MKDEV(newchrled.major, 0);</span><br><span class="line">		register_chrdev_region(newchrled.devid, NEWCHRLED_CNT, NEWCHRLED_NAME);</span><br><span class="line">	&#125; else &#123;						&#x2F;* 没有定义设备号 *&#x2F;</span><br><span class="line">		alloc_chrdev_region(&amp;newchrled.devid, 0, NEWCHRLED_CNT, NEWCHRLED_NAME);	&#x2F;* 申请设备号 *&#x2F;</span><br><span class="line">		newchrled.major &#x3D; MAJOR(newchrled.devid);	&#x2F;* 获取分配号的主设备号 *&#x2F;</span><br><span class="line">		newchrled.minor &#x3D; MINOR(newchrled.devid);	&#x2F;* 获取分配号的次设备号 *&#x2F;</span><br><span class="line">	&#125;</span><br><span class="line">	printk(&quot;newcheled major&#x3D;%d,minor&#x3D;%d\r\n&quot;,newchrled.major, newchrled.minor);	</span><br><span class="line">	</span><br><span class="line">	&#x2F;* 2、初始化cdev *&#x2F;</span><br><span class="line">	newchrled.cdev.owner &#x3D; THIS_MODULE;</span><br><span class="line">	cdev_init(&amp;newchrled.cdev, &amp;newchrled_fops);</span><br><span class="line">	</span><br><span class="line">	&#x2F;* 3、添加一个cdev *&#x2F;</span><br><span class="line">	cdev_add(&amp;newchrled.cdev, newchrled.devid, NEWCHRLED_CNT);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 4、创建类 *&#x2F;</span><br><span class="line">	newchrled.class &#x3D; class_create(THIS_MODULE, NEWCHRLED_NAME);</span><br><span class="line">	if (IS_ERR(newchrled.class)) &#123;</span><br><span class="line">		return PTR_ERR(newchrled.class);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 5、创建设备 *&#x2F;</span><br><span class="line">	newchrled.device &#x3D; device_create(newchrled.class, NULL, newchrled.devid, NULL, NEWCHRLED_NAME);</span><br><span class="line">	if (IS_ERR(newchrled.device)) &#123;</span><br><span class="line">		return PTR_ERR(newchrled.device);</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 驱动出口函数</span><br><span class="line"> * @param 		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">static void __exit led_exit(void)</span><br><span class="line">&#123;</span><br><span class="line">	&#x2F;* 取消映射 *&#x2F;</span><br><span class="line">	iounmap(IMX6U_CCM_CCGR1);</span><br><span class="line">	iounmap(SW_MUX_GPIO1_IO03);</span><br><span class="line">	iounmap(SW_PAD_GPIO1_IO03);</span><br><span class="line">	iounmap(GPIO1_DR);</span><br><span class="line">	iounmap(GPIO1_GDIR);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 注销字符设备驱动 *&#x2F;</span><br><span class="line">	cdev_del(&amp;newchrled.cdev);&#x2F;*  删除cdev *&#x2F;</span><br><span class="line">	unregister_chrdev_region(newchrled.devid, NEWCHRLED_CNT); &#x2F;* 注销设备号 *&#x2F;</span><br><span class="line"></span><br><span class="line">	device_destroy(newchrled.class, newchrled.devid);</span><br><span class="line">	class_destroy(newchrled.class);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">module_init(led_init);</span><br><span class="line">module_exit(led_exit);</span><br><span class="line">MODULE_LICENSE(&quot;GPL&quot;);</span><br><span class="line">MODULE_AUTHOR(&quot;zuozhongkai&quot;);</span><br></pre></td></tr></table></figure>
-<p>led_switch 函数，用于控制开发板上的 LED 灯亮灭，当参数 sta 为 LEDON(0)的时候打开 LED 灯，sta 为 LEDOFF(1)的时候关闭 LED 灯。</p>
-<p>chrdevbase_open 函数，当应用程序调用 open 函数的时候此函数就会调用， 一般在此函 数中将设备结构体作为参数 filp 的私有数据(filp-&gt;private_data)。 </p>
-<p>chrdevbase_read 函数，应用程序调用 read 函数从设备中读取数据的时候此函数会执行。。因为内核空间不能直接操作用户空间的内存，因此需要借助 copy_to_user 函数来完成内核空间的数据到用户空间的复制。参数 to 表示目的，参数 from 表示源，参数 n 表示要复制的数据长度。如果复制成功，返回值为 0，反之返回负数。 </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">static inline long copy_to_user(void __user *to, const void *from, unsigned long n) </span><br></pre></td></tr></table></figure>
-<p>chrdevbase_write 函数，应用程序调用 write 函数向设备写数据的时候此函数 就会执行。函数 copy_from_user 将 buf 中的数据复制到写缓冲区 writebuf 中，因为用户空间内存不能直接访问内核空间的内存，所以需要 借助函数 copy_from_user 将用户空间的数据复制到 writebuf 这个内核空间中。</p>
-<p>chrdevbase_release 函数，应用程序调用 close 关闭设备文件的时候此函数会执行，一般会在此函数里面执行一些释放操作。</p>
-<p>设备文件操作结构体 led_fops 的定义和初始化。</p>
-<p>驱动入口函数 led_init，此函数实现了 LED 的初始化工作，先通过ioremap 函数获取物理寄存器地址映射后的虚拟地址，得到寄存器对应的虚拟地址以后就可以完成相关初始化工作了。比如是能 GPIO1 时钟、设置 GPIO1_IO03 复用功能、配置 GPIO1_IO03 的属性等等。然后申请设备号、添加字符设备、创建类和设备。采用动态申请设备号的方法，使用 printk 在终端上显示出申请到的主设备号和次设备号。 </p>
-<p>在驱动出口函数 led_exit 中注销字符新设备、删除类和设备。 </p>
-<h2 id="2、编写测试-APP-程序"><a href="#2、编写测试-APP-程序" class="headerlink" title="2、编写测试 APP 程序"></a>2、<strong>编写测试</strong> <strong>APP</strong> <strong>程序</strong></h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;***************************************************************</span><br><span class="line">文件名		: ledApp.c</span><br><span class="line">描述	   	: chrdevbase驱测试APP。</span><br><span class="line">使用方法	 ：.&#x2F;ledtest &#x2F;dev&#x2F;led  0 关闭LED</span><br><span class="line">		     .&#x2F;ledtest &#x2F;dev&#x2F;led  1 打开LED		</span><br><span class="line">***************************************************************&#x2F;</span><br><span class="line">#define LEDOFF 	0</span><br><span class="line">#define LEDON 	1</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: main主程序</span><br><span class="line"> * @param - argc 	: argv数组元素个数</span><br><span class="line"> * @param - argv 	: 具体参数</span><br><span class="line"> * @return 			: 0 成功;其他 失败</span><br><span class="line"> *&#x2F;</span><br><span class="line">int main(int argc, char *argv[])</span><br><span class="line">&#123;</span><br><span class="line">	int fd, retvalue;</span><br><span class="line">	char *filename;</span><br><span class="line">	unsigned char databuf[1];</span><br><span class="line">	</span><br><span class="line">	if(argc !&#x3D; 3)&#123;</span><br><span class="line">		printf(&quot;Error Usage!\r\n&quot;);</span><br><span class="line">		return -1;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	filename &#x3D; argv[1];</span><br><span class="line"></span><br><span class="line">	&#x2F;* 打开led驱动 *&#x2F;</span><br><span class="line">	fd &#x3D; open(filename, O_RDWR);</span><br><span class="line">	if(fd &lt; 0)&#123;</span><br><span class="line">		printf(&quot;file %s open failed!\r\n&quot;, argv[1]);</span><br><span class="line">		return -1;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	databuf[0] &#x3D; atoi(argv[2]);	&#x2F;* 要执行的操作：打开或关闭 *&#x2F;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 向&#x2F;dev&#x2F;led文件写入数据 *&#x2F;</span><br><span class="line">	retvalue &#x3D; write(fd, databuf, sizeof(databuf));</span><br><span class="line">	if(retvalue &lt; 0)&#123;</span><br><span class="line">		printf(&quot;LED Control Failed!\r\n&quot;);</span><br><span class="line">		close(fd);</span><br><span class="line">		return -1;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	retvalue &#x3D; close(fd); &#x2F;* 关闭文件 *&#x2F;</span><br><span class="line">	if(retvalue &lt; 0)&#123;</span><br><span class="line">		printf(&quot;file %s close failed!\r\n&quot;, argv[1]);</span><br><span class="line">		return -1;</span><br><span class="line">	&#125;</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>数组 usrdata 是测试 APP 要向 chrdevbase 设备写入的数据。 </p>
-<p>判断运行测试 APP 的时候输入的参数是不是为 3 个，main 函数的 argc 参数表示参数数量，argv[]保存着具体的参数，如果参数不为 3 个的话就表示测试 APP 用法错误。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;chrdevbaseApp &#x2F;dev&#x2F;chrdevbase 1 </span><br></pre></td></tr></table></figure>
-<p>上述命令一共有三个参数“./chrdevbaseApp”、“/dev/chrdevbase”和“1”，这三个参数分别对应 argv[0]、argv[1]和 argv[2]。第一个参数表示运行 chrdevbaseAPP 这个软件，第二个参数表示测试APP要打开/dev/chrdevbase这个设备。第三个参数就是要执行的操作，1表示从chrdevbase 中读取数据，2 表示向 chrdevbase 写数据。 </p>
-<p>第 40 行，获取要打开的设备文件名字，argv[1]保存着设备名字。 </p>
-<p>第 43 行，调用 C 库中的 open 函数打开设备文件：/dev/chrdevbase。 </p>
-<p>第 49 行，判断 argv[2]参数的值是 1 还是 2，因为输入命令的时候其参数都是字符串格式的，因此需要借助 atoi 函数将字符串格式的数字转换为真实的数字。 </p>
-<p>第 50 行，当 argv[2]为 1 的时候表示要从 chrdevbase 设备中读取数据，一共读取 50 字节的 数据，读取到的数据保存在 readbuf 中，读取成功以后就在终端上打印出读取到的数据。 </p>
-<p>第 59 行，当 argv[2]为 2 的时候表示要向 chrdevbase 设备写数据。 </p>
-<p>第 69 行，对 chrdevbase 设备操作完成以后就关闭设备。chrdevbaseApp.c 内容还是很简单的，就是最普通的文件打开、关闭和读写操作。</p>
-<h2 id="3、编译驱动程序Makefile"><a href="#3、编译驱动程序Makefile" class="headerlink" title="3、编译驱动程序Makefile**"></a>3、编译驱动程序Makefile**</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">KERNELDIR :&#x3D; &#x2F;home&#x2F;zuozhongkai&#x2F;linux&#x2F;IMX6ULL&#x2F;linux&#x2F;temp&#x2F;linux-imx-rel_imx_4.1.15_2.1.0_ga_alientek</span><br><span class="line">CURRENT_PATH :&#x3D; $(shell pwd)</span><br><span class="line"></span><br><span class="line">obj-m :&#x3D; led.o</span><br><span class="line"></span><br><span class="line">build: kernel_modules</span><br><span class="line"></span><br><span class="line">kernel_modules:</span><br><span class="line">	$(MAKE) -C $(KERNELDIR) M&#x3D;$(CURRENT_PATH) modules</span><br><span class="line"></span><br><span class="line">clean:</span><br><span class="line">	$(MAKE) -C $(KERNELDIR) M&#x3D;$(CURRENT_PATH) clean</span><br></pre></td></tr></table></figure>
-<p>第 1 行，KERNELDIR 表示开发板所使用的 Linux 内核源码目录，使用绝对路径。 </p>
-<p>第 2 行，CURRENT_PATH 表示当前路径，直接通过运行“pwd”命令来获取当前所处路径。 </p>
-<p>第 3 行，obj-m 表示将 chrdevbase.c 这个文件编译为 chrdevbase.ko 模块。 </p>
-<p>第 8 行，具体的编译命令，后面的 modules 表示编译模块，-C 表示将当前的工作目录切 换到指定目录中，也就是 KERNERLDIR 目录。M 表示模块源码目录，“make modules”命令中加入 M=dir 以后程序会自动到指定的 dir 目录中读取模块的源码并将其编译为.ko 文件。 </p>
-<h1 id="二、运行测试"><a href="#二、运行测试" class="headerlink" title="二、运行测试"></a>二、运行测试</h1><p><strong>加载驱动模块</strong></p>
-<p>为了方便测试，Linux 系统选择通过 TFTP 从网络启动，并且使用 NFS 挂载网络根文件系统，确保 uboot 中 bootcmd 环境变量的值为： </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tftp 80800000 zImage;tftp 83000000 imx6ull-alientek-emmc.dtb;bootz 80800000 - 83000000  </span><br></pre></td></tr></table></figure>
-<p>bootrags 环境变量的值为： </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">console&#x3D;ttymxc0,115200 root&#x3D;&#x2F;dev&#x2F;nfs rw nfsroot&#x3D;192.168.1.250:&#x2F;home&#x2F;zuozhongkai&#x2F;linux&#x2F;nfs&#x2F; </span><br><span class="line">rootfs ip&#x3D;192.168.1.251:192.168.1.250:192.168.1.1:255.255.255.0::eth0:off</span><br></pre></td></tr></table></figure>
-<p>depmod 命令即可自动生成modules.dep，modprobe 命令加载 chrdevbase.ko 驱动文件，/proc/devices 文件可查看当前系统中的所有设备。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">depmod</span><br><span class="line">modprobe chrdevbase.ko</span><br><span class="line">cat &#x2F;proc&#x2F;devices	&#x2F;&#x2F;查看设备</span><br></pre></td></tr></table></figure>
-<p><strong>卸载驱动模块</strong> </p>
-<p>如果不再使用某个设备的话可以将其驱动卸载掉，比如输入如下命令卸载掉 chrdevbase 这个设备： </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rmmod chrdevbase.ko</span><br></pre></td></tr></table></figure>
-
+    <h1 id="编写实验程序"><a href="#编写实验程序" class="headerlink" title="编写实验程序"></a>编写实验程序</h1><h1 id="一、编写实验程序"><a href="#一、编写实验程序" class="headerlink" title="一、编写实验程序"></a>一、编写实验程序</h1><h2 id="1、驱动设备程序"><a href="#1、驱动设备程序" class="headerlink" title="1、驱动设备程序"></a>1、驱动设备程序</h2>
+    
+    <a class="article-more-a" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8LED/#more">more >></a>
+    
     
 
     
@@ -621,45 +455,10 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
-
-<h1 id="一、裸机驱动开发回顾"><a href="#一、裸机驱动开发回顾" class="headerlink" title="一、裸机驱动开发回顾"></a>一、裸机驱动开发回顾</h1><p>​    1、底层，跟寄存器打交道，有些MCU提供了库。</p>
-<h1 id="二、Linux驱动开发思维"><a href="#二、Linux驱动开发思维" class="headerlink" title="二、Linux驱动开发思维"></a>二、Linux驱动开发思维</h1><p>​    1、Linux下驱动开发直接操作寄存器不现实。<br>​    2、根据Linux下的各种驱动框架进行开发。一定要满足框架，也就是Linux下各种驱动框架的掌握。<br>​    3、驱动最终表现就是/dev/xxx文件。打开、关闭、读写、。。。<br>​    4、现在新的内核支持设备树，这个一个.dts文件，此文件 描述了板子的设备信息。</p>
-<h1 id="三、Linux驱动开发分类"><a href="#三、Linux驱动开发分类" class="headerlink" title="三、Linux驱动开发分类"></a>三、Linux驱动开发分类</h1><p>linux驱动分为三大类：<br>1、字符设备驱动，最多的，从最简单的点灯到 I2C、SPI、音频等都属于字符设备驱动的类型。    </p>
-<p>2、块设备驱动。所谓的块设备驱动就是存储器设备的驱动，比如 EMMC、NAND、SD 卡和 U 盘等存储设备，因为这些存储设备的特点是以存储块为基础，因此叫做块设备。</p>
-<p>3、网络设备驱动，</p>
-<p>一个设备不说是一定只属于某一个类型。比如USB WIFI,SDIO WIFI，属于网络设备驱动，因为他又有USB和SDIO，因此也属于字符设备驱动。</p>
-<p>块设备和网络设备驱动要比字符设备驱动复杂，就是因为其复杂所以半导体厂商一般都给我们编写好了，大多数情况下都是直接可以使 用的。</p>
-<h1 id="四、应用程序和驱动的交互原理"><a href="#四、应用程序和驱动的交互原理" class="headerlink" title="四、应用程序和驱动的交互原理"></a>四、应用程序和驱动的交互原理</h1><p>驱动就是获取外设、或者传感器数据，控制外设。数据会提交给应用程序。Linux驱动编译既要编写一个驱动，还要我们编写一个简单的测试应用程序APP。单片机下驱动和应用都是放到一个文件里面，也就是杂糅到一起。Linux下驱动和应用是完全分开的。</p>
-<p>在 Linux 中一切皆为文件，驱动加载成功以后会在“/dev”目录下生成一个相应的文件，应用程序通过对这个名为“/dev/xxx”(xxx 是具体的驱动文件名字)的文件进行相应的操作即可实现对硬件的操作。</p>
-<p>用户空间(用户态)和内核空间(内核态)：Linux操作系统内核和驱动程序运行在内核空间、应用程序运行在用户空间。应用程序想要访问内核资源，怎么办，有三种方法：系统调用、异常(中断)和陷入。</p>
-<p>应用程序不会直接调用系统调用，而是通过API函数来间接的调用系统调用，比如POSIX、API和C库等。unix类操作系统中最常用的编程接口就是POSIX。</p>
-<p>应用程序使用open函数打开一个设备文件。</p>
-<p>每个系统调用都有一个系统调用号。系统调用处于内核空间，应用程序无法直接访问，因此需要“陷入“到内核，方法就是软中断。陷入内核以后还要指定系统调用号。</p>
-<p>​    <img src="Linux%E9%A9%B1%E5%8A%A8-%E9%A9%B1%E5%8A%A8%E5%BC%80%E6%94%BE%E7%AE%80%E4%BB%8B.assets/wps1.jpg" alt="img"></p>
-<p>编写驱动的时候也需要编写驱动对应的open、close，write函数。字符设备驱动fileoptions_struct.驱动是分驱动框架的，要按照驱动框架来编写，对于字符设备驱动来说，重点编写应用程序对应的open、close、read、write等函数。驱动最终是被应用调用的，在写驱动的时候要考虑应用开发的便利性。</p>
-<h1 id="五、C-库文件操作基本函数"><a href="#五、C-库文件操作基本函数" class="headerlink" title="五、C 库文件操作基本函数"></a><strong>五、C</strong> <strong>库文件操作基本函数</strong></h1><p>编写测试 APP 就是编写 Linux 应用，需要用到 C 库里面和文件操作有关的一些函数，比如open、read、write 和 close 这四个函数。 在 Ubuntu 中输入“man 2 open”即可查看 open 函数的详细内容，</p>
-<p><strong>①、open 函数</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int open(const char *pathname, int flags) </span><br></pre></td></tr></table></figure>
-<p><strong>pathname</strong>：要打开的设备或者文件名。 </p>
-<p><strong>flags</strong>：文件打开模式，以下三种模式必选其一： O_RDONLY (只读模式 )、O_WRONLY (只写模式)、O_RDWR (读写模式)，其他的可选模式，通过逻辑或来选择多种模式：O_NONBLOCK （如果路径名指向 FIFO/块文件/字符文件，则把文件的打开和后继 I/O 设置为非阻塞 ）</p>
-<p><strong>返回值</strong>：如果文件打开成功的话返回文件的文件描述符。 </p>
-<p><strong>④、close函数</strong> </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int close(int fd); </span><br></pre></td></tr></table></figure>
-<p><strong>fd</strong>：要关闭的文件描述符。 <strong>返回值：</strong>0 表示关闭成功，负值表示关闭失败。</p>
-<p><strong>②、read 函数</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssize_t read(int fd, void *buf, size_t count)</span><br></pre></td></tr></table></figure>
-<p><strong>fd</strong>：要读取的文件描述符，读取文件之前要先用 open 函数打开文件，open 函数打开文件成功以后会得到文件描述符。 </p>
-<p><strong>buf</strong>：数据读取到此 buf 中。 </p>
-<p><strong>count</strong>：要读取的数据长度，也就是字节数。 </p>
-<p><strong>返回值：</strong>读取成功的话返回读取到的字节数；如果返回 0 表示读取到了文件末尾；如果返回负值，表示读取失败。</p>
-<p><strong>③、write函数</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssize_t write(int fd, const void *buf, size_t count); </span><br></pre></td></tr></table></figure>
-<p><strong>fd</strong>：要进行写操作的文件描述符，写文件之前要先用 open 函数打开文件，open 函数打开文件成功以后会得到文件描述符。 </p>
-<p><strong>buf</strong>：要写入的数据。 </p>
-<p><strong>count</strong>：要写入的数据长度，也就是字节数。 </p>
-<p><strong>返回值：</strong>写入成功的话返回写入的字节数；如果返回 0 表示没有写入任何数据；如果返回 负值，表示写入失败。</p>
-
+    <h1 id="一、裸机驱动开发回顾"><a href="#一、裸机驱动开发回顾" class="headerlink" title="一、裸机驱动开发回顾"></a>一、裸机驱动开发回顾</h1><p>​    1、底层，跟寄存器打交道，有些MCU提供了库。</p>
+    
+    <a class="article-more-a" href="/2021/04/13/Linux%E9%A9%B1%E5%8A%A8-%E9%A9%B1%E5%8A%A8%E5%BC%80%E5%8F%91%E7%AE%80%E4%BB%8B/#more">more >></a>
+    
     
 
     
@@ -733,95 +532,10 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
-
-<p>字符设备是 Linux 驱动中最基本的一类设备驱动，字符设备就是一个一个字节，按照字节流进行读写操作的设备，读写数据是分先后顺序的。最常见的点灯、按键、IIC、SPI，LCD 等等都是字符设备，这些设备的驱动就叫做字符设备驱动。</p>
-<h1 id="一、字符设备驱动开发步骤"><a href="#一、字符设备驱动开发步骤" class="headerlink" title="一、字符设备驱动开发步骤"></a>一、字符设备驱动开发步骤</h1><h2 id="1、驱动模块的加载和卸载"><a href="#1、驱动模块的加载和卸载" class="headerlink" title="1、驱动模块的加载和卸载"></a><strong>1、驱动模块的加载和卸载</strong></h2><p>Linux 驱动有两种运行方式，第一种就是将驱动编译进 Linux 内核中，当 Linux 内核启动的时候就会自动运行驱动程序。第二种就是将驱动编译成模块(Linux 下模块扩展名为.ko)，在Linux 内核启动以后使用“modprobe”命令加载驱动模块。在调试驱动的时候一般都选择将其编译为模块，修改驱动以后只需要编译一下驱动代码即可，不需要编译整个 Linux 代码。而且在调试的时候只需要加载或者卸载驱动模块即可，不需要重启整个系统。</p>
-<p>模块的加载和卸载注册函数如下： </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">module_init(xxx_init); &#x2F;&#x2F;注册模块加载函数 </span><br><span class="line">module_exit(xxx_exit); &#x2F;&#x2F;注册模块卸载函数</span><br></pre></td></tr></table></figure>
-<p>module_init 函数用来向 Linux 内核注册一个模块加载函数，参数 xxx_init 就是需要注册的具体函数，当使用“modprobe”命令加载驱动的时候，xxx_init 这个函数就会被调用。module_exit() 函数用来向 Linux 内核注册一个模块卸载函数，参数 xxx_exit 就是需要注册的具体函数，当使用“rmmod”命令卸载具体驱动的时候 xxx_exit 函数就会被调用。</p>
-<p>驱动编译完成以后扩展名为.ko，modprobe 会分析模块的依赖关系，然后会将所有的依赖模块都加载到内核中，推荐使用 modprobe 命令来加载驱动。驱动模块的卸载使用命令“rmmod”.</p>
-<h2 id="2、申请Linux-设备号"><a href="#2、申请Linux-设备号" class="headerlink" title="2、申请Linux 设备号"></a><strong>2、申请Linux</strong> <strong>设备号</strong></h2><p>Linux 中每个设备都有一个设备号，设备号由主设备号和次设备号两部分组成，主设备号表示某一个具体的驱动，次设备号表示使用这个驱动的各个设备。Linux 提供了一个名为 dev_t 的数据类型表示设备号。</p>
-<p><strong>动态分配设备号</strong></p>
-<p>Linux 社区推荐使用动态分配设备号，在注册字符设备之前先申请一个设备号，系统会自动给你一个没有被使用的设备号</p>
-<p><strong>1、如果没有指定设备号的话就使用如下函数来申请设备号：</strong> </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int alloc_chrdev_region(dev_t *dev, unsigned baseminor, unsigned count, const char *name) </span><br></pre></td></tr></table></figure>
-<p><strong>dev</strong>：保存申请到的设备号。 </p>
-<p><strong>baseminor</strong>：次设备号起始地址，alloc_chrdev_region 可以申请一段连续的多个设备号，这 些设备号的主设备号一样，但是次设备号不同，次设备号以 baseminor 为起始地址地址开始递增。一般 baseminor 为 0，也就是说次设备号从 0 开始。 </p>
-<p><strong>count</strong>：要申请的设备号数量。 <strong>name</strong>：设备名字。 </p>
-<p><strong>2、如果给定了设备的主设备号和次设备号就使用如下所示函数来注册设备号即可：</strong> </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int register_chrdev_region(dev_t from, unsigned count, const char *name) </span><br></pre></td></tr></table></figure>
-<p>参数 from 是要申请的起始设备号，也就是给定的设备号；参数 count 是要申请的数量，一般都是一个；参数 name 是设备名字。 </p>
-<p>3、注销字符设备之后要释放掉设备号，不管是通过alloc_chrdev_region函数还是 register_chrdev_region 函数申请的设备号，统一使用如下释放函数： </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void unregister_chrdev_region(dev_t from, unsigned count)</span><br></pre></td></tr></table></figure>
-<p>此函数有两个参数： <strong>from</strong>：要释放的设备号。 <strong>count</strong>：表示从 from 开始，要释放的设备号数量。</p>
-<h2 id="3、新字符设备注册与注销"><a href="#3、新字符设备注册与注销" class="headerlink" title="3、新字符设备注册与注销"></a>3、新字符设备注册与注销</h2><p>对于字符设备驱动而言，当驱动模块加载成功以后需要注册字符设备，同样，卸载驱动模块的时候也需要注销掉字符设备。</p>
-<p><strong>1、字符设备结构</strong></p>
-<p>在 Linux 中使用 cdev 结构体表示一个字符设备，</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">struct cdev &#123; </span><br><span class="line">	struct kobject kobj;</span><br><span class="line">	struct module *owner; </span><br><span class="line">	const struct file_operations *ops;</span><br><span class="line">	struct list_head list; </span><br><span class="line">	dev_t dev; </span><br><span class="line">	unsigned int count; </span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>有两个重要的成员变量：ops 和 dev，这两个就是字符设备文件操作函数集合file_operations 以及设备号 dev_t。</p>
-<p><strong>2、cdev_init 函数</strong><br>定义好 cdev 变量以后就要使用 cdev_init 函数对其进行初始化，cdev_init 函数原型如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void cdev_init(struct cdev *cdev, const struct file_operations *fops)</span><br></pre></td></tr></table></figure>
-<p>参数 cdev 就是要初始化的 cdev 结构体变量，参数 fops 就是字符设备文件操作函数集合。</p>
-<p><strong>3、cdev_add 函数</strong><br>cdev_add 函数用于向 Linux 系统添加字符设备(cdev 结构体变量)，首先使用 cdev_init 函数完成对 cdev 结构体变量的初始化，然后使用 cdev_add 函数向 Linux 系统添加这个字符设备。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int cdev_add(struct cdev *p, dev_t dev, unsigned count)</span><br></pre></td></tr></table></figure>
-<p>参数 p 指向要添加的字符设备(cdev 结构体变量)，参数 dev 就是设备所使用的设备号，参数 count 是要添加的设备数量。</p>
-<p><strong>4、cdev_del 函数</strong><br>卸载驱动的时候一定要使用 cdev_del 函数从 Linux 内核中删除相应的字符设备</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void cdev_del(struct cdev *p)</span><br></pre></td></tr></table></figure>
-<p>参数 p 就是要删除的字符设备。</p>
-<p><strong>示例</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">struct cdev testcdev;</span><br><span class="line"> &#x2F;* 设备操作函数 *&#x2F;</span><br><span class="line">static struct file_operations test_fops &#x3D; &#123;</span><br><span class="line">	.owner &#x3D; THIS_MODULE, </span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">testcdev.owner &#x3D; THIS_MODULE;</span><br><span class="line">cdev_init(&amp;testcdev, &amp;test_fops); &#x2F;* 初始化 cdev 结构体变量 *&#x2F;</span><br><span class="line">cdev_add(&amp;testcdev, devid, 1); &#x2F;* 添加字符设备 *&#x2F;</span><br><span class="line">cdev_del(&amp;testcdev); &#x2F;* 删除 cdev *&#x2F;</span><br></pre></td></tr></table></figure>
-<h2 id="4、自动创建设备节点"><a href="#4、自动创建设备节点" class="headerlink" title="4、自动创建设备节点"></a>4、自动创建设备节点</h2><p>驱动加载成功需要在/dev 目录下创建一个与之对应的设备节点文件，应用程序就是通过操作这个设备节点文件来完成对具体设备的操作。/dev/chrdevbase 这个文件相当于chrdevbase 设备在用户空间中的实现。</p>
-<p>在驱动中实现<strong>自动创建设备节点</strong>的功能以后，使用 modprobe 加载驱动模块成功的话就会自动在/dev 目录下创建对应的设备文件。</p>
-<p> <strong>mdev</strong> <strong>机制</strong></p>
-<p>udev 是一个用户程序，在 Linux 下通过 udev 来实现设备文件的创建与删除，udev 可以检 测系统中硬件设备状态，可以根据系统中硬件设备状态来创建或者删除设备文件。比如使用modprobe 命令成功加载驱动模块以后就自动在/dev 目录下创建对应的设备节点文件,使用rmmod 命令卸载驱动模块以后就删除掉/dev 目录下的设备节点文件。使用 busybox 构建根文件系统的时候，busybox会创建一个 udev 的简化版本—mdev，所以在嵌入式 Linux 中我们使用mdev 来实现设备节点文件的自动创建与删除，Linux 系统中的热插拔事件也由 mdev 管理。</p>
-<p>下面通过 mdev 来实现设备文件节点的自动创建与删除</p>
-<p><strong>1.创建和删除类</strong> </p>
-<p>自动创建设备节点的工作是在驱动程序的入口函数中完成的，一般在 cdev_add 函数后面添加自动创建设备节点相关代码。首先要创建一个 class 类，class 是个结构体，class_create 是类创建函数。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">struct class *class_create (struct module *owner, const char *name) </span><br></pre></td></tr></table></figure>
-<p>参数 owner一般为 THIS_MODULE，参数name是类名字。返回值是个指向结构体 class 的指针，就是创建的类。</p>
-<p>卸载驱动程序的时候需要删除掉类，类删除函数为 class_destroy，函数原型如下： </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void class_destroy(struct class *cls); </span><br></pre></td></tr></table></figure>
-<p>参数 cls 就是要删除的类。 </p>
-<p><strong>2.创建和删除设备</strong> </p>
-<p>创建好类以后还不能实现自动创建设备节点，还需要在这个类下创建一个设备。使用 device_create 函数在类下面创建设备，device_create 函数原型如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">struct device *device_create(struct class *class, struct device *parent,dev_t devt, </span><br><span class="line">						void *drvdata, const char *fmt, ...)</span><br></pre></td></tr></table></figure>
-<p>device_create 是个可变参数函数，参数 class 就是设备要创建哪个类下面；参数 parent 是父设备，一般为 NULL，也就是没有父设备；参数 devt 是设备号；参数 drvdata 是设备可能会使用的一些数据，一般为 NULL；参数 fmt 是设备名字，如果设置 fmt=xxx 的话，就会生成/dev/xxx这个设备文件。返回值就是创建好的设备。 </p>
-<p>同样的，卸载驱动的时候需要删除掉创建的设备，设备删除函数为 device_destroy，</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void device_destroy(struct class *class, dev_t devt)</span><br></pre></td></tr></table></figure>
-<p>参数 classs 是要删除的设备所处的类，参数 devt 是要删除的设备号。 </p>
-<h2 id="5、设置文件私有数据"><a href="#5、设置文件私有数据" class="headerlink" title="5、设置文件私有数据"></a><strong>5、设置文件私有数据</strong></h2><p>每个硬件设备都有一些属性，比如主设备号(dev_t)，类(class)、设备(device)、开关状态(state) 等等，对于一个设备的所有属性信息将其做成一个结构体。编写驱动 open 函数的时候将设备结构体作为私有数据添加到设备文件中。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">struct test_dev&#123; </span><br><span class="line">    dev_t devid; &#x2F;* 设备号 *&#x2F;</span><br><span class="line">    struct cdev cdev; &#x2F;* cdev *&#x2F;</span><br><span class="line">    struct class *class; &#x2F;* 类 *&#x2F;</span><br><span class="line">    struct device *device; &#x2F;* 设备 *&#x2F;</span><br><span class="line">    int major; &#x2F;* 主设备号 *&#x2F;</span><br><span class="line">    int minor; &#x2F;* 次设备号 *&#x2F;</span><br><span class="line">&#125;;</span><br><span class="line">struct test_dev testdev;</span><br><span class="line"></span><br><span class="line">&#x2F;* open 函数 *&#x2F;</span><br><span class="line">static int test_open(struct inode *inode, struct file *filp)</span><br><span class="line">&#123;</span><br><span class="line">    filp-&gt;private_data &#x3D; &amp;testdev; &#x2F;* 设置私有数据 *&#x2F;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>在 open 函数里面设置好私有数据以后，在 write、read、close 等函数中直接读取 private_data即可得到设备结构体。 </p>
-<h2 id="6、实现设备的具体操作函数"><a href="#6、实现设备的具体操作函数" class="headerlink" title="6、实现设备的具体操作函数"></a>6、实现设备的具体操作函数</h2><p><strong>file_operations</strong> 结构体就是设备的具体操作函数，在初始化 file_operations 之前我们要分析一下需求，也就是要对设备进行哪些操作，只有确定了需求以后才知道应该实现哪些操作函数。</p>
-<p>设备打开和关闭是最基本的要求，几乎所有的设备都得提供打开和关闭的功能。因此需要实现 file_operations 中的 open 和 release 这两个函数。如果应用程序需要通过 read 和 write 这两个函数进行读写操作。所以需要实现 file_operations 中的 read 和 write 这两个函数。 </p>
-<h2 id="7、添加-LICENSE-和作者信息"><a href="#7、添加-LICENSE-和作者信息" class="headerlink" title="7、添加 LICENSE 和作者信息"></a>7、添加 <strong>LICENSE</strong> <strong>和作者信息</strong></h2><p>最后需要在驱动中加入 LICENSE 信息和作者信息，其中 LICENSE 是必须添加的，否则的话编译的时候会报错，作者信息可以添加也可以不添加。LICENSE 和作者信息的添加使用如下两个函数： </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">MODULE_LICENSE() &#x2F;&#x2F;添加模块 LICENSE 信息 </span><br><span class="line">MODULE_AUTHOR() &#x2F;&#x2F;添加模块作者信息 </span><br></pre></td></tr></table></figure>
-<h1 id="二、地址映射"><a href="#二、地址映射" class="headerlink" title="二、地址映射"></a><strong>二、地址映射</strong></h1><p>MMU 全称叫做 Memory  Manage Unit，也就是内存管理单元。MMU 主要完成的功能如下： </p>
-<p>①、完成虚拟空间到物理空间的映射。 </p>
-<p>②、内存保护，设置存储器的访问权限，设置虚拟存储空间的缓冲特性。 </p>
-<p>虚拟空间到物理空间的映射，也叫做地址映射。虚拟地址(VA,Virtual Address)、物理地址(PA，PhyscicalAddress)。对于 32 位的处理器来说，虚拟地址范围是 2^32=4GB，我们的开发板上有 512MB 的 DDR3，这 512MB 的内存就是物理内存，经过 MMU 可以将其映射到整个 4GB 的虚拟空间，物理内存只有 512MB，虚拟内存有 4GB，那么肯定存在多个虚拟地址映射到同一个物理地址上去。Linux 内核启动的时候会初始化 MMU，设置好内存映射，设置好以后 CPU 访问的都是虚拟地 址。</p>
-<p>物理内存和虚拟内存之间的转换，需要用到两个函数：ioremap 和 iounmap。</p>
-<p><strong>1、ioremap 函数</strong></p>
-<p>ioremap 函 数 用 于 获 取 指 定 物 理 地 址 空 间 对 应 的 虚 拟 地 址 空 间 ，</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#define ioremap(cookie,size) __arm_ioremap((cookie), (size), MT_DEVICE)</span><br><span class="line">void __iomem * __arm_ioremap(phys_addr_t phys_addr, size_t size, unsigned int mtype)</span><br><span class="line">&#123; </span><br><span class="line">	return arch_ioremap_caller(phys_addr, size, mtype,__builtin_return_address(0));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>ioremap 是个宏，有两个参数：cookie 和 size，真正起作用的是函数__arm_ioremap，此函数有三个参数和一个返回值。</p>
-<p><strong>phys_addr</strong>：要映射给的物理起始地址。 </p>
-<p><strong>size</strong>：要映射的内存空间大小。 对于 I.MX6ULL 来说一个寄存器是 4 字节(32 位)的，因此映射的内存长度为 4。</p>
-<p><strong>mtype</strong>：ioremap 的类型，可以选择 MT_DEVICE、MT_DEVICE_NONSHARED、 MT_DEVICE_CACHED 和 MT_DEVICE_WC，ioremap 函数选择 MT_DEVICE。 </p>
-<p><strong>返回值：</strong>__iomem 类型的指针，指向映射后的虚拟空间首地址。 </p>
-<p><strong>2、iounmap 函数</strong></p>
-<p>卸载驱动的时候需要使用 iounmap 函数释放掉 ioremap 函数所做的映射，iounmap 只有一个参数 addr，此参数就是要取消映射的虚拟地址空间首地址。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void iounmap (volatile void __iomem *addr)</span><br></pre></td></tr></table></figure>
-<h1 id="三、I-O-内存访问函数"><a href="#三、I-O-内存访问函数" class="headerlink" title="三、I/O 内存访问函数"></a><strong>三、I/O</strong> <strong>内存访问函数</strong></h1><p>I/O 是输入/输出的意思，并不是单片机的 GPIO 引脚。当外部寄存器或内存映射到 IO 空间时，称为 I/O 端口。 当外部寄存器或内存映射到内存空间时，称为 I/O 内存。对于 ARM 来说没有 I/O 空间这个概念，因此 ARM 体系下只有 I/O 内存(可以直接理解为内存)。</p>
-<p>使用 ioremap 函数将寄存器的物理地址映射到虚拟地址以后，使用一组操作函数来对映射后的内存进行读写操作。 </p>
-<p><strong>1、读操作函数</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">u8 readb(const volatile void __iomem *addr)</span><br><span class="line">u16 readw(const volatile void __iomem *addr) </span><br><span class="line">u32 readl(const volatile void __iomem *addr)</span><br></pre></td></tr></table></figure>
-<p>readb、readw 和 readl 这三个函数分别对应 8bit、16bit 和 32bit 读操作，参数 addr 就是要读取写内存地址，返回值就是读取到的数据。 </p>
-<p><strong>2、写操作函数</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">void writeb(u8 value, volatile void __iomem *addr) </span><br><span class="line">void writew(u16 value, volatile void __iomem *addr) </span><br><span class="line">void writel(u32 value, volatile void __iomem *addr)</span><br></pre></td></tr></table></figure>
-<p>writeb、writew 和 writel 这三个函数分别对应 8bit、16bit 和 32bit 写操作，参数 value 是要<br>写入的数值，addr 是要写入的地址。</p>
-
+    <p>字符设备是 Linux 驱动中最基本的一类设备驱动，字符设备就是一个一个字节，按照字节流进行读写操作的设备，读写数据是分先后顺序的。最常见的点灯、按键、IIC、SPI，LCD 等等都是字符设备，这些设备的驱动就叫做字符设备驱动。</p>
+    
+    <a class="article-more-a" href="/2021/04/13/Linux%E9%A9%B1%E5%8A%A8-%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8%E6%A1%86%E6%9E%B6/#more">more >></a>
+    
     
 
     
@@ -895,34 +609,10 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
-
-<p>前面移植好了 uboot 、 linux kernle、根文件系统。都是通过网络来测试的。在实际的产品开发中肯定不可能通过网络来运行，因此我们需要将 uboot、linux kernel、.dtb(设备树)和 rootfs 这四个文件烧写到板子上的 EMMC、NAND 或 QSPI Flash 等其他存储设备上，这样不管有没有网络我们的产品都可以正常运行。以下为如何使用 NXP 官方提供的 MfgTool 工具通过 USB OTG 口来烧写系统。</p>
-<h1 id="一、MfgTool工具简介"><a href="#一、MfgTool工具简介" class="headerlink" title="一、MfgTool工具简介"></a>一、MfgTool工具简介</h1><p>mfgtool是NXP官方做的向I.MX系列烧写系统的软件，运行在windows下。可以烧写uboot.imx、zImage、dtb，rootfs。通过USB烧写。Mfgtool里面默认存放了NXP官方开发板的系统文件。</p>
-<p><strong>基本原理</strong> </p>
-<p>MfgTool 其实是先通过 USB OTG 先将 uboot、kernel 和.dtb(设备树)这是三个文件下载到开发板的 DDR 中，注意不需要下载 rootfs。就相当于直接在开发板的 DDR上启动 Linux 系统，等 Linux 系统启动以后再向 EMMC 中烧写完整的系统，包括 uboot、linuxkernel、.dtb(设备树)和 rootfs，因此 MfgTool 工作过程主要分两个阶段：</p>
-<p>①、将 firmware 目录中的 uboot、linux kernel 和.dtb(设备树)，然后通过 USB OTG 将这个文件下载到开发板的 DDR 中，目的就是在 DDR 中启动 Linux 系统，为后面的烧写做准备。 </p>
-<p>②、经过第①步的操作，此时 Linux 系统已经运行起来了，系统运行起来以后就可以很方 便的完成对 EMMC 的格式化、分区等操作。EMMC 分区建立好以后就可以从 files 中读取要烧写的 uboot、linux kernel、.dtb(设备树)和 rootfs 这 4 个文件，然后将其烧写到 EMMC 中。</p>
-<p>mfgtools-with-rootfs\mfgtools\Profiles\Linux\OS Firmware下有：<strong>files和firmware两个文件夹</strong>。</p>
-<p>Firmware里面保存着第一步的uboot.imx、zImage、dtb。</p>
-<p>files里面保存着最终烧写到开发板中的uboo.imx、zImage、dtb以及rootfs。</p>
-<p><strong>烧写脚本就是各种.vbs文件</strong><br>在L4.1.15_2.0.0-ga_mfg-tools\mfgtools-with-rootfs\mfgtools下有很多.vbs文件。<br>.vbs脚本其实本质上是打开mfgtool2.exe，然后跟一堆的参数，linux，eMMc，board=sabresd、mmc=1、6uluboot=14x14evk、6uldtb=14x14-evk。</p>
-<p><strong>ucl2.xml文件</strong></p>
-<p>路径L4.1.15_2.0.0-ga_mfg-tools\mfgtools-with-rootfs\mfgtools\Profiles\Linux\OS Firmware。<br>ucl2.xml文件负责在files和firmware里面挑选合适的文件。</p>
-<p>如果是MX6ULL的话，根据：%lite% = l ，%6uluboot% = 14x14evk</p>
-<p>uboot就是：firmware/u-boot-imx6ul%lite%%6uluboot%_sd.imx展开以后就是firmware/u-boot-imx6ull14x14evk_sd.imx<br>firmware/zImage-imx6ul%lite%-%6ulldtb%%ldo%.dtb展开以后就是firmware/zImage-imx6ull-14x14-evk.dtb。    </p>
-<h1 id="二、烧写自己的系统"><a href="#二、烧写自己的系统" class="headerlink" title="二、烧写自己的系统"></a>二、烧写自己的系统</h1><p>烧写自己的系统。<br><strong>1、firmare下的文件名</strong><br>    u-boot-imx6ull14x14evk_emmc.imx      uboot<br>    zImage                                                        kernel<br>    zImage-imx6ull-14x14-evk-emmc.dtb   dtb</p>
-<p><strong>2、files下的文件名</strong></p>
-<p>u-boot-imx6ull14x14evk_emmc.imx        uboot<br>zImage                                                            kernel<br>zImage-imx6ull-14x14-evk -emmc.dtb        dtb<br>rootfs_nogpu.tar.bz2                                    rootfs</p>
-<h1 id="三、改造自己的烧写工具"><a href="#三、改造自己的烧写工具" class="headerlink" title="三、改造自己的烧写工具"></a>三、改造自己的烧写工具</h1><p>1、确定自己的系统文件命名</p>
-<p>2、创建自己的.vbs</p>
-<p>3、改造ucl2.xml文件</p>
-<p>4、启动测试<br>经过测试，uboot可以运行，但是Linux内核没启动。</p>
-<p>可以看出，uboot读取的dtb文件名为imx6ull-14x14-evk.dtb。实际的dtb文件名为：Imx6ull-alientek-emmc.dtb。所以要修改bootcmd命令。内容如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">setenv bootcmd &#39;mmc dev 1;fatload mmc 1:1 80800000 zImage;fatload mmc 1:1 83000000</span><br><span class="line">imx6ull-alientek-emmc.dtb;bootz 80800000 - 83000000&#39; </span><br></pre></td></tr></table></figure>
-<p>设置好以后可以启动系统，但是根文件系统加载错误，原因是bootargs设置错误，重新设置bootargs:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">setenv bootargs &#39;console&#x3D;ttymxc0,115200 root&#x3D;&#x2F;dev&#x2F;mmcblk1p2 rootwait rw&#39; </span><br></pre></td></tr></table></figure>
-
+    <p>前面移植好了 uboot 、 linux kernle、根文件系统。都是通过网络来测试的。在实际的产品开发中肯定不可能通过网络来运行，因此我们需要将 uboot、linux kernel、.dtb(设备树)和 rootfs 这四个文件烧写到板子上的 EMMC、NAND 或 QSPI Flash 等其他存储设备上，这样不管有没有网络我们的产品都可以正常运行。以下为如何使用 NXP 官方提供的 MfgTool 工具通过 USB OTG 口来烧写系统。</p>
+    
+    <a class="article-more-a" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8MfgTool%E7%83%A7%E5%86%99/#more">more >></a>
+    
     
 
     
@@ -996,30 +686,10 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
-
-<h1 id="一、根文件系统简介"><a href="#一、根文件系统简介" class="headerlink" title="一、根文件系统简介"></a>一、根文件系统简介</h1><p>根文件系统也叫做rootfs。学习STM32的W25Q256、SD卡的时候接触过FATFS文件系统。Rootfs？=FATFS。不等于！<br>FATFS这类的文件系统属于Linux内核的一部分，属于软件代码。<br>ROOTFS根文件系统=“根”、“文件”、“系统”。根文件系统就是一堆的文件、比如软件、配置文件等，这些文件是Linux运行所必须的，将他们组合在一起就构成了跟文件系统。根文件系统就是一个“文件夹”，此“文件夹”有很多个文件，这些文件是linux运行所必须的，但是无法放到内核里面去的。比如命令、库、配置文件等等。所有这些软件需要我们自己构建。/就是Linux根文件系统。</p>
-<p>根文件系统首先是内核启动时所 mount(挂载)的第一个文件系统，内核代码映像文件保存在根文件系统中，而系统引导启动程序会在根文件系统挂载之后从中把一些基本的初始化脚本和服务等加载到内存中去运行。</p>
-<h1 id="二、BusyBox构建根文件系统"><a href="#二、BusyBox构建根文件系统" class="headerlink" title="二、BusyBox构建根文件系统"></a>二、BusyBox构建根文件系统</h1><p>构建根文件系统，busybox。BusyBox 就是一个大的工具箱，这个工具箱里面集成了 Linux 的许多工具和命令。还有很多成熟化的根文件系统构建方式，buildroot，yocto。构建的根文件系统通过nfs网络挂载，也就是根文件系统存放到ubuntu下，开发板启动以后通过nfs服务使用ubuntu下的根文件系统。<br>1、修改makefile，添加交叉编译器<br>    修改ARCH和CROSS_COMPILE。</p>
-<p>2、busybox支持中文字符</p>
-<p>3、配置busybox<br>make defconfig。<br>make menuconfig打开图形化配置界面</p>
-<p>4、编译busybox</p>
-<p>编译完成以后，在 busybox 生成 bin、sbin 和 usr 这三个目录，以及 linuxrc 这个文件。Linux 内核 init 进程最后会查找用户空间的 init 程序，找到以后就会运行这个用户空间的 init 程序，从而切换到用户态。如果 bootargs 设置 init=/linuxrc，那么 linuxrc 就是可以作为用户空间的 init 程序，所以用户态空间的 init 程序是 busybox 来生成的。 </p>
-<p>5、拷贝库文件。</p>
-<p>交叉编译器里面有很多的库文件，把其库文件都放到我们的根文件系统中。先是rootfs/lib目录，然后是rootfs/usr/lib目录。</p>
-<p>6、创建其他文件夹</p>
-<h1 id="三、根文件系统初步测试"><a href="#三、根文件系统初步测试" class="headerlink" title="三、根文件系统初步测试"></a>三、根文件系统初步测试</h1><p>为了方便测试，我们采用nfs网络挂载根文件系统。uboot 里面的 bootargs 环境变量会设置“root”（根文件）的值，所以我们将 root 的值改为NFS 挂载即可。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">root&#x3D;&#x2F;dev&#x2F;nfs nfsroot&#x3D;192.168.1.250:&#x2F;home&#x2F;zuozhongkai&#x2F;linux&#x2F;nfs&#x2F;rootfs,proto&#x3D;tcp rw</span><br><span class="line">ip&#x3D;192.168.1.251:192.168.1.250:192.168.1.1:255.255.255.0::eth0:off</span><br></pre></td></tr></table></figure>
-<p>“proto=tcp”表示使用 TCP 协议，“rw”表示 nfs 挂载的根文件系统为可读可写。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">setenv bootargs &#39;console&#x3D;ttymxc0,115200 root&#x3D;&#x2F;dev&#x2F;nfs nfsroot&#x3D;192.168.1.250: &#x2F;home&#x2F;zuozhongkai&#x2F;linux&#x2F;nfs&#x2F;rootfs,proto&#x3D;tcp rw ip&#x3D;192.168.1.251:192.168.1.250:192.168.1.1:255.255.255.0::eth0:off&#39;</span><br><span class="line">&#x2F;&#x2F;重新设置 bootargs 环境变量</span><br></pre></td></tr></table></figure>
-<p>要求：<br>    1、linux内核网络驱动要工作正常。<br>    2、设置uboot的bootargs，也就是linux内核的命令行参数。</p>
-<p>从ubuntu的tftpboot里面加载我们前面移植的uboot、zImage和dtb，设置bootcmd。</p>
-<p>测试的时候发现：</p>
-<p>也就是提示文件系统为只读，这是因为booargs参数没设置全。</p>
-<h1 id="四、完善根文件系统"><a href="#四、完善根文件系统" class="headerlink" title="四、完善根文件系统"></a>四、完善根文件系统</h1><p>创建/etc/init.d/rcS 文件</p>
-<p>创建/etc/fstab 文件</p>
-<p> 创建/etc/inittab 文件</p>
-
+    <h1 id="一、根文件系统简介"><a href="#一、根文件系统简介" class="headerlink" title="一、根文件系统简介"></a>一、根文件系统简介</h1><p>根文件系统也叫做rootfs。学习STM32的W25Q256、SD卡的时候接触过FATFS文件系统。Rootfs？=FATFS。不等于！</p>
+    
+    <a class="article-more-a" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/#more">more >></a>
+    
     
 
     
@@ -1093,27 +763,10 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
-
-<h1 id="一、NXP官方开发板Linux内核编译"><a href="#一、NXP官方开发板Linux内核编译" class="headerlink" title="一、NXP官方开发板Linux内核编译"></a>一、NXP官方开发板Linux内核编译</h1><p>编译NXP官方EVK开发板对应的Linux系统，默认配置文件存放路径arch/arm/configs。最终编译出：zImage，和 imx6ull-14x14-evk-emmc.dtb，imx6ull-14x14-evk.dtb。<br>将zImage和 imx6ull-14x14-evk-emmc.dtb拷贝到tftpboot目录下，然后在uboot中通过tftp服务启动。</p>
-<h1 id="二、使能8线EMMC"><a href="#二、使能8线EMMC" class="headerlink" title="二、使能8线EMMC"></a>二、使能8线EMMC</h1><p>Linux 内核驱动里面 EMMC 默认是 4 线模式的，4 线模式肯定没有 8 线模式的速度快，所以将 EMMC 的驱动修改为 8 线模式。修改设备树，imx6ull-alientek-emmc.dts。节点usdhc2。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&amp;usdhc2 &#123;</span><br><span class="line">	pinctrl-names &#x3D; &quot;default&quot;, &quot;state_100mhz&quot;, &quot;state_200mhz&quot;;</span><br><span class="line">	pinctrl-0 &#x3D; &lt;&amp;pinctrl_usdhc2_8bit&gt;;</span><br><span class="line">	pinctrl-1 &#x3D; &lt;&amp;pinctrl_usdhc2_8bit_100mhz&gt;;</span><br><span class="line">	pinctrl-2 &#x3D; &lt;&amp;pinctrl_usdhc2_8bit_200mhz&gt;;</span><br><span class="line">	bus-width &#x3D; &lt;8&gt;;</span><br><span class="line">	non-removable;</span><br><span class="line">	status &#x3D; &quot;okay&quot;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<h1 id="三、网络驱动修改"><a href="#三、网络驱动修改" class="headerlink" title="三、网络驱动修改"></a>三、网络驱动修改</h1><p>为何要一开始就修改网络驱动？？在做Linux驱动开发的时候一般都是通过网络调试的。<br>修改网络复位IO和PHY ID以后，Linux内核内部通用PHY驱动已经正常工作。</p>
-<p>LAN8720的生产厂家是SMSC。使能SMSC驱动，然后重新编译Linux内核，并启动，tftp启动。</p>
-<h1 id="四、在Linux中添加自己的开发板"><a href="#四、在Linux中添加自己的开发板" class="headerlink" title="四、在Linux中添加自己的开发板"></a>四、在Linux中添加自己的开发板</h1><p>​    2、一个就是imx6_alientek_emmc_defconfig默认配置文件。<br>​    3、imx6ull-alientek-emmc.dts编译出来就是.dtb文件。</p>
-<pre><code>复制arch/arm/configs/imx_v7_mfg_defconfig文件为imx_alientek_emmc_defconfig。
-复制arch/arm/boot/dts/imx6ull-14x14-evk.dts文件为imx6ull-alientek-emmc.dts
-修改arch/arm/boot/dts/Makefile，
-</code></pre>
-<p>四、CPU主频和网络驱动修改<br>1、修改驱动之前，要先保证板子能够正常启动。<br>2、根文件系统处理好，使用现成根文件系统。保证EMMC烧写了系统，设置bootcmd和bootargs。<br>Bootcmd设置默认从网络启动，通过TFTP。<br>Setenv bootcmd ‘tftp 80800000 zImage;tftp 83000000 imx6ull-alientek-emmc.dtb;bootz 80800000 - 83000000;’</p>
-<p>Bootargs设置，根文件系统存放在EMMC的分区2里面，root=/dev/mmcblk1p2命令如下：</p>
-<p>Setenv bootargs ‘console=ttymxc0,115200 root=/dev/mmcblk1p2 rootwait rw’</p>
-<p>现在的问题就是EMMC驱动有问题，在imx6ull-alientek-emmc.dts中找到usdhc2节点。将usdhc2改为：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&amp;usdhc2 &#123;</span><br><span class="line">	pinctrl-names &#x3D; &quot;default&quot;, &quot;state_100mhz&quot;, &quot;state_200mhz&quot;;</span><br><span class="line">	pinctrl-0 &#x3D; &lt;&amp;pinctrl_usdhc2_8bit&gt;;</span><br><span class="line">	pinctrl-1 &#x3D; &lt;&amp;pinctrl_usdhc2_8bit_100mhz&gt;;</span><br><span class="line">	pinctrl-2 &#x3D; &lt;&amp;pinctrl_usdhc2_8bit_200mhz&gt;;</span><br><span class="line">	bus-width &#x3D; &lt;8&gt;;</span><br><span class="line">	non-removable;</span><br><span class="line">	status &#x3D; &quot;okay&quot;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>完了以后编译设备树。使用如下命令：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Make dtbs。</span><br></pre></td></tr></table></figure>
-<p>1、配置主频<br>超频到696MHz，NXP官方宣传为700MHz。打开imx6ull.dtsi文件，</p>
-
+    <h1 id="一、NXP官方开发板Linux内核编译"><a href="#一、NXP官方开发板Linux内核编译" class="headerlink" title="一、NXP官方开发板Linux内核编译"></a>一、NXP官方开发板Linux内核编译</h1><p>编译NXP官方EVK开发板对应的Linux系统，默认配置文件存放路径arch/arm/configs。最终编译出：zImage，和 imx6ull-14x14-evk-emmc.dtb，imx6ull-14x14-evk.dtb。</p>
+    
+    <a class="article-more-a" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8%E7%A7%BB%E6%A4%8D/#more">more >></a>
+    
     
 
     
@@ -1187,19 +840,10 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
-
-<h1 id="一、vmlinux-lds简介"><a href="#一、vmlinux-lds简介" class="headerlink" title="一、vmlinux.lds简介"></a>一、vmlinux.lds简介</h1><p>​    从arch/arm/kernel/vmlinux.lds分析Linux内核第一行启动代码。找到<br>ENTRY(stext)<br>​    入口函数是stext，image和zImage是经过压缩的，Linux内核会先进行解压缩，解压缩完成以后就要运行Linux内核。要求：<br>​    1、MMU关闭<br>​    2、D cache关闭<br>​    3、I cache无所谓<br>​    4、r0 = 0。<br>​    5、r1 = machine nr<br>​    6、r2=atags 或设备树</p>
-<h1 id="二、Linux入口stext"><a href="#二、Linux入口stext" class="headerlink" title="二、Linux入口stext"></a>二、Linux入口stext</h1><p>​    __vet_atags 函数验证atags或dtb是否有效，如果使用设备树的话就是dtb。<br>     __create_page_tables 创建页表。<br>​    ldr    r13, =__mmap_switched 也就是r13保存__mmap_switched。<br>​    __enable_mmu  使能MMU<br>​        -&gt; __turn_mmu_on<br>​            -&gt;_mmap_switched<br>​                -&gt;start_kernel  启动内核。<br>​    Linux内核第一阶段。</p>
-<h1 id="三、-mmap-switched函数"><a href="#三、-mmap-switched函数" class="headerlink" title="三、__mmap_switched函数"></a>三、__mmap_switched函数</h1><h1 id="四、start-kernel函数"><a href="#四、start-kernel函数" class="headerlink" title="四、start_kernel函数"></a>四、start_kernel函数</h1><p>​    Linux内核第二阶段<br>​    start_kernel<br>​        -&gt; rest_init<br>​            -&gt; kernel_thread(kernel_init, NULL, CLONE_FS);  创建kernel_init进程。也就是<br>init进程，PID=1<br>​            -&gt; kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);  创建kthreadd<br>进程，进程PID为2。<br>​            -&gt; cpu_startup_entry 进入空闲进程，也就是主进程退化为空闲进程，idle。</p>
-<p>启动开发板，输入：ps -A，列出当前系统所有进程。</p>
-<h1 id="五、reset-init函数"><a href="#五、reset-init函数" class="headerlink" title="五、reset_init函数"></a>五、reset_init函数</h1><p>​    </p>
-<h1 id="六、init进程"><a href="#六、init进程" class="headerlink" title="六、init进程"></a>六、init进程</h1><p>​    kernel_init<br>​        -&gt; kernel_init_freeable<br>​            -&gt; 设置标准输入、标准输出、标准错误使用console，比如ttymxc0<br>​            -&gt; ramdisk_execute_command = “/init”;</p>
-<p>​            -&gt; 检查/init是否存在，存在的话就运行。<br>​            -&gt; uboot传递给Linux内核的bootargs可以自定init=xxx，或者叫命令行参数。 </p>
-<p>有一些开发板会设置init=linuxrc。<br>        -&gt; 试着运行/sbin/init。<br>        -&gt; /etc/init<br>        -&gt; /bin/init<br>        -&gt; /bin/sh</p>
-<p>可以看出，最终引出根文件系统。</p>
-<p>​    </p>
-
+    <h1 id="一、vmlinux-lds简介"><a href="#一、vmlinux-lds简介" class="headerlink" title="一、vmlinux.lds简介"></a>一、vmlinux.lds简介</h1><p>从arch/arm/kernel/vmlinux.lds分析Linux内核第一行启动代码。找到ENTRY(stext)</p>
+    
+    <a class="article-more-a" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/#more">more >></a>
+    
     
 
     
@@ -1273,96 +917,10 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
-
-<h1 id="一、Linux顶层Makefile基本流程"><a href="#一、Linux顶层Makefile基本流程" class="headerlink" title="一、Linux顶层Makefile基本流程"></a>一、Linux顶层Makefile基本流程</h1><p>​    hdr-arch  = arm</p>
-<h1 id="二、make-xxx-defconfig过程"><a href="#二、make-xxx-defconfig过程" class="headerlink" title="二、make xxx_defconfig过程"></a>二、make xxx_defconfig过程</h1><p>​    %config: scripts_basic outputmakefile FORCE</p>
-<p>​    $(Q)$(MAKE) $(build)=scripts/kconfig $@</p>
-<p>scripts_basic:</p>
-<p>​    $(Q)$(MAKE) $(build)=scripts/basic</p>
-<p>include scripts/Kbuild.include</p>
-<p>build := -f $(srctree)/scripts/Makefile.build obj</p>
-<p>$(Q)$(MAKE) $(build)=scripts/basic</p>
-<p>$(Q)$(MAKE) $(build)=scripts/kconfig $@</p>
-<p>make -f ./scripts/Makefile.build obj= scripts/basic -&gt;生成fixdep和bin2c</p>
-<p>make -f ./scripts/Makefile.build obj=scripts/kconfig xxx_defconfig -&gt; </p>
-<p>scripts/kconfig/conf –defconfig=arch/arm/configs/%_defconfig Kconfig -&gt;.config</p>
-<h1 id="三、make过程"><a href="#三、make过程" class="headerlink" title="三、make过程"></a>三、make过程</h1><p>​    通过make或make all来编译Linux内核。默认目标：</p>
-<p>_all:</p>
-<p>_all: all</p>
-<p>all: vmlinux</p>
-<p>vmlinux: scripts/link-vmlinux.sh $(vmlinux-deps) FORCE</p>
-<p>ifdef CONFIG_HEADERS_CHECK</p>
-<p>​    $(Q)$(MAKE) -f $(srctree)/Makefile headers_check</p>
-<p>endif</p>
-<p>ifdef CONFIG_SAMPLES</p>
-<p>​    $(Q)$(MAKE) $(build)=samples</p>
-<p>endif</p>
-<p>ifdef CONFIG_BUILD_DOCSRC</p>
-<p>​    $(Q)$(MAKE) $(build)=Documentation</p>
-<p>endif</p>
-<p>ifdef CONFIG_GDB_SCRIPTS</p>
-<p>​    $(Q)ln -fsn <code>cd $(srctree) &amp;&amp; /bin/pwd</code>/scripts/gdb/vmlinux-gdb.py</p>
-<p>endif</p>
-<p>​    +$(call if_changed,link-vmlinux)</p>
-<p>vmlinux-deps := $(KBUILD_LDS) $(KBUILD_VMLINUX_INIT) $(KBUILD_VMLINUX_MAIN)</p>
-<p>KBUILD_LDS      := arch/$(SRCARCH)/kernel/vmlinux.lds 展开就是：</p>
-<p>KBUILD_LDS      := arch/arm/kernel/vmlinux.lds 连接脚本</p>
-<p>KBUILD_VMLINUX_INIT := $(head-y) $(init-y)</p>
-<p>export KBUILD_VMLINUX_MAIN := $(core-y) $(libs-y) $(drivers-y) $(net-y)</p>
-<p>head-y        := arch/arm/kernel/head.o</p>
-<p>init-y        := init/</p>
-<p>init-y        := $(patsubst %/, %/built-in.o, $(init-y))</p>
-<p>init-y= init/built-in.o</p>
-<p>drivers-y    := drivers/ sound/ firmware/</p>
-<p>net-y        := net/</p>
-<p>drivers-y    := $(patsubst %/, %/built-in.o, $(drivers-y))</p>
-<p>net-y        := $(patsubst %/, %/built-in.o, $(net-y))</p>
-<p>drivers-y= drivers/built-in.o sound/built-in.o firmware/built-in.o</p>
-<p>net-y = net/built-in.o</p>
-<p>libs-y        := lib/</p>
-<p>libs-y        := arch/arm/lib/ $(libs-y) </p>
-<p>libs-y := arch/arm/lib lib/</p>
-<p>libs-y1        := $(patsubst %/, %/lib.a, $(libs-y))</p>
-<p>libs-y2        := $(patsubst %/, %/built-in.o, $(libs-y))</p>
-<p>libs-y        := $(libs-y1) $(libs-y2)</p>
-<p>libs-y        := lib/lib.a arch/arm/lib/lib.a  lib/built-in.o  arch/arm/lib/built-in.o</p>
-<p>​    所有的.o和.a库文件准备好以后，就可以连接生成vmlinux。命令为：</p>
-<p>+$(call if_changed,link-vmlinux)此命令最终展开为：</p>
-<p>cmd_link-vmlinux = /bin/bash scripts/link-vmlinux.sh arm-linux-gnueabihf-ld -EL -p –noundefined -X –pic-veneer –build-id</p>
-<h1 id="四、built-in-o文件编译生成过程"><a href="#四、built-in-o文件编译生成过程" class="headerlink" title="四、built-in.o文件编译生成过程"></a>四、built-in.o文件编译生成过程</h1><p>vmlinux-deps = arch/arm/kernel/vmlinux.lds arch/arm/kernel/head.o init/built-in.o usr/built-in.o arch/arm/vfp/built-in.o arch/arm/vdso/built-in.o arch/arm/kernel/built-in.o arch/arm/mm/built-in.o arch/arm/common/built-in.o arch/arm/probes/built-in.o arch/arm/net/built-in.o arch/arm/crypto/built-in.o arch/arm/firmware/built-in.o arch/arm/mach-imx/built-in.o kernel/built-in.o mm/built-in.o fs/built-in.o ipc/built-in.o security/built-in.o crypto/built-in.o block/built-in.o arch/arm/lib/lib.a lib/lib.a arch/arm/lib/built-in.o lib/built-in.o drivers/built-in.o sound/built-in.o firmware/built-in.o net/built-in.o</p>
-<p>vmlinux-dirs    := $(patsubst %/,%,$(filter %/, $(init-y) $(init-m) \</p>
-<p>​           $(core-y) $(core-m) $(drivers-y) $(drivers-m) \</p>
-<p>​           $(net-y) $(net-m) $(libs-y) $(libs-m)))</p>
-<p>vmlinux-dirs = init usr arch/arm/vfp arch/arm/vdso arch/arm/kernel arch/arm/mm arch/arm/common arch/arm/probes arch/arm/net arch/arm/crypto arch/arm/firmware arch/arm/mach-imx kernel mm fs ipc security crypto block drivers sound firmware net arch/arm/lib lib</p>
-<p>$(vmlinux-dirs): prepare scripts</p>
-<p>​    $(Q)$(MAKE) $(build)=$@</p>
-<p>​    make -f ./scripts/Makefile.build obj=$@ 展开</p>
-<p>make -f ./scripts/Makefile.build obj=init</p>
-<p>默认目标为__build，规则就是：</p>
-<p>__build: $(if $(KBUILD_BUILTIN),$(builtin-target) $(lib-target) $(extra-y)) \</p>
-<p>​     $(if $(KBUILD_MODULES),$(obj-m) $(modorder-target)) \</p>
-<p>​     $(subdir-ym) $(always)</p>
-<p>​    @:</p>
-<p>​    简化完成以后就是：</p>
-<p>__build: $(builtin-target) $(lib-target) $(extra-y)) $(subdir-ym) $(always)<br>@:</p>
-<p>cmd_link_o_target = $(if $(strip $(obj-y)),\</p>
-<p>​           $(LD) $(ld_flags) -r -o $@ $(filter $(obj-y), $^) \</p>
-<p>​           $(cmd_secanalysis),\</p>
-<p>​           rm -f $@; $(AR) rcs$(KBUILD_ARFLAGS) $@)</p>
-<p>$(builtin-target): $(obj-y) FORCE</p>
-<p>​    $(call if_changed,link_o_target) 相当于调用cmd_link_o_target。</p>
-<p>builtin-target := $(obj)/built-in.o</p>
-<p>$(obj)/built-in.o: $(obj-y) FORCE</p>
-<p>​    $(call if_changed,link_o_target) 相当于调用cmd_link_o_target。</p>
-<h1 id="五、make-zImage过程"><a href="#五、make-zImage过程" class="headerlink" title="五、make zImage过程"></a>五、make zImage过程</h1><p>​    我们需要zImage文件，但是前面一直说的是生成vmlinux，</p>
-<p>BOOT_TARGETS    = zImage Image xipImage bootpImage uImage</p>
-<p>$(BOOT_TARGETS): vmlinux</p>
-<p>​    $(Q)$(MAKE) $(build)=$(boot) MACHINE=$(MACHINE) $(boot)/$@</p>
-<p>zImage Image xipImage bootpImage uImage: vmlinux</p>
-<p>​    $(Q)$(MAKE) $(build)=$(boot) MACHINE=$(MACHINE) $(boot)/$@ 展开</p>
-<p>​    make -f ./scripts/Makefile.build obj=arch/arm/boot MACHINE=arch/arm/boot/zImage</p>
-
+    <h1 id="一、Linux顶层Makefile基本流程"><a href="#一、Linux顶层Makefile基本流程" class="headerlink" title="一、Linux顶层Makefile基本流程"></a>一、Linux顶层Makefile基本流程</h1><p>​    hdr-arch  = arm</p>
+    
+    <a class="article-more-a" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8Makefile%E8%AF%A6%E8%A7%A3/#more">more >></a>
+    
     
 
     

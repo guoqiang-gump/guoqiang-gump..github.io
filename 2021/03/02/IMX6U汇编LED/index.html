@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="一、汇编LED原理分析​    为什么要学习Cortex-A汇编： ​    ①、需要用汇编初始化一些SOC外设。 ​    ②、使用汇编初始化DDR，I.MX6U不需要。 ​    ③、设置sp指针，一般指向DDR，设置好C语言运行环境。 1、ALPHA开发板LED灯硬件原理分析：I.MX6ULL IO初始化：​    LED0 接到了 GPIO_3 上，GPIO_3 就是 GPIO1_I">
+  <meta name="description" content="一、汇编LED原理分析​    为什么要学习Cortex-A汇编： ​    ①、需要用汇编初始化一些SOC外设。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="IMX6U汇编LED">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/03/02/IMX6U%E6%B1%87%E7%BC%96LED/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="一、汇编LED原理分析​    为什么要学习Cortex-A汇编： ​    ①、需要用汇编初始化一些SOC外设。 ​    ②、使用汇编初始化DDR，I.MX6U不需要。 ​    ③、设置sp指针，一般指向DDR，设置好C语言运行环境。 1、ALPHA开发板LED灯硬件原理分析：I.MX6ULL IO初始化：​    LED0 接到了 GPIO_3 上，GPIO_3 就是 GPIO1_I">
+<meta property="og:description" content="一、汇编LED原理分析​    为什么要学习Cortex-A汇编： ​    ①、需要用汇编初始化一些SOC外设。">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-03-02T12:02:00.000Z">
-<meta property="article:modified_time" content="2021-04-20T09:37:49.325Z">
+<meta property="article:modified_time" content="2021-05-05T04:41:26.630Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="linux">
 <meta property="article:tag" content="IMX6U">
@@ -246,10 +246,10 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
-
-<h1 id="一、汇编LED原理分析"><a href="#一、汇编LED原理分析" class="headerlink" title="一、汇编LED原理分析"></a>一、汇编LED原理分析</h1><p>​    为什么要学习Cortex-A汇编：</p>
+    <h1 id="一、汇编LED原理分析"><a href="#一、汇编LED原理分析" class="headerlink" title="一、汇编LED原理分析"></a>一、汇编LED原理分析</h1><p>​    为什么要学习Cortex-A汇编：</p>
 <p>​    ①、需要用汇编初始化一些SOC外设。</p>
+ <a id="more"></a> 
+
 <p>​    ②、使用汇编初始化DDR，I.MX6U不需要。</p>
 <p>​    ③、设置sp指针，一般指向DDR，设置好C语言运行环境。</p>
 <h3 id="1、ALPHA开发板LED灯硬件原理分析："><a href="#1、ALPHA开发板LED灯硬件原理分析：" class="headerlink" title="1、ALPHA开发板LED灯硬件原理分析："></a>1、ALPHA开发板LED灯硬件原理分析：</h3><h3 id="I-MX6ULL-IO初始化："><a href="#I-MX6ULL-IO初始化：" class="headerlink" title="I.MX6ULL IO初始化："></a>I.MX6ULL IO初始化：</h3><p>​    LED0 接到了 GPIO_3 上，GPIO_3 就是 GPIO1_IO03，当 GPIO1_IO03输出低电平(0)的时候发光二极管 LED0 就会导通点亮，当 GPIO1_IO03 输出高电平(1)的时候发 光二极管 LED0 不会导通，因此 LED0 也就不会点亮。所以 LED0 的亮灭取决于 GPIO1_IO03的输出电平，输出 0 就亮，输出 1 就灭。 </p>

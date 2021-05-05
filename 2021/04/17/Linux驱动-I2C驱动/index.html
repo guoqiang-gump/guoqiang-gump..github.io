@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="Linux I2C驱动框架裸机篇中编写 AP3216C 驱动的四个文件：bsp_i2c.c、bsp_i2c.h、bsp_ap3216c.c 和 bsp_ap3216c.h。其中前两个是 I.MX6U 的 IIC 接口驱动，后两个文 件是 AP3216C 这个 I2C 设备驱动文件。相当于有两部分驱动： I2C 主机驱动、I2C 设备驱动。  对于 I2C 主机驱动，一旦编写完成就不需要再做修">
+  <meta name="description" content="Linux I2C驱动框架裸机篇中编写 AP3216C 驱动的四个文件：bsp_i2c.c、bsp_i2c.h、bsp_ap3216c.c 和 bsp_ap3216c.h。其中前两个是 I.MX6U 的 IIC 接口驱动，后两个文 件是 AP3216C 这个 I2C 设备驱动文件。相当于有两部分驱动： I2C 主机驱动、I2C 设备驱动。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux驱动-I2C驱动">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/17/Linux%E9%A9%B1%E5%8A%A8-I2C%E9%A9%B1%E5%8A%A8/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="Linux I2C驱动框架裸机篇中编写 AP3216C 驱动的四个文件：bsp_i2c.c、bsp_i2c.h、bsp_ap3216c.c 和 bsp_ap3216c.h。其中前两个是 I.MX6U 的 IIC 接口驱动，后两个文 件是 AP3216C 这个 I2C 设备驱动文件。相当于有两部分驱动： I2C 主机驱动、I2C 设备驱动。  对于 I2C 主机驱动，一旦编写完成就不需要再做修">
+<meta property="og:description" content="Linux I2C驱动框架裸机篇中编写 AP3216C 驱动的四个文件：bsp_i2c.c、bsp_i2c.h、bsp_ap3216c.c 和 bsp_ap3216c.h。其中前两个是 I.MX6U 的 IIC 接口驱动，后两个文 件是 AP3216C 这个 I2C 设备驱动文件。相当于有两部分驱动： I2C 主机驱动、I2C 设备驱动。">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-17T05:51:36.000Z">
-<meta property="article:modified_time" content="2021-04-20T09:39:49.926Z">
+<meta property="article:modified_time" content="2021-05-05T04:43:45.442Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,9 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
+    <h1 id="Linux-I2C驱动框架"><a href="#Linux-I2C驱动框架" class="headerlink" title="Linux I2C驱动框架"></a>Linux I2C驱动框架</h1><p>裸机篇中编写 AP3216C 驱动的四个文件：bsp_i2c.c、bsp_i2c.h、bsp_ap3216c.c 和 bsp_ap3216c.h。其中前两个是 I.MX6U 的 IIC 接口驱动，后两个文 件是 AP3216C 这个 I2C 设备驱动文件。相当于有两部分驱动： I2C 主机驱动、I2C 设备驱动。 </p>
+ <a id="more"></a> 
 
-<h1 id="Linux-I2C驱动框架"><a href="#Linux-I2C驱动框架" class="headerlink" title="Linux I2C驱动框架"></a>Linux I2C驱动框架</h1><p>裸机篇中编写 AP3216C 驱动的四个文件：bsp_i2c.c、bsp_i2c.h、bsp_ap3216c.c 和 bsp_ap3216c.h。其中前两个是 I.MX6U 的 IIC 接口驱动，后两个文 件是 AP3216C 这个 I2C 设备驱动文件。相当于有两部分驱动： I2C 主机驱动、I2C 设备驱动。 </p>
 <p>对于 I2C 主机驱动，一旦编写完成就不需要再做修改，其他的 I2C 设备直接调用主机驱动提供的 API 函数完成读写操作即可。这个正好符合 Linux 的驱动分离与分层的思想，因此 Linux内核也将 I2C 驱动分为两部分：<br>①、I2C 总线驱动，I2C 总线驱动就是 SOC 的 I2C 控制器驱动，也叫做 I2C 适配器驱动。<br>②、I2C 设备驱动，I2C 设备驱动就是针对具体的 I2C 设备而编写的驱动。</p>
 <h2 id="I2C-总线驱动"><a href="#I2C-总线驱动" class="headerlink" title="I2C 总线驱动"></a><strong>I2C</strong> <strong>总线驱动</strong></h2><p>platform 是虚拟出来的一条总线，目的是为了实现总线、设备、驱动框架。。对于 I2C 而言，不需要虚拟出一条总线，直接使用 I2C 总线即可。I2C 总线驱动重点是 I2C 适配器(也就是 SOC 的 I2C 接口控制器)驱动，这里要用到 两个重要的数据结构：i2c_adapter 和 i2c_algorithm，Linux 内核将 SOC 的 I2C 适配器(控制器) 抽象成 i2c_adapter，i2c_adapter 结构体定义在 include/linux/i2c.h 文件中，结构体内容如下：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">struct i2c_adapter &#123;</span><br><span class="line">    struct module *owner;</span><br><span class="line">    unsigned int class; &#x2F;* classes to allow probing for *&#x2F;</span><br><span class="line">    const struct i2c_algorithm *algo; &#x2F;* 总线访问算法 *&#x2F;</span><br><span class="line">    void *algo_data;</span><br><span class="line">	………………</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>

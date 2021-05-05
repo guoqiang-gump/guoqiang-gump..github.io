@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="一、Uboot源码目录分析1、因为uboot会使用到一些经过编译才会生成的文件，因此我们在分析uboot的时候，需要先编译一下uboot。 2、arch\arm\cpu\u-boot.lds就是整个UBOOT的连接脚本 3、board\freescale\mx6ullevk。重点。 4、configs目录是uboot的默认配置文件目录。此目录下都是以_defconfig结尾的。这些配置文件对">
+  <meta name="description" content="一、Uboot源码目录分析1、因为uboot会使用到一些经过编译才会生成的文件，因此我们在分析uboot的时候，需要先编译一下uboot。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="IMX6U移植-uboot-Makefile">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/12/Linux%E7%A7%BB%E6%A4%8D-uboot-Makefile/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="一、Uboot源码目录分析1、因为uboot会使用到一些经过编译才会生成的文件，因此我们在分析uboot的时候，需要先编译一下uboot。 2、arch\arm\cpu\u-boot.lds就是整个UBOOT的连接脚本 3、board\freescale\mx6ullevk。重点。 4、configs目录是uboot的默认配置文件目录。此目录下都是以_defconfig结尾的。这些配置文件对">
+<meta property="og:description" content="一、Uboot源码目录分析1、因为uboot会使用到一些经过编译才会生成的文件，因此我们在分析uboot的时候，需要先编译一下uboot。">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-12T15:04:55.000Z">
-<meta property="article:modified_time" content="2021-04-20T09:41:48.482Z">
+<meta property="article:modified_time" content="2021-05-05T04:47:48.760Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,9 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
+    <h1 id="一、Uboot源码目录分析"><a href="#一、Uboot源码目录分析" class="headerlink" title="一、Uboot源码目录分析"></a>一、Uboot源码目录分析</h1><p>1、因为uboot会使用到一些经过编译才会生成的文件，因此我们在分析uboot的时候，需要先编译一下uboot。</p>
+ <a id="more"></a> 
 
-<h1 id="一、Uboot源码目录分析"><a href="#一、Uboot源码目录分析" class="headerlink" title="一、Uboot源码目录分析"></a>一、Uboot源码目录分析</h1><p>1、因为uboot会使用到一些经过编译才会生成的文件，因此我们在分析uboot的时候，需要先编译一下uboot。</p>
 <p>2、arch\arm\cpu\u-boot.lds就是整个UBOOT的连接脚本</p>
 <p>3、board\freescale\mx6ullevk。重点。</p>
 <p>4、configs目录是uboot的默认配置文件目录。此目录下都是以_defconfig结尾的。这些配置文件对应不同的板子。在编译 uboot 之前一定要使用 defconfig 来配置 uboot！ 使用 “make xxx_defconfig”命令即可配置 uboot。当我们执行make xxx_defconfig以后就会生成.config问价，此文件保存了详细的uboot配置信息。</p>

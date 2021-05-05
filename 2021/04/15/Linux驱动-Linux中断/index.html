@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="Linux 内核提供了完善的中断框架，我们只需要申请中断，然后注册中断处理函数即可，使用非常方便，不需要一系列复杂的寄存器配置。 Linux 中断 API 函数1、中断号 每个中断都有一个中断号，通过中断号即可区分不同的中断，有的资料也把中断号叫做中断线。在 Linux 内核中使用一个 int 变量表示中断号，关于中断号就是裸机学的中断号了。 2、request_irq 函数 在 Linux">
+  <meta name="description" content="Linux 内核提供了完善的中断框架，我们只需要申请中断，然后注册中断处理函数即可，使用非常方便，不需要一系列复杂的寄存器配置。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux驱动-Linux中断">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-Linux%E4%B8%AD%E6%96%AD/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="Linux 内核提供了完善的中断框架，我们只需要申请中断，然后注册中断处理函数即可，使用非常方便，不需要一系列复杂的寄存器配置。 Linux 中断 API 函数1、中断号 每个中断都有一个中断号，通过中断号即可区分不同的中断，有的资料也把中断号叫做中断线。在 Linux 内核中使用一个 int 变量表示中断号，关于中断号就是裸机学的中断号了。 2、request_irq 函数 在 Linux">
+<meta property="og:description" content="Linux 内核提供了完善的中断框架，我们只需要申请中断，然后注册中断处理函数即可，使用非常方便，不需要一系列复杂的寄存器配置。">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-15T13:17:29.000Z">
-<meta property="article:modified_time" content="2021-04-20T09:40:21.057Z">
+<meta property="article:modified_time" content="2021-05-05T04:44:19.268Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,9 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
+    <p>Linux 内核提供了完善的中断框架，我们只需要申请中断，然后注册中断处理函数即可，使用非常方便，不需要一系列复杂的寄存器配置。</p>
+ <a id="more"></a> 
 
-<p>Linux 内核提供了完善的中断框架，我们只需要申请中断，然后注册中断处理函数即可，使用非常方便，不需要一系列复杂的寄存器配置。</p>
 <h1 id="Linux-中断-API-函数"><a href="#Linux-中断-API-函数" class="headerlink" title="Linux 中断 API 函数"></a><strong>Linux</strong> <strong>中断</strong> <strong>API</strong> <strong>函数</strong></h1><p><strong>1、中断号</strong></p>
 <p>每个中断都有一个中断号，通过中断号即可区分不同的中断，有的资料也把中断号叫做中断线。在 Linux 内核中使用一个 int 变量表示中断号，关于中断号就是裸机学的中断号了。</p>
 <p><strong>2、request_irq 函数</strong></p>

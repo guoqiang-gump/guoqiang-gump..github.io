@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="前面移植好了 uboot 、 linux kernle、根文件系统。都是通过网络来测试的。在实际的产品开发中肯定不可能通过网络来运行，因此我们需要将 uboot、linux kernel、.dtb(设备树)和 rootfs 这四个文件烧写到板子上的 EMMC、NAND 或 QSPI Flash 等其他存储设备上，这样不管有没有网络我们的产品都可以正常运行。以下为如何使用 NXP 官方提供的">
+  <meta name="description" content="前面移植好了 uboot 、 linux kernle、根文件系统。都是通过网络来测试的。在实际的产品开发中肯定不可能通过网络来运行，因此我们需要将 uboot、linux kernel、.dtb(设备树)和 rootfs 这四个文件烧写到板子上的 EMMC、NAND 或 QSPI Flash 等其他存储设备上，这样不管有没有网络我们的产品都可以正常运行。以下为如何使用 NXP 官方提供的 Mfg">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux移植-内核MfgTool烧写">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8MfgTool%E7%83%A7%E5%86%99/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="前面移植好了 uboot 、 linux kernle、根文件系统。都是通过网络来测试的。在实际的产品开发中肯定不可能通过网络来运行，因此我们需要将 uboot、linux kernel、.dtb(设备树)和 rootfs 这四个文件烧写到板子上的 EMMC、NAND 或 QSPI Flash 等其他存储设备上，这样不管有没有网络我们的产品都可以正常运行。以下为如何使用 NXP 官方提供的">
+<meta property="og:description" content="前面移植好了 uboot 、 linux kernle、根文件系统。都是通过网络来测试的。在实际的产品开发中肯定不可能通过网络来运行，因此我们需要将 uboot、linux kernel、.dtb(设备树)和 rootfs 这四个文件烧写到板子上的 EMMC、NAND 或 QSPI Flash 等其他存储设备上，这样不管有没有网络我们的产品都可以正常运行。以下为如何使用 NXP 官方提供的 Mfg">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-13T11:21:56.000Z">
-<meta property="article:modified_time" content="2021-04-20T09:41:44.563Z">
+<meta property="article:modified_time" content="2021-05-05T04:47:41.852Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,9 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
+    <p>前面移植好了 uboot 、 linux kernle、根文件系统。都是通过网络来测试的。在实际的产品开发中肯定不可能通过网络来运行，因此我们需要将 uboot、linux kernel、.dtb(设备树)和 rootfs 这四个文件烧写到板子上的 EMMC、NAND 或 QSPI Flash 等其他存储设备上，这样不管有没有网络我们的产品都可以正常运行。以下为如何使用 NXP 官方提供的 MfgTool 工具通过 USB OTG 口来烧写系统。</p>
+ <a id="more"></a> 
 
-<p>前面移植好了 uboot 、 linux kernle、根文件系统。都是通过网络来测试的。在实际的产品开发中肯定不可能通过网络来运行，因此我们需要将 uboot、linux kernel、.dtb(设备树)和 rootfs 这四个文件烧写到板子上的 EMMC、NAND 或 QSPI Flash 等其他存储设备上，这样不管有没有网络我们的产品都可以正常运行。以下为如何使用 NXP 官方提供的 MfgTool 工具通过 USB OTG 口来烧写系统。</p>
 <h1 id="一、MfgTool工具简介"><a href="#一、MfgTool工具简介" class="headerlink" title="一、MfgTool工具简介"></a>一、MfgTool工具简介</h1><p>mfgtool是NXP官方做的向I.MX系列烧写系统的软件，运行在windows下。可以烧写uboot.imx、zImage、dtb，rootfs。通过USB烧写。Mfgtool里面默认存放了NXP官方开发板的系统文件。</p>
 <p><strong>基本原理</strong> </p>
 <p>MfgTool 其实是先通过 USB OTG 先将 uboot、kernel 和.dtb(设备树)这是三个文件下载到开发板的 DDR 中，注意不需要下载 rootfs。就相当于直接在开发板的 DDR上启动 Linux 系统，等 Linux 系统启动以后再向 EMMC 中烧写完整的系统，包括 uboot、linuxkernel、.dtb(设备树)和 rootfs，因此 MfgTool 工作过程主要分两个阶段：</p>
