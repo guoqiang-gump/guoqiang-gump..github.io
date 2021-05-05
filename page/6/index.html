@@ -313,27 +313,10 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
-
-<h1 id="GPT-定时器简介"><a href="#GPT-定时器简介" class="headerlink" title="GPT 定时器简介"></a>GPT 定时器简介</h1><p>I.MX6U 的 GPT 定时器全称为 General Purpose Timer，可实现高精度延时。GPT 定时器是一个 32 位向上定时器(也就是从 0X00000000 开始向上递增计数)，GPT 定时器也可以跟一个值进行比较，当计数器值和这个值相等的话就发生比较事件，产生比较中断。GPT 定时器有一个 12 位的分频器，可以对 GPT 定时器的时钟源进行分频，GPT 定时器特性如下： </p>
-<p>①、一个可选时钟源的 32 位向上计数器。 </p>
-<p>②、两个输入捕获通道，可以设置触发方式。 </p>
-<p>③、三个输出比较通道，可以设置输出模式。 </p>
-<p>④、可以生成捕获中断、比较中断和溢出中断。 </p>
-<p>⑤、计数器可以运行在重新启动(restart)或(自由运行)free-run 模式。 </p>
-<p>GPT 定时器共有五个时钟源，分别为：ipg_clk_24M、GPT_CLK(外部时钟)、 ipg_clk、ipg_clk_32k 和 ipg_clk_highfreq。现选择 ipg_clk 为 GPT 的时钟源，ipg_clk=66MHz。 </p>
-<p><strong>GPT 定时器有两种工作模式</strong></p>
-<p><strong>重新启动(restart)模式</strong>：当 GPTx_CR(x=1，2)寄存器的 FRR 位清零的时候 GPT 工作在此模式。在此模式下，当计数值和比较寄存器中的值相等的话计数值就会清零，然后重新从0X00000000 开始向上计数，只有比较通道 1 才有此模式！向比较通道 1 的比较寄存器写入任何数据都会复位 GPT 计数器。对于其他两路比较通道（通道 2 和 3），当发生比较事件以后不会复位计数器。</p>
-<p><strong>自由运行(free-run)模式</strong>：当 GPTx_CR(x=1，2)寄存器的 FRR 位置 1 时候 GPT 工作在此模式下，此模式适用于所有三个比较通道，当比较事件发生以后并不会复位计数器，而是继续计数，直到计数值为 0XFFFFFFFF，然后重新回滚到 0X00000000。 </p>
-<h1 id="定时器实现高精度延时原理"><a href="#定时器实现高精度延时原理" class="headerlink" title="定时器实现高精度延时原理"></a>定时器实现高精度延时原理</h1><p>高精度延时函数的实现肯定是要借助硬件定时器，如果设置 GPT 定时器的时钟源为 ipg_clk=66MHz，设置 66 分频，那么进入 GPT 定时器的最终时钟频率就是 66/66=1MHz，周期为 1us。GPT 的计数器每计一个数就表示“过去” 了 1us。如果计 10 个数就表示“过去”了 10us。通过读取寄存器 GPTx_CNT 中的值就知道计了个数，比如现在要延时 100us，那么进入延时函数以后纪录下寄存器 GPTx_CNT 中的值为 200， 当 GPTx_CNT 中的值为 300 的时候就表示 100us 过去了，也就是延时结束。GPTx_CNT 是个 32 位寄存器，如果时钟为 1MHz 的话，GPTx_CNT 最多可以实现 0XFFFFFFFFus=4294967295us≈4294s≈72min。也就是说 72 分钟以后 GPTx_CNT 寄存器就会回滚到 0X00000000，也就是溢出，所以需要在延时函数中要处理溢出的情况。</p>
-<p><strong>高精度延时的实现步骤如下</strong></p>
-<p>1、设置 GPT1 定时器<br>首先设置 GPT1_CR 寄存器的 SWR(bit15)位来复位寄存器 GPT1。复位完成以后设置寄存器 GPT1_CR 寄存器的 CLKSRC(bit8:6)位，选择 GPT1 的时钟源为 ipg_clk。设置定时器 GPT1的工作模式。</p>
-<p>2、设置 GPT1 的分频值<br>设置寄存器 GPT1_PR 寄存器的 PRESCALAR(bit111:0)位，设置分频值。66分频</p>
-<p>3、设置 GPT1 的比较值</p>
-<p>如果要使用 GPT1 的输出比较中断，那么 GPT1 的输出比较寄存器 GPT1_OCR1 的值可以根据所需的中断时间来设置。本章例程不使用比较输出中断，所以将 GPT1_OCR1 设置为最大 值，即：0XFFFFFFFF。 </p>
-<p>4、使能 GPT1 定时器<br>设置好 GPT1 定时器以后就可以使能了，设置 GPT1_CR 的 EN(bit0)位为 1 来使能 GPT1 定时器。</p>
-<p>5、编写延时函数<br>GPT1定时器已经开始运行了，可以根据前面介绍的高精度延时函数原理来编写延时函数，针对 us 和 ms 延时分别编写两个延时函数。</p>
-<h1 id="程序编写"><a href="#程序编写" class="headerlink" title="程序编写"></a>程序编写</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;***************************************************************</span><br><span class="line">文件名	: 	 bsp_delay.c</span><br><span class="line">描述	   : 延时文件。使用定时器GPT实现高精度延时,添加了：delay_init 延时初始化函数gpt1_irqhandler 			gpt1定时器中断处理函数delayus us延时函数delayms ms延时函数</span><br><span class="line">***************************************************************&#x2F;</span><br><span class="line">#include &quot;bsp_delay.h&quot;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 延时有关硬件初始化,主要是GPT定时器</span><br><span class="line">				  GPT定时器时钟源选择ipg_clk&#x3D;66Mhz</span><br><span class="line"> * @param		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void delay_init(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPT1-&gt;CR &#x3D; 0; 					&#x2F;* 清零，bit0也为0，即停止GPT  			*&#x2F;</span><br><span class="line"></span><br><span class="line">	GPT1-&gt;CR &#x3D; 1 &lt;&lt; 15;				&#x2F;* bit15置1进入软复位 				*&#x2F;</span><br><span class="line">	while((GPT1-&gt;CR &gt;&gt; 15) &amp; 0x01);	&#x2F;*等待复位完成 						*&#x2F;</span><br><span class="line">	</span><br><span class="line">	&#x2F;*</span><br><span class="line">   	 * GPT的CR寄存器,GPT通用设置</span><br><span class="line">   	 * bit22:20	000 输出比较1的输出功能关闭，也就是对应的引脚没反应</span><br><span class="line">     * bit9:    0   Restart模式,当CNT等于OCR1的时候就产生中断</span><br><span class="line">     * bit8:6   001 GPT时钟源选择ipg_clk&#x3D;66Mhz</span><br><span class="line">     * bit</span><br><span class="line">  	 *&#x2F;</span><br><span class="line">	GPT1-&gt;CR &#x3D; (1&lt;&lt;6);</span><br><span class="line"></span><br><span class="line">	&#x2F;*</span><br><span class="line">     * GPT的PR寄存器，GPT的分频设置</span><br><span class="line">     * bit11:0  设置分频值，设置为0表示1分频，</span><br><span class="line">     *          以此类推，最大可以设置为0XFFF，也就是最大4096分频</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	GPT1-&gt;PR &#x3D; 65;	&#x2F;* 设置为65，即66分频，因此GPT1时钟为66M&#x2F;(65+1)&#x3D;1MHz *&#x2F;</span><br><span class="line"></span><br><span class="line">	 &#x2F;*</span><br><span class="line">      * GPT的OCR1寄存器，GPT的输出比较1比较计数值，</span><br><span class="line">      *	GPT的时钟为1Mz，那么计数器每计一个值就是就是1us。</span><br><span class="line">      * 为了实现较大的计数，我们将比较值设置为最大的0XFFFFFFFF,</span><br><span class="line">      * 这样一次计满就是：0XFFFFFFFFus &#x3D; 4294967296us &#x3D; 4295s &#x3D; 71.5min</span><br><span class="line">      * 也就是说一次计满最多71.5分钟，存在溢出</span><br><span class="line">	  *&#x2F;</span><br><span class="line">	GPT1-&gt;OCR[0] &#x3D; 0XFFFFFFFF;</span><br><span class="line"></span><br><span class="line">	GPT1-&gt;CR |&#x3D; 1&lt;&lt;0;			&#x2F;&#x2F;使能GPT1</span><br><span class="line"></span><br><span class="line">	&#x2F;* 一下屏蔽的代码是GPT定时器中断代码，</span><br><span class="line">	 * 如果想学习GPT定时器的话可以参考一下代码。</span><br><span class="line">	 *&#x2F;</span><br><span class="line">#if 0</span><br><span class="line">	&#x2F;*</span><br><span class="line">     * GPT的PR寄存器，GPT的分频设置</span><br><span class="line">     * bit11:0  设置分频值，设置为0表示1分频，</span><br><span class="line">     *          以此类推，最大可以设置为0XFFF，也就是最大4096分频</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	GPT1-&gt;PR &#x3D; 65;	&#x2F;&#x2F;设置为1，即65+1&#x3D;66分频，因此GPT1时钟为66M&#x2F;66&#x3D;1MHz</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	 &#x2F;*</span><br><span class="line">      * GPT的OCR1寄存器，GPT的输出比较1比较计数值，</span><br><span class="line">      * 当GPT的计数值等于OCR1里面值时候，输出比较1就会发生中断</span><br><span class="line">      * 这里定时500ms产生中断，因此就应该为1000000&#x2F;2&#x3D;500000;</span><br><span class="line">	  *&#x2F;</span><br><span class="line">	GPT1-&gt;OCR[0] &#x3D; 500000;</span><br><span class="line"></span><br><span class="line">	&#x2F;*</span><br><span class="line">     * GPT的IR寄存器，使能通道1的比较中断</span><br><span class="line">     * bit0： 0 使能输出比较中断</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	GPT1-&gt;IR |&#x3D; 1 &lt;&lt; 0;</span><br><span class="line"></span><br><span class="line">	&#x2F;*</span><br><span class="line">     * 使能GIC里面相应的中断，并且注册中断处理函数</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	GIC_EnableIRQ(GPT1_IRQn);	&#x2F;&#x2F;使能GIC中对应的中断</span><br><span class="line">	system_register_irqhandler(GPT1_IRQn, (system_irq_handler_t)gpt1_irqhandler, NULL);	&#x2F;&#x2F;注册中断服务函数	</span><br><span class="line">#endif</span><br><span class="line">	</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">#if 0</span><br><span class="line">&#x2F;* 中断处理函数 *&#x2F;</span><br><span class="line">void gpt1_irqhandler(void)</span><br><span class="line">&#123; </span><br><span class="line">	static unsigned char state &#x3D; 0;</span><br><span class="line"></span><br><span class="line">	state &#x3D; !state;</span><br><span class="line"></span><br><span class="line">	&#x2F;*</span><br><span class="line">     * GPT的SR寄存器，状态寄存器</span><br><span class="line">     * bit2： 1 输出比较1发生中断</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	if(GPT1-&gt;SR &amp; (1&lt;&lt;0)) </span><br><span class="line">	&#123;</span><br><span class="line">		led_switch(LED2, state);</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	GPT1-&gt;SR |&#x3D; 1&lt;&lt;0; &#x2F;* 清除中断标志位 *&#x2F;</span><br><span class="line">&#125;</span><br><span class="line">#endif</span><br><span class="line"> </span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: 微秒(us)级延时</span><br><span class="line"> * @param - value	: 需要延时的us数,最大延时0XFFFFFFFFus</span><br><span class="line"> * @return 			: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void delayus(unsigned    int usdelay)</span><br><span class="line">&#123;</span><br><span class="line">	unsigned long oldcnt,newcnt;</span><br><span class="line">	unsigned long tcntvalue &#x3D; 0;	&#x2F;* 走过的总时间  *&#x2F;</span><br><span class="line"></span><br><span class="line">	oldcnt &#x3D; GPT1-&gt;CNT;</span><br><span class="line">	while(1)</span><br><span class="line">	&#123;</span><br><span class="line">		newcnt &#x3D; GPT1-&gt;CNT;</span><br><span class="line">		if(newcnt !&#x3D; oldcnt)</span><br><span class="line">		&#123;</span><br><span class="line">			if(newcnt &gt; oldcnt)		&#x2F;* GPT是向上计数器,并且没有溢出 *&#x2F;</span><br><span class="line">				tcntvalue +&#x3D; newcnt - oldcnt;</span><br><span class="line">			else  					&#x2F;* 发生溢出    *&#x2F;</span><br><span class="line">				tcntvalue +&#x3D; 0XFFFFFFFF-oldcnt + newcnt;</span><br><span class="line">			oldcnt &#x3D; newcnt;</span><br><span class="line">			if(tcntvalue &gt;&#x3D; usdelay)&#x2F;* 延时时间到了 *&#x2F;</span><br><span class="line">			break;			 		&#x2F;*  跳出 *&#x2F;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: 毫秒(ms)级延时</span><br><span class="line"> * @param - msdelay	: 需要延时的ms数</span><br><span class="line"> * @return 			: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void delayms(unsigned	 int msdelay)</span><br><span class="line">&#123;</span><br><span class="line">	int i &#x3D; 0;</span><br><span class="line">	for(i&#x3D;0; i&lt;msdelay; i++)</span><br><span class="line">	&#123;</span><br><span class="line">		delayus(1000);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    <h1 id="GPT-定时器简介"><a href="#GPT-定时器简介" class="headerlink" title="GPT 定时器简介"></a>GPT 定时器简介</h1><p>I.MX6U 的 GPT 定时器全称为 General Purpose Timer，可实现高精度延时。GPT 定时器是一个 32 位向上定时器(也就是从 0X00000000 开始向上递增计数)，GPT 定时器也可以跟一个值进行比较，当计数器值和这个值相等的话就发生比较事件，产生比较中断。GPT 定时器有一个 12 位的分频器，可以对 GPT 定时器的时钟源进行分频，GPT 定时器特性如下： </p>
+    
+    <a class="article-more-a" href="/2021/04/11/IMX6U-GPT%E5%AE%9A%E6%97%B6%E5%99%A8/#more">more >></a>
+    
     
 
     
@@ -407,47 +390,10 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
-
-<h1 id="EPIT简介"><a href="#EPIT简介" class="headerlink" title="EPIT简介"></a>EPIT简介</h1><p>EPIT 的全称是：Enhanced Periodic Interrupt Timer，直译过来就是增强的周期中断定时器， 它主要是完成周期性中断定时的。I.MX6U 的 EPIT 定时器只是完成周期性中断定时的，仅此一项功能！至于输入捕获、PWM 输出等这些功能，I.MX6U 由其它的外设来完成。 </p>
-<p>EPIT 是一个 32 位定时器，在处理器几乎不用介入的情况下提供精准的定时中断，软件使能以后 EPIT 就会开始运行，EPIT 定时器有如下特点： </p>
-<p>①、时钟源可选的 32 位向下计数器。 </p>
-<p>②、12 位的分频值。 </p>
-<p>③、当计数值和比较值相等的时候产生中断。 </p>
-<p>EPIT 共有 3 个时钟源可选择， ipg_clk、ipg_clk_32k 和 ipg_clk_highfreq。 选择ipg_clk=66MHz。可以对时钟源进行分频，12位的分频器，0<del>4095分别代表1</del>4096分频。</p>
-<ul>
-<li>计数寄存器 (<strong>EPIT_CNR</strong>)：向下计数，给它一个初值，它就会从这个给定的初值开始递减，直到减为 0。</li>
-<li>加载寄存器(**EPIT_LR)**：保存初值</li>
-<li>比较寄存器(<strong>EPIT_CMPR</strong>)：比较寄存器里面保存的数值用于和计数寄存器里面的计数值比较，如果相等， 产生一个比较事件。</li>
-<li>配置寄存器(<strong>EPIT_CR</strong>)：用于配置EPIT。</li>
-<li>(<strong>EPITx_SR</strong>) ：只有一个位有效，那就是 OCIF(bit0)，这个位是比较中断标志位，为 0 的时候表示没有比较事件发生，为 1 的时候表示有比较事件发生。当比较中断发生以后需要手动清除此位，此位是写 1 清零的。 </li>
-</ul>
-<p>EPIT 可以设置引脚输出，如果设置了的话就会通过指定的引脚输出信号。</p>
-<p>EPIT 定时器有两种工作模式：set-and-forget 和 free-running。</p>
-<p><strong>set-and-forget</strong> <strong>模式</strong>：EPITx_CR(x=1，2)寄存器的 RLD 位置 1 的时候 EPIT 工作在此模式 </p>
-<p>下，在此模式下 EPIT 的计数器从加载寄存器 EPITx_LR 中获取初始值，不能直接向计数器寄存 </p>
-<p>器写入数据。不管什么时候，只要计数器计数到 0，那么就会从加载寄存器 EPITx_LR 中重新 </p>
-<p>加载数据到计数器中，周而复始。 </p>
-<p><strong>free-running</strong> <strong>模式</strong>：EPITx_CR 寄存器的 RLD 位清零的时候 EPIT 工作在此模式下，当计数 </p>
-<p>器计数到0以后会重新从0XFFFFFFFF开始计数，并不是从加载寄存器EPITx_LR中获取数据。 </p>
-<p>EPIT_CR寄存器用于配置EPIT。</p>
-<h1 id="EPIT-的配置步骤"><a href="#EPIT-的配置步骤" class="headerlink" title="EPIT 的配置步骤"></a><strong>EPIT 的配置步骤</strong></h1><p>1、设置 EPIT1 的时钟源：设置寄存器 EPIT1_CR 寄存器的 CLKSRC(bit25:24)位，选择 EPIT1 的时钟源。</p>
-<p>2、设置分频值：设置寄存器 EPIT1_CR 寄存器的 PRESCALAR(bit15:4)位，设置分频值。</p>
-<p>3、设置工作模式：设置寄存器 EPIT1_CR 的 RLD(bit3)位，设置 EPTI1 的工作模式。</p>
-<p>4、设置计数器的初始值来源：设置寄存器 EPIT1_CR 的 ENMOD(bit1)位，设置计数器的初始值来源。</p>
-<p> 5、使能比较中断：要使用到比较中断，因此需要设置寄存器EPIT1_CR的OCIEN(bit2)位，使能比较中<br>断。</p>
-<p>6、设置加载值和比较值：设置寄存器 EPIT1_LR 中的加载值和寄存器 EPIT1_CMPR 中的比较值，通过这两个寄存器就可以决定定时器的中断周期。</p>
-<p>7、EPIT1 中断设置和中断服务函数编写：使能 GIC 中对应的 EPIT1 中断，注册中断服务函数，如果需要的话还可以设置中断优先级。最后编写中断服务函数。</p>
-<p>8、使能 EPIT1 定时器：配置好 EPIT1 以后就可以使能 EPIT1 了，通过寄存器 EPIT1_CR 的 EN(bit0)位来设置。</p>
-<h1 id="实验原理"><a href="#实验原理" class="headerlink" title="实验原理"></a>实验原理</h1><p>EPIT_CR bit0为1，设置EPIT使能，bit1为1，设置计数器的初始值为记载寄存器的值。Bit2为1使能比较中断，bit3为1设置定时器工作在set-and-forget模式下。Bit15~bit4设置分频值。Bit25:24设置时钟源的选择，我们设置为1，那么EPIT的时钟源就为ipg_clock=66MHz    </p>
-<p>EPIT_SR寄存器，只有bit0有效，表示中断状态，写1清零。当OCIF位为1的时候表示中断发生，为0的时候表示中断未发生。我们处理完定时器中断以后一定要清除中断标志位。</p>
-<p>EPIT_LR寄存器设置计数器的加载值。计数器每次计时到0以后就会读取LR寄存器的值重新开始计时。</p>
-<p>CMPR比较计数器，当计数器的值和CMPR相等以后就会产生比较中断。</p>
-<p>使用EPIT实现500ms周期的定时器。我们在EPIT中断服务函数里面让LED灯亮灭。</p>
-<h1 id="实验程序"><a href="#实验程序" class="headerlink" title="实验程序"></a>实验程序</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;***************************************************************</span><br><span class="line">文件名	: 	 bsp_epittimer.c</span><br><span class="line">描述	   : EPIT定时器驱动文件。</span><br><span class="line">***************************************************************&#x2F;</span><br><span class="line">#include &quot;bsp_epittimer.h&quot;</span><br><span class="line">#include &quot;bsp_int.h&quot;</span><br><span class="line">#include &quot;bsp_led.h&quot;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description		: 初始化EPIT定时器.</span><br><span class="line"> *					  EPIT定时器是32位向下计数器,时钟源使用ipg&#x3D;66Mhz		 </span><br><span class="line"> * @param - frac	: 分频值，范围为0~4095，分别对应1~4096分频。</span><br><span class="line"> * @param - value	: 倒计数值。</span><br><span class="line"> * @return 			: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void epit1_init(unsigned int frac, unsigned int value)</span><br><span class="line">&#123;</span><br><span class="line">	if(frac &gt; 0XFFF)</span><br><span class="line">		frac &#x3D; 0XFFF;</span><br><span class="line">		</span><br><span class="line">	EPIT1-&gt;CR &#x3D; 0;	&#x2F;* 先清零CR寄存器 *&#x2F;</span><br><span class="line">	</span><br><span class="line">	&#x2F;*</span><br><span class="line">     * CR寄存器:</span><br><span class="line">     * bit25:24 01 时钟源选择Peripheral clock&#x3D;66MHz</span><br><span class="line">     * bit15:4  frac 分频值</span><br><span class="line">     * bit3:	1  当计数器到0的话从LR重新加载数值</span><br><span class="line">     * bit2:	1  比较中断使能</span><br><span class="line">     * bit1:    1  初始计数值来源于LR寄存器值</span><br><span class="line">     * bit0:    0  先关闭EPIT1</span><br><span class="line">     *&#x2F;</span><br><span class="line">	EPIT1-&gt;CR &#x3D; (1&lt;&lt;24 | frac &lt;&lt; 4 | 1&lt;&lt;3 | 1&lt;&lt;2 | 1&lt;&lt;1);</span><br><span class="line">	</span><br><span class="line">	EPIT1-&gt;LR &#x3D; value;	&#x2F;* 倒计数值 *&#x2F;</span><br><span class="line">	EPIT1-&gt;CMPR	&#x3D; 0;	&#x2F;* 比较寄存器，当计数器值和此寄存器值相等的话就会产生中断 *&#x2F;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 使能GIC中对应的中断 			*&#x2F;</span><br><span class="line">	GIC_EnableIRQ(EPIT1_IRQn);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 注册中断服务函数 			*&#x2F;</span><br><span class="line">	system_register_irqhandler(EPIT1_IRQn, (system_irq_handler_t)epit1_irqhandler, NULL);	</span><br><span class="line"></span><br><span class="line">	EPIT1-&gt;CR |&#x3D; 1&lt;&lt;0;	&#x2F;* 使能EPIT1 *&#x2F; </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description			: EPIT中断处理函数</span><br><span class="line"> * @param				: 无</span><br><span class="line"> * @return 				: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void epit1_irqhandler(void)</span><br><span class="line">&#123; </span><br><span class="line">	static unsigned char state &#x3D; 0;</span><br><span class="line"></span><br><span class="line">	state &#x3D; !state;</span><br><span class="line">	if(EPIT1-&gt;SR &amp; (1&lt;&lt;0)) 			&#x2F;* 判断比较事件发生 *&#x2F;</span><br><span class="line">	&#123;</span><br><span class="line">		led_switch(LED0, state); 	&#x2F;* 定时器周期到，反转LED *&#x2F;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	EPIT1-&gt;SR |&#x3D; 1&lt;&lt;0; 				&#x2F;* 清除中断标志位 *&#x2F;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>epit1_init ，EPIT1 初始化函数，有两个参数 frac 和 value，其中 frac 是分频值，value 是加载值。在第 29 行设置比较寄存器为 0，也就是当计数器倒计数到 0 以后就会触发比较中断。Tout = ((frac +1 )* value) / Tclk;设置了 EPIT1 工作模式为 set-and-forget，并且时钟源为 ipg_clk=66MHz。</p>
-<p>epit1_irqhandler，EPIT1 中断处理函数。读取 EPIT1_SR 寄存器，判断当 前的中断是否为比较事件，如果是的话就翻转 LED 灯。最后在退出中断处理函数的时候需要清除中断标志位。</p>
-
+    <h1 id="EPIT简介"><a href="#EPIT简介" class="headerlink" title="EPIT简介"></a>EPIT简介</h1><p>EPIT 的全称是：Enhanced Periodic Interrupt Timer，直译过来就是增强的周期中断定时器， 它主要是完成周期性中断定时的。I.MX6U 的 EPIT 定时器只是完成周期性中断定时的，仅此一项功能！至于输入捕获、PWM 输出等这些功能，I.MX6U 由其它的外设来完成。 </p>
+    
+    <a class="article-more-a" href="/2021/04/11/IMX6U-EPIT%E5%AE%9A%E6%97%B6%E5%99%A8/#more">more >></a>
+    
     
 
     
@@ -745,82 +691,10 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
-
-<h1 id="I-MX6U-IO-命名"><a href="#I-MX6U-IO-命名" class="headerlink" title="I.MX6U IO 命名"></a><strong>I.MX6U IO</strong> <strong>命名</strong></h1><p>“IOMUXC_SW_MUC_CTL_PAD_GPIO1_IO00”的就是 GPIO 命名，命名形式就是“IOMUXC_SW_MUC_CTL_PAD_XX_XX”，后面的“XX_XX”就是 GPIO 命名， 比如：GPIO1_IO01、UART1_TX_DATA、JTAG_MOD、SNVS_TAMPER1 等等。</p>
-<p>I.MX6U 的 GPIO 并不像 STM32 一样以 PA0~15 这样命名，他是根据某个 IO 所拥有的功能来命名的。 GPIO1_IO01，这个肯定能做 GPIO， UART1_TX_DATA 肯定这个 IO 肯定能做为 UART1 的发送引脚。</p>
-<p>I.MX6U 的其它 IO 也是可以复用为 GPIO 功能。同样的，GPIO1_IO00~GPIO_IO09 也是可以复用为其它外设引脚的。</p>
-<h2 id="I-MX6U-IO-复用"><a href="#I-MX6U-IO-复用" class="headerlink" title="I.MX6U IO 复用"></a><strong>I.MX6U IO</strong> <strong>复用</strong></h2><p>IOMUXC_SW_MUX_CTL_PAD_GPIO1_IO00的寄存器，寄存器地址为 0X020E005C，这个寄存器是 32 位的，但是只用到了最低 5位，其中bit0<del>bit3(MUX_MODE)就是设置 GPIO1_IO00 的复用功能的。GPIO1_IO00 一共可以复用为 9 种功能 IO，分别对应 ALT0</del>ALT8，其中 ALT5 就是作为 GPIO1_IO00。GPIO1_IO00 还可以作 为 I2C2_SCL、GPT1_CAPTURE1、ANATOP_OTG1_ID 等。这个就是 I.MX6U 的 IO 复用。</p>
-<p>由此可见，I.MX6U 的 GPIO 不止 GPIO1_IO00~GPIO1_IO09 这 10 个，其它的 IO 都可以复用为 GPIO 来使用。I.MX6U 的 GPIO 一共有 5 组：GPIO1、GPIO2、GPIO3、GPIO4 和 GPIO5，其中 GPIO1 有 32 个 IO，GPIO2 有22 个 IO，GPIO3 有 29 个 IO、GPIO4 有 29 个 IO，GPIO5 最少，只有 12 个 IO，这样一共有 124 个 GPIO。</p>
-<h2 id="I-MX6U-IO-配置"><a href="#I-MX6U-IO-配置" class="headerlink" title="I.MX6U IO 配置"></a><strong>I.MX6U IO</strong> <strong>配置</strong></h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">IOMUXC_SW_MUX_CTL_PAD_GPIO1_IO00 </span><br><span class="line">IOMUXC_SW_PAD_CTL_PAD_GPIO1_IO00</span><br></pre></td></tr></table></figure>
-<p>上面两个都是跟 GPIO_IO00 有关的寄存器，名字上的区别就是红色部分，一个是“MUX”， 一个是“PAD”。</p>
-<p>IOMUXC_SW_MUX_CTL_PAD_XX_XX 和 IOMUXC_SW_PAD_CTL_PAD_XX_XX 这两种寄存器都是配置 IO 的，注意是 IO！IOMUXC_SW_MUX_CTL_PAD_XX_XX配置GPIO1_IO00 复用功能的，IOMUXC_SW_PAD_CTL_PAD_XX_XX是用来配置 GPIO1_IO00 的IO 属性，包括速度设置、驱动能力设置、压摆率设置等等。</p>
-<p><strong>当 IO 用作 GPIO 的时候需要设置的寄存器，一共有八个：DR、GDIR、PSR、ICR1、ICR2、EDGE_SEL、IMR 和 ISR。</strong></p>
-<p>DR 寄存器，数据寄存器。此寄存器是 32 位的，一个 GPIO 组最大只有 32 个 IO，因此 DR 寄存器中的每个位都对应一个 GPIO。当 GPIO 被配置为输出功能以后，向DR寄存器指定的位写入数据那么相应的 IO 就会输出相应的高低电平，当 GPIO被配置为输入模式以后，此DR寄存器就保存着对应 IO 的电平值。</p>
-<p>GDIR 寄存器，方向寄存器。用来设置某个 GPIO 的工作方向的，即输入/输出，GDIR 寄存器也是 32 位的，此寄存器用来设置某个 IO 的工作方向，是输入还是输出。同样的，每个 IO 对应一个位，如果要设置 GPIO 为输入的话就设置相应的位为 0，如果要设置为输出的话就设置为 1。</p>
-<p>PSR 寄存器， GPIO 状态寄存器，同样的 PSR 寄存器也是一个 GPIO 对应一个位，读取相应的位即可获取对应的 GPIO 的状态，也就是 GPIO 的高低电平值。功能和输入状态下的 DR 寄存器一样。 </p>
-<p>ICR1和ICR2这两个寄存器，都是中断控制寄存器，ICR1用于配置低16个GPIO， ICR2 用于配置高 16 个 GPIO，ICR1 用于 IO0<del>15 的配置， ICR2 用于 IO16</del>31 的配置。ICR1 寄存器中一个 GPIO 用两个位，这两个位用来配置中断的触发方式。</p>
-<table>
-<thead>
-<tr>
-<th><strong>位设置</strong></th>
-<th>触发方式</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>00</td>
-<td>低电平触发</td>
-</tr>
-<tr>
-<td>01</td>
-<td>高电平触发</td>
-</tr>
-<tr>
-<td>10</td>
-<td>上升沿触发</td>
-</tr>
-<tr>
-<td>11</td>
-<td>下降沿触发</td>
-</tr>
-</tbody></table>
-<p>以GPIO1_IO15为例，如果要设置GPIO1_IO15为上升沿触发中断，那么GPIO1.ICR1=2&lt;&lt;30，如果要设置 GPIO1 的 IO16~31 的话就需要设置 ICR2 寄存器了。</p>
-<p>IMR 寄存器，中断屏蔽寄存器。IMR 寄存器也是一个 GPIO 对应一个位，IMR 寄存器用来控制 GPIO 的中断禁止和使能，如果使能某个 GPIO 的中断，那么设置相应的位为 1 即可，反之，如果要禁止中断，那么就设 置相应的位为 0 即可。</p>
-<p>寄存器 ISR，中断状态寄存器。ISR 寄存器也是 32 位寄存器，一个 GPIO 对应一个位，只要某个 GPIO 的中断发生，那么 ISR 中相应的位就会被置 1。所以，我们可以通过读取 ISR 寄存器来判断 GPIO 中断是否发生， 相当于 ISR 中的这些位就是中断标志位。当我们处理完中断以后，必须清除中断标志位，清除 方法就是向 ISR 中相应的位写 1，也就是写 1 清零。 </p>
-<p>EDGE_SEL 寄存器，边沿选择寄存器。EDGE_SEL 寄存器用来设置边沿中断，这个寄存器会覆盖 ICR1 和 ICR2 的设置，同样是一 个 GPIO 对应一个位。如果相应的位被置 1，那么就相当与设置了对应的 GPIO 是上升沿和下降 沿(双边沿)触发。例如，我们设置 GPIO1.EDGE_SEL=1，那么就表示 GPIO1_IO01 是双边沿触发中断，无论 GFPIO1_CR1 的设置为多少，都是双边沿触发。</p>
-<h2 id="I-MX6U-GPIO-时钟使能"><a href="#I-MX6U-GPIO-时钟使能" class="headerlink" title="I.MX6U GPIO 时钟使能"></a><strong>I.MX6U GPIO</strong> <strong>时钟使能</strong></h2><p>I.MX6U每个外设的时钟都可以独立的使能或禁止，这样可以关闭掉不使用的外设时钟，起到 省电的目的。如果要使用某个外设的话必须要先使能其时钟。CCM 里面 的外设时钟使能寄存器CMM 有 CCM_CCGR0~CCM_CCGR6 这 7 个寄存器，这 7 个寄存器控制着 I.MX6U 的所有外设时钟开关。</p>
-<p>CCM_CCGR0 是个 32 为寄存器，其中每 2 位控制一个外设的时钟，比如 bit31:30 控制着GPIO2 的外设时钟，两个位就有 4 中操作方式。</p>
-<table>
-<thead>
-<tr>
-<th><strong>位设置</strong></th>
-<th><strong>时钟控制</strong></th>
-</tr>
-</thead>
-<tbody><tr>
-<td>00</td>
-<td>所有模式下都关闭外设时钟。</td>
-</tr>
-<tr>
-<td>01</td>
-<td>只有在运行模式下打开外设时钟，等待模式和停止模式下均关闭外设时钟。</td>
-</tr>
-<tr>
-<td>10</td>
-<td>未使用(保留)。</td>
-</tr>
-<tr>
-<td>11</td>
-<td>除了停止模式以外，其他所有模式下时钟都打开。</td>
-</tr>
-</tbody></table>
-<p>要打开 GPIO2 的外设时钟，那么只需要设置CCM_CCGR0 的 bit31 和 bit30 都为 1 即可，也就是 CCM_CCGR0=3 &lt;&lt; 30。反之，如果要关闭GPIO2 的 外设时钟 ，CCM_CCGR0 的 bit31 和 bit30 都 为0 即 可 。</p>
-<p>要将 I.MX6U 的 IO 作为 GPIO 使用，我们需要一下 几步： </p>
-<p>①、使能 GPIO 对应的时钟。 </p>
-<p>②、设置寄存器 IOMUXC_SW_MUX_CTL_PAD_XX_XX，设置 IO 的复用功能，使其复用 GPIO 功能。 </p>
-<p>③、设置寄存器 IOMUXC_SW_PAD_CTL_PAD_XX_XX，设置 IO 的上下拉、速度等等。 </p>
-<p>④、第②步已经将 IO 复用为了 GPIO 功能，所以需要配置 GPIO，设置输入/输出、是否使用中断、默认输出电平等。</p>
-
+    <h1 id="I-MX6U-IO-命名"><a href="#I-MX6U-IO-命名" class="headerlink" title="I.MX6U IO 命名"></a><strong>I.MX6U IO</strong> <strong>命名</strong></h1><p>“IOMUXC_SW_MUC_CTL_PAD_GPIO1_IO00”的就是 GPIO 命名，命名形式就是“IOMUXC_SW_MUC_CTL_PAD_XX_XX”，后面的“XX_XX”就是 GPIO 命名， 比如：GPIO1_IO01、UART1_TX_DATA、JTAG_MOD、SNVS_TAMPER1 等等。</p>
+    
+    <a class="article-more-a" href="/2021/04/10/IMX6U-GPIO%E8%AF%A6%E8%A7%A3/#more">more >></a>
+    
     
 
     
@@ -894,53 +768,10 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
-
-<p>对于 Cortex-A 芯片来讲，大部分芯片在上电以后 C 语言环境还没准备好，所以第一行程序肯定是汇编的，至于要写多少汇编程序，那就看你能在哪一步把 C 语言环境准备好。所谓的C语言环境就是保证 C 语言能够正常运行。C 语言中的函数调用涉及到出栈入栈，出栈入栈就要对堆栈进行操作，所谓的堆栈其实就是一段内存，这段内存比较特殊，由 SP 指针访问，SP 指针指向栈顶。芯片一上电 SP 指针还没有初始化，所以 C 语言没法运行，对于有些芯片还需要初始化 DDR，因为芯片本身没有 RAM，或者内部 RAM 不开放给用户使用，用户代码需要在DDR 中行，因此一开始要用汇编来初始化 DDR 控制器。</p>
-<h1 id="GNU-汇编语法"><a href="#GNU-汇编语法" class="headerlink" title="GNU 汇编语法"></a><strong>GNU</strong> <strong>汇编语法</strong></h1><p>我们要编写的是 ARM汇编，编译使用的 GCC 交叉编译器，所以我们的汇编代码要符合 GNU 语法。GNU 汇编语法适用于所有的架构，并不是 ARM 独享的，GNU 汇编由一系列的语句组成，每行一条语句，每条语句有三个可选部分，如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">label：instruction @ comment</span><br></pre></td></tr></table></figure>
-<p><strong>label</strong> 即标号，表示地址位置，有些指令前面可能会有标号，这样就可以通过这个标号得到指令的地址，标号也可以用来表示数据地址。注意 label 后面的“：”，任何以“：”结尾的标识符都会被识别为一个标号。 </p>
-<p><strong>instruction</strong> 即指令，也就是汇编指令或伪指令。 </p>
-<p><strong>@**符号，表示后面的是注释，其实在 GNU 汇编文件中我们也可以使用“/**”和“</strong>/”来注释。 </p>
-<p><strong>comment</strong> 就是注释内容。 </p>
-<p><strong>ARM 中的指令、伪指令、伪操作、寄存器名等可以全部使用大写，也可以全部使用小写，但是不能大小写混用。</strong> </p>
-<p>汇编系统预定义了一些段名： </p>
-<ul>
-<li><strong>.text</strong> 表示代码段。</li>
-<li><strong>.data</strong> 初始化的数据段。 </li>
-<li><strong>.bss</strong> 未初始化的数据段。 </li>
-<li><strong>.rodata</strong> 只读数据段。 </li>
-</ul>
-<p>汇编程序的默认入口标号是_start，</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">.global _start  </span><br><span class="line"></span><br><span class="line">_start: </span><br><span class="line">ldr r0, &#x3D;0x12 </span><br><span class="line">@r0&#x3D;0x12</span><br></pre></td></tr></table></figure>
-<p>.global 是伪操作，表示_start 是一个全局标号，类似 C 语言里面的全局变量一 样，常见的伪操作有： </p>
-<p><strong>.byte</strong>         定义单字节数据，比如.byte 0x12。 </p>
-<p><strong>.short</strong>     定义双字节数据，比如.short 0x1234。 </p>
-<p><strong>.long</strong>     定义一个 4 字节数据，比如.long 0x12345678。 </p>
-<p><strong>.equ</strong>     赋值语句，格式为：.equ 变量名，表达式，比如.equ num, 0x12，表示 num=0x12。 </p>
-<p><strong>.align</strong>     数据字节对齐，比如：.align 4 表示 4 字节对齐。 </p>
-<p><strong>.end</strong>     表示源文件结束。 </p>
-<p><strong>.global</strong>     定义一个全局符号，格式为：.global symbol，比如：.global _start。</p>
-<h1 id="Cortex-A7-常用汇编指令"><a href="#Cortex-A7-常用汇编指令" class="headerlink" title="Cortex-A7 常用汇编指令"></a>Cortex-A7 常用汇编指令</h1><p><strong>处理器内部数据传输指令</strong> </p>
-<p>MOV 指令用于将数据从一个寄存器拷贝到另外一个寄存器，或者将一个立即数传递到寄存器里面，使用示例如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">MOV R0，R1  		@将寄存器 R1 中的数据传递给 R0，即 R0&#x3D;R1 </span><br><span class="line">MOV R0, #0X12 	@将立即数 0X12 传递给 R0 寄存器，即 R0&#x3D;0X12 </span><br></pre></td></tr></table></figure>
-<p>MRS 指令用于将特殊寄存器(如 CPSR 和 SPSR)中的数据传递给通用寄存器，要读取特殊寄存器的数据只能使用MRS 指令！使用示例如下： </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MRS R0, CPSR 	@将特殊寄存器 CPSR 里面的数据传递给 R0，即 R0&#x3D;CPSR</span><br></pre></td></tr></table></figure>
-<p>MSR 指令和 MRS 刚好相反，MSR 指令用来将普通寄存器的数据传递给特殊寄存器，也就是写特殊寄存器，写特殊寄存器只能使用 MSR，使用示例如下： </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MSR CPSR, R0 	@将 R0 中的数据复制到 CPSR 中，即 CPSR&#x3D;R0</span><br></pre></td></tr></table></figure>
-<p><strong>存储器访问指令</strong></p>
-<p>ARM 不能直接访问存储器，比如 RAM 中的数据，I.MX6UL 中的寄存器就是 RAM 类型的，我们用汇编来配置 I.MX6UL 寄存器的时候需要借助存储器访问指令。</p>
-<p>LDR 主要用于从存储加载数据到寄存器 Rx 中，LDR 也可以将一个立即数加载到寄存器 Rx 中，LDR 加载立即数的时候要使用“=”，而不是“#”。在嵌入式开发中，LDR 最常用的就是读取 CPU 的寄存器值。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">LDR R0**, &#x3D;**0X0209C004 @将寄存器地址 0X0209C004 加载到 R0 中，即 R0**&#x3D;**0X0209C004 </span><br><span class="line">LDR R1**, [R0] 	@读取地址 0X0209C004 中的数据到 R1 寄存器中</span><br></pre></td></tr></table></figure>
-<p>STR 就是将数据写入到存储器中。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">LDR R0**, &#x3D;**0X0209C004 @将寄存器地址 0X0209C004 加载到 R0 中，即 R0**&#x3D;**0X0209C004 </span><br><span class="line">LDR R1**, &#x3D;**0X20000002 @R1 保存要写入到寄存器的值，即 R1**&#x3D;**0X20000002 </span><br><span class="line">STR R1**, [**R0**]** @将 R1 中的值写入到 R0 中所保存的地址中 </span><br></pre></td></tr></table></figure>
-<p><strong>压栈和出栈指令</strong> </p>
-<p>A 函数中调用 B 函数，当 B 函数执行完以后再回到 A 函数继续执行。要想 在跳回 A 函数以后代码能够接着正常运行，那就必须在跳到 B 函数之前将当前处理器状态保存起来(就是保存 R0<del>R15 这些寄存器值)，当 B 函数执行完成以后再用前面保存的寄存器值恢复 R0</del>R15 即可。保存 R0<del>R15 寄存器的操作就叫做现场保护，恢复 R0</del>R15 寄存器的操作就叫做 恢复现场。在进行现场保护的时候需要进行压栈(入栈)操作，恢复现场就要进行出栈操作。压栈 的指令为 PUSH，出栈的指令为 POP，PUSH 和 POP 是一种多存储和多加载指令，即可以一次 操作多个寄存器数据。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">PUSH		将寄存器列表存入栈中。 </span><br><span class="line">POP 		从栈中恢复寄存器列表。</span><br></pre></td></tr></table></figure>
-<p><strong>跳转指令</strong></p>
-<p>B 指令会将 PC 寄存器的值设置为跳转目标地址， 一旦执行 B 指 令，ARM 处理器就会立即跳转到指定的目标地址。如果要调用的函数不会再返回到原来的执行处，那就可以用 B 指令。</p>
-<p>BL 指令相比 B 指令，在跳转之前会在寄存器 LR(R14)中保存当前 PC 寄存器值，所以可以通过将 LR 寄存器中的值重新加载到 PC 中来继续从跳转之前的代码处运行。</p>
-
+    <p>对于 Cortex-A 芯片来讲，大部分芯片在上电以后 C 语言环境还没准备好，所以第一行程序肯定是汇编的，至于要写多少汇编程序，那就看你能在哪一步把 C 语言环境准备好。所谓的C语言环境就是保证 C 语言能够正常运行。C 语言中的函数调用涉及到出栈入栈，出栈入栈就要对堆栈进行操作，所谓的堆栈其实就是一段内存，这段内存比较特殊，由 SP 指针访问，SP 指针指向栈顶。芯片一上电 SP 指针还没有初始化，所以 C 语言没法运行，对于有些芯片还需要初始化 DDR，因为芯片本身没有 RAM，或者内部 RAM 不开放给用户使用，用户代码需要在DDR 中行，因此一开始要用汇编来初始化 DDR 控制器。</p>
+    
+    <a class="article-more-a" href="/2021/04/10/ARM%E6%B1%87%E7%BC%96%E5%9F%BA%E7%A1%80/#more">more >></a>
+    
     
 
     
@@ -1014,90 +845,10 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a> 
-
-<h1 id="Cortex-A7-MPCore-简介"><a href="#Cortex-A7-MPCore-简介" class="headerlink" title="Cortex-A7 MPCore 简介"></a>Cortex-A7 MPCore 简介</h1><p>Cortex-A7 支持在一个处理器上选配 1~4 个内核。Cortex-A7 负责普通应用，因为 Cortex-A7省电。Cortex-A7 本身性能也不弱，不要看它叫做 Cortex-A7 但是它可是比 Cortex-A8 性能要强大，而且更省电。</p>
-<p>在 28nm 工艺下，Cortex-A7 可以运行在 1.2~1.6GHz，并且单核面积不大于 0.45mm2(含有浮点单元、NEON 和 32KB 的 L1 缓存)，在典型场景下功耗小于 100mW， 这使得它非常适 合对功耗要求严格的移动设备，这意味着 Cortex-A7 在获得与 Cortex-A9 相似性能的情况下，其功耗更低。</p>
-<p><strong>Cortex-A7MPCore 使用 ARMv7-A 架构，主要特性如下：</strong></p>
-<ul>
-<li><p>SIMDv2 扩展整形和浮点向量操作。</p>
-</li>
-<li><p>提供了与 ARM VFPv4 体系结构兼容的高性能的单双精度浮点指令，支持全功能的IEEE754。 </p>
-</li>
-<li><p>支持大物理扩展(LPAE)，最高可以访问 40 位存储地址，也就是最高可以支持 1TB 的内存。</p>
-</li>
-<li><p>支持硬件虚拟化。 </p>
-</li>
-<li><p>支持 Generic Interrupt Controller(GIC)V2.0。</p>
-</li>
-<li><p>支持 NEON，可以加速多媒体和信号处理算法。 </p>
-<h1 id="Cortex-A-处理器运行模型"><a href="#Cortex-A-处理器运行模型" class="headerlink" title="Cortex-A 处理器运行模型"></a>Cortex-A 处理器运行模型</h1></li>
-</ul>
-<p><strong>Cortex-A7 处理器有 9 种处理模式</strong></p>
-<table>
-<thead>
-<tr>
-<th>模式</th>
-<th>描述</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>User(USR)</td>
-<td>用户模式，非特权模式，大部分程序运行的时候就处于此模式。</td>
-</tr>
-<tr>
-<td>FIQ</td>
-<td>快速中断模式，进入 FIQ 中断异常</td>
-</tr>
-<tr>
-<td>IRQ</td>
-<td>一般中断模式。</td>
-</tr>
-<tr>
-<td>Supervisor(SVC)</td>
-<td>超级管理员模式，特权模式，供操作系统使用。</td>
-</tr>
-<tr>
-<td>Abort(ABT)</td>
-<td>数据访问终止模式，用于虚拟存储以及存储保护。</td>
-</tr>
-<tr>
-<td>Undef(UND)</td>
-<td>未定义指令终止模式。</td>
-</tr>
-<tr>
-<td>System(SYS)</td>
-<td>系统模式，用于运行特权级的操作系统任务</td>
-</tr>
-<tr>
-<td>Monitor(MON)</td>
-<td>监视模式？这个模式用于安全扩展模式。</td>
-</tr>
-<tr>
-<td>Hyp(HYP)</td>
-<td>超级监视模式？用于虚拟化扩展。</td>
-</tr>
-</tbody></table>
-<p>除了 User(USR)用户模式以外，其它 8 种运行模式都是特权模式。这几个运行模式可以通过软件进行任意切换，也可以通过中断或者异常来进行切换。大多数的程序都运行在用户模式，用户模式下是不能访问系统所有资源的，有些资源是受限的，要想访问这些受限的资源就必须进行模式切换。但是用户模式是不能直接进行切换的，用户模式下需要借助 异常来完成模式切换，当要切换模式的时候，应用程序可以产生异常，在异常的处理过程中完 成处理器模式切换。 </p>
-<p>当中断或者异常发生以后，处理器就会进入到相应的异常模式种，每一种模式都有一组寄存器供异常处理程序使用，这样的目的是为了保证在进入异常模式以后，用户模式下的寄存器不会被破坏。</p>
-<p>STM32 只有两种运行模式，特权模式和非特权模式，但是 Cortex-A 就有 9 种运行模式。 </p>
-<h1 id="Cortex-A-寄存器组"><a href="#Cortex-A-寄存器组" class="headerlink" title="Cortex-A 寄存器组"></a>Cortex-A 寄存器组</h1><p>ARM 架构提供了 16 个 32 位的通用寄存器(R0<del>R15)供软件使用，前 15 个(R0</del>R14)可以用作通用的数据存储，R15 是程序计数器 PC，用来保存将要执行的指令。ARM 还提供了一个当前程序状态寄存器 CPSR 和一个备份程序状态寄存器 SPSR，SPSR 寄存器就是 CPSR 寄存器的备份。</p>
-<p>Cortex-A7 有 9 种运行模式，每一种运行模式都有一组与之对应的寄存器组。每一种模式可见的寄存器包括 15 个通用寄存器(R0~R14)、一两个程序状态寄存器和一个 程序计数器 PC。在这些寄存器中，有些是所有模式所共用的同一个物理寄存器，有一些是各模式自己所独立拥有的。</p>
-<h2 id="通用寄存器"><a href="#通用寄存器" class="headerlink" title="通用寄存器"></a><strong>通用寄存器</strong></h2><p>R0~R15 就是通用寄存器，通用寄存器可以分为以下三类： </p>
-<p>①、未备份寄存器，即 R0~R7。 </p>
-<p>②、备份寄存器，即 R8~R14。 </p>
-<p>③、程序计数器 PC，即 R15。 </p>
-<p><strong>未备份寄存器</strong> </p>
-<p>未备份寄存器指的是 R0~R7 这 8 个寄存器，因为在所有的处理器模式下这 8 个寄存器都是同一个物理寄存器，在不同的模式下，这 8 个寄存器中的数据就会被破坏。所以这 8 个寄存器并没有被用作特殊用途。 </p>
-<p><strong>备份寄存器</strong> </p>
-<p>备份寄存器中的 R8<del>R12 这 5 个寄存器有两种物理寄存器，在快速中断模式下(FIQ)它们对应着 Rx_irq(x=8</del>12)物理寄存器，其他模式下对应着 Rx(8~12)物理寄存器。</p>
-<p>备份寄存器 R13 一共有 8 个物理寄存器，其中一个是用户模式(User)和系统模式(Sys)共用的，剩下的 7 个分别对应 7 种不同的模式。R13 也叫做 SP，用来做为栈指针。基本上每种模式都有一个自己的 R13 物理寄存器，应用程序会初始化 R13，使其指向该模式专用的栈地址，这就是常说的初始化 SP 指针。 </p>
-<p>备份寄存器 R14 一共有 7 个物理寄存器，其中一个是用户模式(User)、系统模式(Sys)和超级监视模式(Hyp)所共有的，剩下的 6 个分别对应 6 种不同的模式。R14 也称为连接寄存器(LR)，LR 寄存器在 ARM 中主要用作如下两种用途：</p>
-<p>①、每种处理器模式使用 R14(LR)来存放当前子程序的返回地址</p>
-<p>②、当异常发生以后，该异常模式对应的 R14 寄存器被设置成该异常模式将要返回的地址，R14 也可以当作普通寄存器使用。</p>
-<p><strong>程序计数器</strong> <strong>R15</strong></p>
-<p>程序计数器 R15 也叫做 PC，R15 保存着当前执行的指令地址值加 8 个字节，这是因为 ARM的流水线机制导致的。ARM 处理器 3 级流水线：取指-&gt;译码-&gt;执行，这三级流水线循环执行，比如当前正在执行第一条指令的同时也对第二条指令进行译码，第三条指令也同时被取出存放在 R15(PC)中。我们喜欢以当前正在执行的指令作为参考点，也就是以第一条指令为参考点，那么 R15(PC)中存放的就是第三条指令，换句话说就是 R15(PC)总是指向当前正在执行的指令地址再加上 2 条指令的地址。对于 32 位的 ARM 处理器，每条指令是 4 个字节，所以: </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">R15 (PC)值 &#x3D; 当前执行的程序位置 + 8 个字节。 </span><br></pre></td></tr></table></figure>
+    <h1 id="Cortex-A7-MPCore-简介"><a href="#Cortex-A7-MPCore-简介" class="headerlink" title="Cortex-A7 MPCore 简介"></a>Cortex-A7 MPCore 简介</h1><p>Cortex-A7 支持在一个处理器上选配 1~4 个内核。Cortex-A7 负责普通应用，因为 Cortex-A7省电。Cortex-A7 本身性能也不弱，不要看它叫做 Cortex-A7 但是它可是比 Cortex-A8 性能要强大，而且更省电。</p>
+    
+    <a class="article-more-a" href="/2021/04/10/Cortex-A7_MPCore/#more">more >></a>
+    
     
 
     
@@ -1475,7 +1226,7 @@
   
   
     <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/page/5/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/7/">Next &amp;raquo;</a>
+      <a class="extend prev" rel="prev" href="/page/5/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/7/">Next &amp;raquo;</a>
     </nav>
   
 

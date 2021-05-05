@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="C语言运行环境构建在开始部分用汇编来初始化一下 C 语言环境，比如初始化 DDR、  设置堆栈指针 SP 等等，当这些工作都做完以后就可以进入 C 语言环境，也就是运行 C 语言代  码，一般都是进入 main 函数。所以我们有两部分文件要做： ①、汇编文件  汇编文件只是用来完成 C 语言环境搭建。  ②、C 语言文件  C 语言文件就是完成我们的业务层代码的，其实就是我们实际例程要完成的">
+  <meta name="description" content="C语言运行环境构建在开始部分用汇编来初始化一下 C 语言环境，比如初始化 DDR、设置堆栈指针 SP 等等，当这些工作都做完以后就可以进入 C 语言环境，也就是运行 C 语言代码，一般都是进入 main 函数。所以我们有两部分文件要做：">
 <meta property="og:type" content="article">
 <meta property="og:title" content="IMX6U_C语言LED">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/03/03/IMX6U-C%E8%AF%AD%E8%A8%80LED/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="C语言运行环境构建在开始部分用汇编来初始化一下 C 语言环境，比如初始化 DDR、  设置堆栈指针 SP 等等，当这些工作都做完以后就可以进入 C 语言环境，也就是运行 C 语言代  码，一般都是进入 main 函数。所以我们有两部分文件要做： ①、汇编文件  汇编文件只是用来完成 C 语言环境搭建。  ②、C 语言文件  C 语言文件就是完成我们的业务层代码的，其实就是我们实际例程要完成的">
+<meta property="og:description" content="C语言运行环境构建在开始部分用汇编来初始化一下 C 语言环境，比如初始化 DDR、设置堆栈指针 SP 等等，当这些工作都做完以后就可以进入 C 语言环境，也就是运行 C 语言代码，一般都是进入 main 函数。所以我们有两部分文件要做：">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-03-02T16:00:05.000Z">
-<meta property="article:modified_time" content="2021-04-20T09:35:56.018Z">
+<meta property="article:modified_time" content="2021-05-05T04:36:22.139Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="linux">
 <meta property="article:tag" content="IMX6U">
@@ -246,11 +246,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
+    <h1 id="C语言运行环境构建"><a href="#C语言运行环境构建" class="headerlink" title="C语言运行环境构建"></a>C语言运行环境构建</h1><p>在开始部分用汇编来初始化一下 C 语言环境，比如初始化 DDR、设置堆栈指针 SP 等等，当这些工作都做完以后就可以进入 C 语言环境，也就是运行 C 语言代码，一般都是进入 main 函数。所以我们有两部分文件要做：</p>
+ <a id="more"></a> 
 
-<h1 id="C语言运行环境构建"><a href="#C语言运行环境构建" class="headerlink" title="C语言运行环境构建"></a>C语言运行环境构建</h1><p>在开始部分用汇编来初始化一下 C 语言环境，比如初始化 DDR、 </p>
-<p>设置堆栈指针 SP 等等，当这些工作都做完以后就可以进入 C 语言环境，也就是运行 C 语言代 </p>
-<p>码，一般都是进入 main 函数。所以我们有两部分文件要做：</p>
 <p>①、汇编文件 </p>
 <p>汇编文件只是用来完成 C 语言环境搭建。 </p>
 <p>②、C 语言文件 </p>

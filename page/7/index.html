@@ -343,126 +343,10 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a> 
-
-<h1 id="一、Cortex-A7中断系统"><a href="#一、Cortex-A7中断系统" class="headerlink" title="一、Cortex-A7中断系统"></a>一、Cortex-A7中断系统</h1><h2 id="1、Cortex-A中断向量表"><a href="#1、Cortex-A中断向量表" class="headerlink" title="1、Cortex-A中断向量表"></a>1、Cortex-A中断向量表</h2><p>​    中断向量表是一个表，这个表里面存放的是中断向量。中断服务程序的入口地址或存放中断服务程序的首地址成为中断向量，因此中断向量表是一系列中断服务程序入口地址组成的表。这些中断服务程序(函数)在中断向量表中的位置是由半导体厂商定好的，当某个中断被触发以 后就会自动跳转到中断向量表中对应的中断服务程序(函数)入口地址处。中断向量表在整个程序的最前面。</p>
-<p>Cortex-A7 内核有 8 个异常中断，Cortex-A的中断向量表需要自己去定义。</p>
-<table>
-<thead>
-<tr>
-<th><strong>向量地址</strong></th>
-<th><strong>中断类型</strong></th>
-<th><strong>中断模式</strong></th>
-</tr>
-</thead>
-<tbody><tr>
-<td>0X00</td>
-<td>复位中断(Rest)</td>
-<td>特权模式(SVC)</td>
-</tr>
-<tr>
-<td>0X04</td>
-<td>未定义指令中断(Undefined Instruction)</td>
-<td>未定义指令中止模式(Undef)</td>
-</tr>
-<tr>
-<td>0X08</td>
-<td>软中断(Software Interrupt,SWI)</td>
-<td>特权模式(SVC)</td>
-</tr>
-<tr>
-<td>0X0C</td>
-<td>指令预取中止中断(Prefetch Abort)</td>
-<td>中止模式</td>
-</tr>
-<tr>
-<td>0X10</td>
-<td>数据访问中止中断(Data Abort)</td>
-<td>中止模式</td>
-</tr>
-<tr>
-<td>0X14</td>
-<td>未使用(Not Used)</td>
-<td>未使用</td>
-</tr>
-<tr>
-<td>0X18</td>
-<td>IRQ 中断(IRQ Interrupt)</td>
-<td>外部中断模式(IRQ)</td>
-</tr>
-<tr>
-<td>0X1C</td>
-<td>FIQ 中断(FIQ Interrupt)</td>
-<td>快速中断模式(FIQ)</td>
-</tr>
-</tbody></table>
-<p>中断向量表里面都是中断服务函数的入口地址，Cortex-A7 一共有 8 个中断，而且还有一个中断向量未使用，实际只有 7 个中断。</p>
-<p>①、复位中断(Rest)，CPU 复位以后就会进入复位中断，我们可以在复位中断服务函数里面 做一些初始化工作，比如初始化 SP 指针、DDR 等等。 </p>
-<p>②、未定义指令中断(Undefined Instruction)，如果指令不能识别的话就会产生此中断。 </p>
-<p>③、软中断(Software Interrupt,SWI)，由 SWI 指令引起的中断，Linux 的系统调用会用 SWI指令来引起软中断，通过软中断来陷入到内核空间。 </p>
-<p>④、指令预取中止中断(Prefetch Abort)，预取指令的出错的时候会产生此中断。 </p>
-<p>⑤、数据访问中止中断(Data Abort)，访问数据出错的时候会产生此中断。 </p>
-<p>⑥、IRQ 中断(IRQ Interrupt)，外部中断，前面已经说了，芯片内部的外设中断都会引起此中断的发生。 </p>
-<p>⑦、FIQ 中断(FIQ Interrupt)，快速中断，如果需要快速处理中断的话就可以使用此中。</p>
-<p>常用的就是复位中断和 IRQ 中断.</p>
-<h3 id="中断实验编写"><a href="#中断实验编写" class="headerlink" title="中断实验编写"></a>中断实验编写</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;***************************************************************</span><br><span class="line">文件名	: 	 start.s</span><br><span class="line">描述	   : ZERO-I.MX6UL&#x2F;I.MX6ULL开发板启动文件，完成C环境初始化，</span><br><span class="line">		 C环境初始化完成以后跳转到C代码。</span><br><span class="line">**************************************************************&#x2F;</span><br><span class="line"></span><br><span class="line">.global _start  				&#x2F;* 全局标号 *&#x2F;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * 描述：	_start函数，首先是中断向量表的创建</span><br><span class="line"> *&#x2F;</span><br><span class="line">_start:</span><br><span class="line">	ldr pc, &#x3D;Reset_Handler		&#x2F;* 复位中断 					*&#x2F;	</span><br><span class="line">	ldr pc, &#x3D;Undefined_Handler	&#x2F;* 未定义中断 					*&#x2F;</span><br><span class="line">	ldr pc, &#x3D;SVC_Handler		&#x2F;* SVC(Supervisor)中断 		*&#x2F;</span><br><span class="line">	ldr pc, &#x3D;PrefAbort_Handler	&#x2F;* 预取终止中断 					*&#x2F;</span><br><span class="line">	ldr pc, &#x3D;DataAbort_Handler	&#x2F;* 数据终止中断 					*&#x2F;</span><br><span class="line">	ldr	pc, &#x3D;NotUsed_Handler	&#x2F;* 未使用中断					*&#x2F;</span><br><span class="line">	ldr pc, &#x3D;IRQ_Handler		&#x2F;* IRQ中断 					*&#x2F;</span><br><span class="line">	ldr pc, &#x3D;FIQ_Handler		&#x2F;* FIQ(快速中断)未定义中断 			*&#x2F;</span><br><span class="line"></span><br><span class="line">&#x2F;* 复位中断 *&#x2F;	</span><br><span class="line">Reset_Handler:</span><br><span class="line"></span><br><span class="line">&#x2F;* 未定义中断 *&#x2F;</span><br><span class="line">Undefined_Handler:</span><br><span class="line">	ldr r0, &#x3D;Undefined_Handler</span><br><span class="line">	bx r0</span><br><span class="line"></span><br><span class="line">&#x2F;* SVC中断 *&#x2F;</span><br><span class="line">SVC_Handler:</span><br><span class="line">	ldr r0, &#x3D;SVC_Handler</span><br><span class="line">	bx r0</span><br><span class="line"></span><br><span class="line">&#x2F;* 预取终止中断 *&#x2F;</span><br><span class="line">PrefAbort_Handler:</span><br><span class="line">	ldr r0, &#x3D;PrefAbort_Handler	</span><br><span class="line">	bx r0</span><br><span class="line"></span><br><span class="line">&#x2F;* 数据终止中断 *&#x2F;</span><br><span class="line">DataAbort_Handler:</span><br><span class="line">	ldr r0, &#x3D;DataAbort_Handler</span><br><span class="line">	bx r0</span><br><span class="line"></span><br><span class="line">&#x2F;* 未使用的中断 *&#x2F;</span><br><span class="line">NotUsed_Handler:</span><br><span class="line">	ldr r0, &#x3D;NotUsed_Handler</span><br><span class="line">	bx r0</span><br><span class="line"></span><br><span class="line">&#x2F;* IRQ中断！重点！！！！！ *&#x2F;</span><br><span class="line">IRQ_Handler:</span><br><span class="line">	</span><br><span class="line">&#x2F;* FIQ中断 *&#x2F;</span><br><span class="line">FIQ_Handler:</span><br><span class="line">	ldr r0, &#x3D;FIQ_Handler	</span><br><span class="line">	bx r0									</span><br></pre></td></tr></table></figure>
-<p>第 4 到 11 行是中断向量表，当指定的中断发生以后就会调用对应的中断复位函数，比如复位中断发生以后就会执行第 4 行代码，也就是调用函数 Reset_Handler，函数 Reset_Handler就是复位中断的中断复位函数，其它的中断同理。</p>
-<h2 id="3、GIC中断控制器。"><a href="#3、GIC中断控制器。" class="headerlink" title="3、GIC中断控制器。"></a>3、GIC中断控制器。</h2><p>I.MX6U(Cortex-A)的中断控制器叫做 GIC，当 GIC 接收到外部中断信号以后就会报给 ARM 内核，但是ARM 内核只提供了四个信号给 GIC 来汇报中断情况：VFIQ、VIRQ、FIQ 和 IRQ。</p>
-<p><img src="IMX6U%E4%B8%AD%E6%96%AD.assets/1618114295969.png" alt="1618114295969"></p>
-<p>GIC接收众多的外部中断，然后对其进行处理，最终就只通过四个信号 报给 ARM 内核，这四个信号的含义如下： </p>
-<p><strong>VFIQ</strong>:虚拟快速 FIQ。 <strong>VIRQ</strong>:虚拟快速 IRQ。 <strong>FIQ</strong>:快速中断 IRQ。 <strong>IRQ</strong>:外部中断 IRQ。 </p>
-<p>GIC 将众多的中断源分为分为三类： </p>
-<p>①、SPI(Shared Peripheral Interrupt),共享中断，顾名思义，所有 Core 共享的中断，这个是最 常见的，那些外部中断都属于 SPI 中断(注意！不是 SPI 总线那个中断) 。比如按键中断、串口中断等等，这些中断所有的 Core 都可以处理，不限定特定 Core。 </p>
-<p>②、PPI(Private Peripheral Interrupt)，私有中断，我们说了 GIC 是支持多核的，每个核肯定有自己独有的中断。这些独有的中断肯定是要指定的核心处理，因此这些中断就叫做私有中断。 </p>
-<p>③、SGI(Software-generated Interrupt)，软件中断，由软件触发引起的中断，通过向寄存器GICD_SGIR 写入数据来触发，系统会使用 SGI 中断来完成多核之间的通信。</p>
-<h2 id="4、IMX6U中断号"><a href="#4、IMX6U中断号" class="headerlink" title="4、IMX6U中断号"></a>4、IMX6U中断号</h2><p>中断源有很多，为了区分这些不同的中断源肯定要给他们分配一个唯一 ID，这些 ID 就是 中断 ID。I.MX6U 的中断源共有 128+32=160。</p>
-<p>ID0<del>ID15：这 16 个 ID 分配给 SGI。 ID16</del>ID31：这 16 个 ID 分配给 PPI。ID32~ID159：这 128 个 ID 分配给 SPI</p>
-<h2 id="5、GIC-逻辑分块"><a href="#5、GIC-逻辑分块" class="headerlink" title="5、GIC 逻辑分块"></a><strong>5、GIC</strong> <strong>逻辑分块</strong></h2><p>GIC 架构分为了两个逻辑块：Distributor 和 CPU Interface</p>
-<p><strong>Distributor(分发器端)：</strong>此逻辑块负责处理各个中断事件的分发问题，也就是中断事件应该发送到哪个CPU Interface 上去。分发器收集所有的中断源，可以控制每个中断的优先级，它总是将优先级最高的中断事件发送到 CPU 接口端。</p>
-<p>①、全局中断使能控制。 </p>
-<p>②、控制每一个中断的使能或者关闭。 </p>
-<p>③、设置每个中断的优先级。 </p>
-<p>④、设置每个中断的目标处理器列表。 </p>
-<p>⑤、设置每个外部中断的触发模式：电平触发或边沿触发。 </p>
-<p>⑥、设置每个中断属于组 0 还是组 1。 </p>
-<p><strong>CPU Interface(CPU接口端)：</strong>CPU 接口端听名字就知道是和 CPU Core 相连接的，每个 CPU Core 都可以在 GIC 中找到一个与之对应的 CPU Interface。CPU 接口端就是分发器和 CPU Core 之间的桥梁，CPU 接口端主要工作如下： </p>
-<p>①、使能或者关闭发送到 CPU Core 的中断请求信号。</p>
-<p>②、应答中断。 </p>
-<p>③、通知中断处理完成。 </p>
-<p>④、设置优先级掩码，通过掩码来设置哪些中断不需要上报给 CPU Core。 </p>
-<p>⑤、定义抢占策略。 </p>
-<p>⑥、当多个中断到来的时候，选择优先级最高的中断通知给 CPU Core。</p>
-<h2 id="6、CP15协处理器"><a href="#6、CP15协处理器" class="headerlink" title="6、CP15协处理器"></a>6、CP15协处理器</h2><p>CP15 协处理器一般用于存储系统管理，但是在中断中也会使用到。CP15 协处理器一共有16 个 32 位寄存器。CP15 协处理器的访问通过如下另个指令完成： </p>
-<p><strong>MRC</strong>: 将 CP15 协处理器中的寄存器数据读到 ARM 寄存器中。</p>
-<p><strong>MCR:</strong> 将 ARM 寄存器的数据写入到 CP15 协处理器寄存器中</p>
-<p>MRC 就是读 CP15 寄存器， MCR 就是写 CP15 寄存器， MCR 指令格式如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">MCR&#123;cond&#125; p15, &lt;opc1&gt;, &lt;Rt&gt;, &lt;CRn&gt;, &lt;CRm&gt;, &lt;opc2&gt;</span><br><span class="line">MRC p15, 0, r0, c0,c0,0</span><br></pre></td></tr></table></figure>
-<p>现在要关闭I,D ache和MMU，打开Cortex-A7参考手册到105页，找到SCTLR寄存器。也就是系统控制寄存器，此寄存器bit0用于打开和关闭MMU，bit1控制对齐，bit2控制D Cache的打开和关闭。Bit11用于控制分支预测。Bit12用于控制I Cache。</p>
-<p>​    <strong>中断向量偏移设置</strong></p>
-<p>​    将新的中断向量表首地址写入到CP15协处理器的VBAR寄存器。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">MCR&#123;cond&#125; p15, &lt;opc1&gt;, &lt;Rt&gt;, &lt;CRn&gt;, &lt;CRm&gt;, &lt;opc2&gt;</span><br><span class="line">MRC p15,0,r0,c12,c0,0 </span><br><span class="line">MCR p15,0,r0,c12,c0,0</span><br></pre></td></tr></table></figure>
-<p>​    <strong>IRQ中断服务函数</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mrc p15, 4, r1, c15, c0, 0  读取CP15的CBAR寄存器。</span><br></pre></td></tr></table></figure>
-<p>CBAR寄存器保存了GIC控制器的寄存器组首地址。GIC寄存器组偏移0x1000<del>0x1fff为GIC的分发器。0x2000</del>0x3fff为CPU接口端。意味我们可以访问GIC控制器了！</p>
-<p>代码中，R1寄存器吧保存着GIC控制器的CPU接口端基地址。读取CPU接口段的GICC_IAR寄存器的值保存到R0寄存器里面。可以从GICC_IAR的bit9~0读取中断ID，我们读取中断ID的目的就是为了得到对应的中断处理函数。</p>
-<p>system_irqhandler就是具体的中断处理函数，此函数有一个参数，为GICC_IAR寄存器的值。system_irqhandler处理完具体的中断以后，需要将对应的中断ID值写入到GICC_EOIR寄存器里面。</p>
-<h2 id="7、中断使能"><a href="#7、中断使能" class="headerlink" title="7、中断使能"></a><strong>7、中断使能</strong></h2><p>中断使能包括两部分，一个是 IRQ 或者 FIQ 总中断使能，另一个就是 ID0~ID1019 这 1020 个中断源的使能。</p>
-<p><strong>IRQ</strong> <strong>和</strong> <strong>FIQ</strong> <strong>总中断使能</strong></p>
-<p>寄存器 CPSR 的 I=1 禁止 IRQ，当 I=0 使能 IRQ；F=1 禁止 FIQ，F=0 使能 FIQ。</p>
-<p><strong>ID0~ID1019</strong> <strong>中断使能和禁止</strong></p>
-<p>一个 bit 控制一个中断 ID 的使能，GICD_ISENABLER0 的 bit[15:0]对应ID15<del>0 的 SGI 中断，GICD_ISENABLER0 的 bit[31:16]对应 ID31</del>16 的 PPI 中断。剩下的GICD_ISENABLER1~GICD_ISENABLER15 就是控制 SPI 中断的。</p>
-<h2 id="8、中断优先级设置"><a href="#8、中断优先级设置" class="headerlink" title="8、中断优先级设置"></a><strong>8、中断优先级设置</strong></h2><p> <strong>优先级数配置</strong> </p>
-<p>Cortex-A7 的中断优先级也可以分为抢占优先级和子优先级，I.MX6U 选择了 32 个优先级，数字越小，优先级越高！在使用中断的时候需要初始化 GICC_PMR 寄存器，此寄存器用来决定使用几级优先级，GICC_PMR 寄存器只有低 8 位有效，I.MX6U 支持 32 个优先级，所以 GICC_PMR 要设置为 0b11111000。 </p>
-<p><strong>抢占优先级和子优先级位数设置</strong></p>
-<p>抢占优先级和子优先级各占多少位是由寄存器 GICC_BPR 来决定的，寄存器 GICC_BPR 只有低 3 位有效，其值不同，抢占优先级和子优先级占用的位数也不同。为了简单起见，一般将所有的中断优先级位都配置为抢占优先级，比如 I.MX6U 的优先级位数为 5(32 个优先级)，所以可以设置 Binary point 为 2，表示 5 个优先级位全部为抢占优先级。 </p>
-<p><strong>优先级设置</strong></p>
-<p>某个中断 ID 的中断优先级设置由寄存器 D_IPRIORITYR 来完成，如果优先级个数为 32 的话，使用寄 存器 D_IPRIORITYR 的 bit7:4 来设置优先级，也就是说实际的优先级要左移 3 位。比如要设置ID40 中断的优先级为 5，示例代码如下： </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GICD_IPRIORITYR[40] &#x3D; 5 &lt;&lt; 3; </span><br></pre></td></tr></table></figure>
-<p>优先级设置主要有三部分： </p>
-<p>①、设置寄存器 GICC_PMR，配置优先级个数，比如 I.MX6U 支持 32 级优先级。</p>
-<p>②、设置抢占优先级和子优先级位数，一般为了简单起见，会将所有的位数都设置为抢占优先级。 </p>
-<p>③、设置指定中断 ID 的优先级，也就是设置外设优先级。 </p>
-
+    <h1 id="一、Cortex-A7中断系统"><a href="#一、Cortex-A7中断系统" class="headerlink" title="一、Cortex-A7中断系统"></a>一、Cortex-A7中断系统</h1><h2 id="1、Cortex-A中断向量表"><a href="#1、Cortex-A中断向量表" class="headerlink" title="1、Cortex-A中断向量表"></a>1、Cortex-A中断向量表</h2><p>​    中断向量表是一个表，这个表里面存放的是中断向量。中断服务程序的入口地址或存放中断服务程序的首地址成为中断向量，因此中断向量表是一系列中断服务程序入口地址组成的表。这些中断服务程序(函数)在中断向量表中的位置是由半导体厂商定好的，当某个中断被触发以 后就会自动跳转到中断向量表中对应的中断服务程序(函数)入口地址处。中断向量表在整个程序的最前面。</p>
+    
+    <a class="article-more-a" href="/2021/03/03/Cortex-A7%E4%B8%AD%E6%96%AD%E7%B3%BB%E7%BB%9F%E8%AF%A6%E8%A7%A3/#more">more >></a>
+    
     
 
     
@@ -954,55 +838,10 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-     <a id="more"></a>
-
-<h1 id="C语言运行环境构建"><a href="#C语言运行环境构建" class="headerlink" title="C语言运行环境构建"></a>C语言运行环境构建</h1><p>在开始部分用汇编来初始化一下 C 语言环境，比如初始化 DDR、 </p>
-<p>设置堆栈指针 SP 等等，当这些工作都做完以后就可以进入 C 语言环境，也就是运行 C 语言代 </p>
-<p>码，一般都是进入 main 函数。所以我们有两部分文件要做：</p>
-<p>①、汇编文件 </p>
-<p>汇编文件只是用来完成 C 语言环境搭建。 </p>
-<p>②、C 语言文件 </p>
-<p>C 语言文件就是完成我们的业务层代码的，其实就是我们实际例程要完成的功能。 </p>
-<h2 id="设置处理器模式"><a href="#设置处理器模式" class="headerlink" title="设置处理器模式"></a>设置处理器模式</h2><p>​    设置6ULL处于SVC模式 下。设置CPSR寄存器的bit4-0，也就是M[4:0]为10011=0X13。读写状态寄存器需要用到MRS和MSR指令。MRS将CPSR寄存器数据读出到通用寄存器里面，MSR指令将通用寄存器的值写入到CPSR寄存器里面去。</p>
- <!-- more --> 
-
-<h2 id="设置sp指针"><a href="#设置sp指针" class="headerlink" title="设置sp指针"></a>设置sp指针</h2><p>​    Sp可以指向内部RAM，也可以指向DDR，我们将其指向DDR。Sp设置到哪里？512MB的范围0x80000000~0x9FFFFFFF。栈大小，0x200000=2MB。处理器栈增长方式，对于A7而言是向下增长的。设置sp指向0x80200000。</p>
-<h3 id="跳转到C语言"><a href="#跳转到C语言" class="headerlink" title="跳转到C语言"></a>跳转到C语言</h3><p>​    使用b指令，跳转到C语言函数，比如main函数。</p>
-<p>汇编文件只是用来完成 C 语言环境搭建。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">.global _start  		&#x2F;* 全局标号 *&#x2F;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * 描述：	_start函数，程序从此函数开始执行，此函数主要功能是设置C</span><br><span class="line"> *		 运行环境。</span><br><span class="line"> *&#x2F;</span><br><span class="line">_start:</span><br><span class="line"></span><br><span class="line">	&#x2F;* 进入SVC模式 *&#x2F;</span><br><span class="line">	mrs r0, cpsr</span><br><span class="line">	bic r0, r0, #0x1f 	&#x2F;* 将r0寄存器中的低5位清零，也就是cpsr的M0~M4 	*&#x2F;</span><br><span class="line">	orr r0, r0, #0x13 	&#x2F;* r0或上0x13,表示使用SVC模式					*&#x2F;</span><br><span class="line">	msr cpsr, r0		&#x2F;* 将r0 的数据写入到cpsr_c中 					*&#x2F;</span><br><span class="line"></span><br><span class="line">	ldr sp, &#x3D;0X80200000	&#x2F;* 设置栈指针			 *&#x2F;</span><br><span class="line">	b main				&#x2F;* 跳转到main函数 		 *&#x2F;</span><br></pre></td></tr></table></figure>
-<p>第 1 行定义了一个全局标号_start。 </p>
-<p>第 7 行就是标号_start 开始的地方，相当于是一个_start 函数，这个_start 就是第一行代码。 </p>
-<p>第 10~13 行就是设置处理器进入 SVC 模式，在 6.2 小节的“Cortex-A 处理器运行模型”中 </p>
-<p>我们说过 Cortex-A 有九个运行模型，这里我们设置处理器运行在 SVC 模式下。处理器模式的 </p>
-<p>设置是通过修改 CPSR(程序状态)寄存器来完成的，在 6.3.2 小节中我们详细的讲解了 CPSR 寄 </p>
-<p>存器，其中 M[4:0](CPSR 的 bit[4:0])就是设置处理器运行模式的，参考表 6.3.2.2，如果要将处 </p>
-<p>理器设置为 SVC 模式，那么 M[4:0]就要等于 0X13。11~13 行代码就是先使用指令 MRS 将 CPSR </p>
-<p>寄存器的值读取到 R0 中，然后修改 R0 中的值，设置 R0 的 bit[4:0]为 0X13，然后再使用指令 </p>
-<p>MSR 将修改后的 R0 重新写入到 CPSR 中。 </p>
-<p>第 15 行通过 ldr 指令设置 SVC 模式下的 SP 指针=0X80200000，因为 I.MX6U-ALPHA 开 </p>
-<p>发 板 上 的 </p>
-<p>DDR3 </p>
-<p>地 址 范 围 是 </p>
-<p>0X80000000~0XA0000000(512MB) 或 者 </p>
-<p>0X80000000~0X90000000(256MB)，不管是 512MB 版本还是 256MB 版本的，其 DDR3 起始地 </p>
-<p>址都是 0X80000000。由于 Cortex-A7 的堆栈是向下增长的，所以将 SP 指针设置为 0X80200000， </p>
-<p>因此 SVC 模式的栈大小 0X80200000-0X80000000=0X200000=2MB，2MB 的栈空间已经很大了， </p>
-<p>如果做裸机开发的话绰绰有余。 </p>
-<p>第 16 行就是跳转到 main 函数，main 函数就是 C 语言代码了。</p>
-<p>几行代码，用来设置处理器运行到 SVC 模式下、然后初始 </p>
-<p>化 SP 指针、最终跳转到 C 文件的 main 函数中。</p>
-<p>start.s 文件中却没有初始化 DDR3 的代码，DDR3 肯定是要初始化的，但是不需要在 start.s 文 </p>
-<p>件中完成。在 9.4.2 小节里面分析 DCD 数据的时候就已经讲过了，DCD 数据包含了 DDR 配置 </p>
-<p>参数，I.MX6U 内部的 Boot ROM 会读取 DCD 数据中的 DDR 配置参数然后完成 DDR 初始化 </p>
-<p>的。 </p>
-<h2 id="C-语言部分实验程序编写"><a href="#C-语言部分实验程序编写" class="headerlink" title="C 语言部分实验程序编写"></a><strong>C</strong> <strong>语言部分实验程序编写</strong></h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;**************************************************************</span><br><span class="line">描述	   : I.MX6U开发板裸机实验2 C语言点灯使用C语言来点亮开发板上的LED灯，学习</span><br><span class="line">			和掌握如何用C语言来完成对I.MX6U处理器的GPIO初始化和控制。</span><br><span class="line">**************************************************************&#x2F;</span><br><span class="line">#include &quot;main.h&quot;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 使能I.MX6U所有外设时钟</span><br><span class="line"> *&#x2F;</span><br><span class="line">void clk_enable(void)</span><br><span class="line">&#123;</span><br><span class="line">	CCM_CCGR0 &#x3D; 0xffffffff;</span><br><span class="line">	CCM_CCGR1 &#x3D; 0xffffffff;</span><br><span class="line">	CCM_CCGR2 &#x3D; 0xffffffff;</span><br><span class="line">	CCM_CCGR3 &#x3D; 0xffffffff;</span><br><span class="line">	CCM_CCGR4 &#x3D; 0xffffffff;</span><br><span class="line">	CCM_CCGR5 &#x3D; 0xffffffff;</span><br><span class="line">	CCM_CCGR6 &#x3D; 0xffffffff;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 初始化LED对应的GPIO</span><br><span class="line"> *&#x2F;</span><br><span class="line">void led_init(void)</span><br><span class="line">&#123;</span><br><span class="line">	&#x2F;* 1、初始化IO复用 *&#x2F;</span><br><span class="line">	SW_MUX_GPIO1_IO03 &#x3D; 0x5;	&#x2F;* 复用为GPIO1_IO03 *&#x2F;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 2、、配置GPIO1_IO03的IO属性	</span><br><span class="line">	 *bit 16:0 HYS关闭</span><br><span class="line">	 *bit [15:14]: 00 默认下拉</span><br><span class="line">     *bit [13]: 0 kepper功能</span><br><span class="line">     *bit [12]: 1 pull&#x2F;keeper使能</span><br><span class="line">     *bit [11]: 0 关闭开路输出</span><br><span class="line">     *bit [7:6]: 10 速度100Mhz</span><br><span class="line">     *bit [5:3]: 110 R0&#x2F;6驱动能力</span><br><span class="line">     *bit [0]: 0 低转换率</span><br><span class="line">     *&#x2F;</span><br><span class="line">	SW_PAD_GPIO1_IO03 &#x3D; 0X10B0;		</span><br><span class="line"></span><br><span class="line">	&#x2F;* 3、初始化GPIO *&#x2F;</span><br><span class="line">	GPIO1_GDIR &#x3D; 0X0000008;	&#x2F;* GPIO1_IO03设置为输出 *&#x2F;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 4、设置GPIO1_IO03输出低电平，打开LED0 *&#x2F;</span><br><span class="line">	GPIO1_DR &#x3D; 0X0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 打开LED灯</span><br><span class="line"> *&#x2F;</span><br><span class="line">void led_on(void)</span><br><span class="line">&#123;</span><br><span class="line">	&#x2F;* </span><br><span class="line">	 * 将GPIO1_DR的bit3清零	 </span><br><span class="line">	 *&#x2F;</span><br><span class="line">	GPIO1_DR &amp;&#x3D; ~(1&lt;&lt;3); </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 关闭LED灯</span><br><span class="line"> *&#x2F;</span><br><span class="line">void led_off(void)</span><br><span class="line">&#123;</span><br><span class="line">	&#x2F;*    </span><br><span class="line">	 * 将GPIO1_DR的bit3置1</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	GPIO1_DR |&#x3D; (1&lt;&lt;3);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<h1 id="链接脚本"><a href="#链接脚本" class="headerlink" title="链接脚本"></a>链接脚本</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">SECTIONS&#123;</span><br><span class="line">	. &#x3D; 0X87800000;</span><br><span class="line">	.text :</span><br><span class="line">	&#123;</span><br><span class="line">		start.o </span><br><span class="line">		main.o </span><br><span class="line">		*(.text)</span><br><span class="line">	&#125;</span><br><span class="line">	.rodata ALIGN(4) : &#123;*(.rodata*)&#125;     </span><br><span class="line">	.data ALIGN(4)   : &#123; *(.data) &#125;    </span><br><span class="line">	__bss_start &#x3D; .;    </span><br><span class="line">	.bss ALIGN(4)  : &#123; *(.bss)  *(COMMON) &#125;    </span><br><span class="line">	__bss_end &#x3D; .;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>第 2 行设置定位计数器为0X87800000，因为我们的链接地址就是0X87800000。</p>
-<p>第5行设置链接到开始位置的文件为start.o，因为 start.o 里面包含着第一个要执行的指令，所以一定要链接到最开始的地方。</p>
-<p>第 6 行是 main.o这个文件，其实可以不用写出来，因为 main.o 的位置就无所谓了，可以由编译器自行决定链接 位置。</p>
-<p>在第 11、13 行有“__bss_start”和“__bss_end”这两个东西？这个是什么呢？“__bss_start” 和“__bss_end”是符号，第 11、13 这两行其实就是对这两个符号进行赋值，其值为定位符“.”， 这两个符号用来保存.bss 段的起始地址和结束地址。前面说了.bss 段是定义了但是没有被初始化的变量，我们需要手动对.bss 段的变量清零的，因此我们需要知道.bss 段的起始和结束地址， 这样我们直接对这段内存赋 0 即可完成清零。</p>
-<p>通过第 11、13 行代码，.bss 段的起始地址和结束 地址就保存在了“__bss_start”和“__bss_end”中，我们就可以直接在汇编或者 C 文件里面使 用这两个符号。</p>
-
+    <h1 id="C语言运行环境构建"><a href="#C语言运行环境构建" class="headerlink" title="C语言运行环境构建"></a>C语言运行环境构建</h1><p>在开始部分用汇编来初始化一下 C 语言环境，比如初始化 DDR、设置堆栈指针 SP 等等，当这些工作都做完以后就可以进入 C 语言环境，也就是运行 C 语言代码，一般都是进入 main 函数。所以我们有两部分文件要做：</p>
+    
+    <a class="article-more-a" href="/2021/03/03/IMX6U-C%E8%AF%AD%E8%A8%80LED/#more">more >></a>
+    
     
 
     
@@ -1602,7 +1441,7 @@
   
   
     <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/page/6/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><span class="page-number current">7</span><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/8/">Next &amp;raquo;</a>
+      <a class="extend prev" rel="prev" href="/page/6/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><span class="page-number current">7</span>
     </nav>
   
 
