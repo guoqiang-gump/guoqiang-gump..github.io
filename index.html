@@ -455,7 +455,8 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="九、文件"><a href="#九、文件" class="headerlink" title="九、文件"></a>九、文件</h1><h2 id="1-文件系统的物理结构"><a href="#1-文件系统的物理结构" class="headerlink" title="1.文件系统的物理结构"></a>1.文件系统的物理结构</h2><p>1)硬盘的物理结构：驱动臂、盘片、主轴、磁头、控制器<br>2)磁表面存储器的读写原理</p>
+    <h1 id="九、文件"><a href="#九、文件" class="headerlink" title="九、文件"></a>九、文件</h1><h2 id="1-文件系统的物理结构"><a href="#1-文件系统的物理结构" class="headerlink" title="1.文件系统的物理结构"></a>1.文件系统的物理结构</h2><p>1)硬盘的物理结构：驱动臂、盘片、主轴、磁头、控制器</p>
+<p>2)磁表面存储器的读写原理</p>
     
     <a class="article-more-a" href="/2021/05/03/UinxC-IO%E7%BC%96%E7%A8%8B2/#more">more >></a>
     
@@ -474,6 +475,83 @@
     
     <p class="article-more-link">
       <a class="article-more-a" href="/2021/05/03/UinxC-IO%E7%BC%96%E7%A8%8B2/">展开 >></a>
+    </p>
+    
+
+    
+    <div class="clearfix"></div>
+  </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-UinxC-IO编程1" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+  
+  
+    <h1 itemprop="name">
+	
+	  <a class="article-title" href="/2021/05/03/UinxC-IO%E7%BC%96%E7%A8%8B1/" target="_blank">UinxC-IO编程1</a>
+  
+    </h1>
+  
+
+
+  
+  
+<a href="/2021/05/03/UinxC-IO%E7%BC%96%E7%A8%8B1/" class="archive-article-date">
+        <time datetime="2021-05-03T02:36:43.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-05-03</time>
+</a>
+
+  
+  
+    
+
+  
+  </header>
+  
+  <div class="article-entry" itemprop="articleBody">
+    
+    <h1 id="一、GNU编译器-gcc"><a href="#一、GNU编译器-gcc" class="headerlink" title="一、GNU编译器(gcc)"></a>一、GNU编译器(gcc)</h1><h2 id="1-GCC的基本特点"><a href="#1-GCC的基本特点" class="headerlink" title="1.GCC的基本特点"></a>1.GCC的基本特点</h2><p>1)支持多种硬件架构<br>x86-64</p>
+    
+    <a class="article-more-a" href="/2021/05/03/UinxC-IO%E7%BC%96%E7%A8%8B1/#more">more >></a>
+    
+    
+
+    
+
+    
+
+  </div>
+  <div class="article-info article-info-index">
+    
+    
+    
+
+    
+    <p class="article-more-link">
+      <a class="article-more-a" href="/2021/05/03/UinxC-IO%E7%BC%96%E7%A8%8B1/">展开 >></a>
     </p>
     
 
@@ -1094,109 +1172,9 @@
 
 
   
-    <article id="post-Linux驱动-RTC驱动" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-  
-  
-    <h1 itemprop="name">
-	
-	  <a class="article-title" href="/2021/04/17/Linux%E9%A9%B1%E5%8A%A8-RTC%E9%A9%B1%E5%8A%A8/" target="_blank">Linux驱动-RTC驱动</a>
-  
-    </h1>
-  
-
-
-  
-  
-<a href="/2021/04/17/Linux%E9%A9%B1%E5%8A%A8-RTC%E9%A9%B1%E5%8A%A8/" class="archive-article-date">
-        <time datetime="2021-04-17T05:04:41.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-17</time>
-</a>
-
-  
-  
-    
-
-  
-  </header>
-  
-  <div class="article-entry" itemprop="articleBody">
-    
-     <a id="more"></a>
-
-<h1 id="Linux-内核-RTC-驱动"><a href="#Linux-内核-RTC-驱动" class="headerlink" title="Linux 内核 RTC 驱动"></a><strong>Linux</strong> <strong>内核</strong> <strong>RTC</strong> <strong>驱动</strong></h1><p>RTC 设备驱动是一个标准的字符设备驱动，应用程序通过 open、release、read、write 和 ioctl等函数完成对 RTC 设备的操作。Linux 内核将 RTC 设备抽象为 rtc_device 结构体，因此 RTC 设备驱动就是申请并初始化<br>rtc_device，最后将 rtc_device 注册到 Linux 内核里面，这样 Linux 内核就有一个 RTC 设备的。<br> rtc_device 结构体，此结构体定义在 include/linux/rtc.h 文件中，结构体内容如下(删除条件编译)：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">struct rtc_device</span><br><span class="line">&#123;</span><br><span class="line">    struct device dev; &#x2F;* 设备 *&#x2F;</span><br><span class="line">    struct module *owner;</span><br><span class="line"></span><br><span class="line">    int id; &#x2F;* ID *&#x2F; </span><br><span class="line">    char name[RTC_DEVICE_NAME_SIZE]; &#x2F;* 名字 *&#x2F;</span><br><span class="line"></span><br><span class="line">    const struct rtc_class_ops *ops; &#x2F;* RTC 设备底层操作函数 *&#x2F;</span><br><span class="line">    struct mutex ops_lock;</span><br><span class="line"></span><br><span class="line">    struct cdev char_dev; &#x2F;* 字符设备 *&#x2F;</span><br><span class="line">    unsigned long flags;</span><br><span class="line">	………………</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>RTC 设备的操作是用一个 rtc_class_ops 类型的操作集合(结构体)来表示的，就是是 ops 成员变量，这是一个 rtc_class_ops 类型的指针变量。rtc_class_ops为 RTC 设备的最底层操作函数集合，包括从 RTC 设备中读取时间、向 RTC 设备写入新的时间值等。因此，rtc_class_ops 是需要用户根据所使用的 RTC 设备编写的</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">struct rtc_class_ops &#123;</span><br><span class="line">    int (*open)(struct device *);</span><br><span class="line">    void (*release)(struct device *);</span><br><span class="line">    int (*ioctl)(struct device *, unsigned int, unsigned long);</span><br><span class="line">    int (*read_time)(struct device *, struct rtc_time *);</span><br><span class="line">    int (*set_time)(struct device *, struct rtc_time *);</span><br><span class="line">    int (*read_alarm)(struct device *, struct rtc_wkalrm *);</span><br><span class="line">    int (*set_alarm)(struct device *, struct rtc_wkalrm *);</span><br><span class="line">    int (*proc)(struct device *, struct seq_file *);</span><br><span class="line">    int (*set_mmss64)(struct device *, time64_t secs);</span><br><span class="line">    int (*set_mmss)(struct device *, unsigned long secs);</span><br><span class="line">    int (*read_callback)(struct device *, int data);</span><br><span class="line">    int (*alarm_irq_enable)(struct device *, unsigned int enabled);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>rtc_class_ops 中的这些函数只是最底层的 RTC 设备操作函数，并不是提供给应用层的file_operations 函数操作集。RTC 是个字符设备，那么肯定有字符设备的 file_operations 函数操作集，Linux 内核提供了一个 RTC 通用字符设备驱动文件，文件名为 drivers/rtc/rtc-dev.c，rtc-dev.c 文件提供了所有 RTC 设备共用的 file_operations 函数操作集，如下所示：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">static const struct file_operations rtc_dev_fops &#x3D; &#123;</span><br><span class="line">    .owner &#x3D; THIS_MODULE,</span><br><span class="line">    .llseek &#x3D; no_llseek,</span><br><span class="line">    .read &#x3D; rtc_dev_read,</span><br><span class="line">    .poll &#x3D; rtc_dev_poll,</span><br><span class="line">    .unlocked_ioctl &#x3D; rtc_dev_ioctl,</span><br><span class="line">    .open &#x3D; rtc_dev_open,</span><br><span class="line">    .release &#x3D; rtc_dev_release,</span><br><span class="line">    .fasync &#x3D; rtc_dev_fasync,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>rtc_dev_fops是标准的字符设备操作集。应用程序可以通过 ioctl 函数来设置/读取时间、设置/读取闹钟的操作，那么驱动中对应的 rtc_dev_ioctl 函数就会执行， rtc_dev_ioctl 最终会通过操作 rtc_class_ops 中的 read_time、set_time 等函数来对具体 RTC 设备的读写操作。</p>
-<p> 如果向rtc_dev_ioctl 函数传入参数cmd=RTC_RD_TIME (时间读取命令)，就会调用 rtc_read_time 函数会调用_ _rtc_read_time函数，__rtc_read_time 函数再通过调用 rtc_class_ops 中的read_time 函数来从 RTC 设备中获取当前时间。rtc_dev_ioctl 函数对其他的命令处理都是类似的，传入参数cmd=RTC_ALM_READ (闹钟读取命令) ，就会调用 rtc_read_alarm ，而 rtc_read_alarm 函数再经过层层调用，最终会调用 rtc_class_ops 中的 read_alarm 函数来获取闹钟值。 </p>
-<p><img src="Linux%E9%A9%B1%E5%8A%A8-RTC%E9%A9%B1%E5%8A%A8.assets/1618637052010.png" alt="1618637052010"></p>
-<p>当 rtc_class_ops 准备好以后需要将其注册到 Linux 内核中，可以使用rtc_device_register函数完成注册工作。此函数会申请一个rtc_device并且初始化这个rtc_device，最后向调用者返回这个 rtc_device，当卸载 RTC 驱动的时候需要调用 rtc_device_unregister 函数来注销注册的 rtc_device，</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">struct rtc_device *rtc_device_register(const char *name, struct device *dev,</span><br><span class="line">								const struct rtc_class_ops *ops, struct module *owner)</span><br><span class="line">&#x2F;&#x2F;name：设备名字。</span><br><span class="line">&#x2F;&#x2F;dev：设备。</span><br><span class="line">&#x2F;&#x2F;ops：RTC 底层驱动函数集。</span><br><span class="line">&#x2F;&#x2F;owner：驱动模块拥有者。</span><br><span class="line">&#x2F;&#x2F;返回值：注册成功的话就返回 rtc_device，错误的话会返回一个负值。</span><br><span class="line"></span><br><span class="line">void rtc_device_unregister(struct rtc_device *rtc)</span><br><span class="line">&#x2F;&#x2F;rtc：要删除的 rtc_device。</span><br><span class="line">&#x2F;&#x2F;返回值：无。</span><br></pre></td></tr></table></figure>
-<h1 id="I-MX6U-内部-RTC-驱动分析"><a href="#I-MX6U-内部-RTC-驱动分析" class="headerlink" title="I.MX6U 内部 RTC 驱动分析"></a><strong>I.MX6U</strong> <strong>内部</strong> <strong>RTC</strong> <strong>驱动分析</strong></h1><p>I.MX6U 的 RTC 驱动不用自己编写，因为 NXP 已经写好了。其实对于大多数的 SOC 来讲，内部 RTC 驱动都不需要我们去编写，半导体厂商会编写好。得看一下这些原厂是怎么编写 RTC 驱动的。 </p>
-<p>分析驱动，先从设备树入手，打开 imx6ull.dtsi，在里面找到如下 snvs_rtc 设备节点，设置兼容属性 compatible 的值为“fsl,sec-v4.0-mon-rtc-lp”。驱动文件rtc-snvs.c中的设备树 ID 表有一条 compatible 属性，值为“fsl,sec-v4.0-mon-rtc-lp”，因此 imx6ull.dtsi 中的 snvs_rtc 设备节点会和此驱动匹配。该驱动文件采用标准的 platform 驱动框架，当设备和驱动匹配成功以后 snvs_rtc_probe 函数就会执行。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">static int snvs_rtc_probe(struct platform_device *pdev)</span><br><span class="line">&#123;</span><br><span class="line">    res &#x3D; platform_get_resource(pdev, IORESOURCE_MEM, 0);</span><br><span class="line"></span><br><span class="line">    mmio &#x3D; devm_ioremap_resource(&amp;pdev-&gt;dev, res);</span><br><span class="line">    ………………</span><br><span class="line">    data-&gt;regmap &#x3D; devm_regmap_init_mmio(&amp;pdev-&gt;dev, mmio, &amp;snvs_rtc_config);</span><br><span class="line">    ………………</span><br><span class="line">    data-&gt;irq &#x3D; platform_get_irq(pdev, 0);</span><br><span class="line">    ………………</span><br><span class="line">    &#x2F;* Initialize glitch detect *&#x2F;</span><br><span class="line">	regmap_write(data-&gt;regmap, data-&gt;offset + SNVS_LPPGDR,SNVS_LPPGDR_INIT);</span><br><span class="line">	</span><br><span class="line">	&#x2F;* Clear interrupt status *&#x2F;</span><br><span class="line">	regmap_write(data-&gt;regmap, data-&gt;offset + SNVS_LPSR,0xffffffff);</span><br><span class="line">	</span><br><span class="line">	&#x2F;* Enable RTC *&#x2F;</span><br><span class="line">	snvs_rtc_enable(data, true);</span><br><span class="line">	</span><br><span class="line">    ret &#x3D; devm_request_irq(&amp;pdev-&gt;dev, data-&gt;irq,snvs_rtc_irq_handler,</span><br><span class="line">    										IRQF_SHARED, &quot;rtc alarm&quot;, &amp;pdev-&gt;dev);</span><br><span class="line">    </span><br><span class="line">    data-&gt;rtc &#x3D; devm_rtc_device_register(&amp;pdev-&gt;dev, pdev-&gt;name,</span><br><span class="line">														&amp;snvs_rtc_ops, THIS_MODULE);	</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>调用 platform_get_resource 函数从设备树中获取到 RTC 外设寄存器基地址。 </p>
-<p>调用函数 devm_ioremap_resource 完成内存映射，得到 RTC 外设寄存器物理基地址对应的虚拟地址。 </p>
-<p>Linux3.1 引入了一个全新的 regmap 机制，regmap 用于提供一套方便的 API 函数去操作底层硬件寄存器，以提高代码的可重用性。snvs-rtc.c 文件会采用 regmap 机制来读写RTC 底层硬件寄存器。这里使用 devm_regmap_init_mmio 函数将 RTC 的硬件寄存器转化为regmap 形式，这样 regmap 机制的 regmap_write、regmap_read 等 API 函数才能操作寄存器。</p>
-<p>调用platform_get_irq从设备树中获取 RTC 的中断号。 </p>
-<p>调用regmap_write设置 RTC_ LPPGDR 寄存器值为 SNVS_LPPGDR_INIT= 0x41736166，这里就是用的 regmap 机制的 regmap_write 函数完成对寄存器进行写操作。 </p>
-<p>调用regmap_write设置 RTC_LPSR 寄存器，写入 0xffffffff，LPSR 是 RTC 状态寄存器，写 1 清零， 因此这一步就是清除 LPSR 寄存器。</p>
-<p>调用 snvs_rtc_enable 函数使能 RTC，此函数会设置 RTC_LPCR 寄存器。 </p>
-<p>调用devm_request_irq函数请求RTC中断，中断服务函数为snvs_rtc_irq_handler，用于 RTC 闹钟中断。 </p>
-<p>调用 devm_rtc_device_register 函数向系统注册 rtc_devcie，RTC 底层驱动集为 snvs_rtc_ops。snvs_rtc_ops操作集包含了读取/设置RTC时间，读取/设置闹钟等函数。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">static const struct rtc_class_ops snvs_rtc_ops &#x3D; &#123;</span><br><span class="line">    .read_time &#x3D; snvs_rtc_read_time,</span><br><span class="line">    .set_time &#x3D; snvs_rtc_set_time,</span><br><span class="line">    .read_alarm &#x3D; snvs_rtc_read_alarm,</span><br><span class="line">    .set_alarm &#x3D; snvs_rtc_set_alarm,</span><br><span class="line">    .alarm_irq_enable &#x3D; snvs_rtc_alarm_irq_enable,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-    
-
-    
-
-    
-
-  </div>
-  <div class="article-info article-info-index">
-    
-    
-    
-
-    
-    <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/17/Linux%E9%A9%B1%E5%8A%A8-RTC%E9%A9%B1%E5%8A%A8/">展开 >></a>
-    </p>
-    
-
-    
-    <div class="clearfix"></div>
-  </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
-      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/2/">Next &amp;raquo;</a>
+      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/2/">Next &amp;raquo;</a>
     </nav>
   
 

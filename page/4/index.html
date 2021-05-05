@@ -195,6 +195,103 @@
             
 
   
+    <article id="post-Linux驱动-Linux设备树LED" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+  
+  
+    <h1 itemprop="name">
+	
+	  <a class="article-title" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-Linux%E8%AE%BE%E5%A4%87%E6%A0%91LED/" target="_blank">Linux驱动-Linux设备树LED</a>
+  
+    </h1>
+  
+
+
+  
+  
+<a href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-Linux%E8%AE%BE%E5%A4%87%E6%A0%91LED/" class="archive-article-date">
+        <time datetime="2021-04-14T12:38:13.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-14</time>
+</a>
+
+  
+  
+    
+
+  
+  </header>
+  
+  <div class="article-entry" itemprop="articleBody">
+    
+     <a id="more"></a>
+
+<h1 id="一、设备树LED驱动原理"><a href="#一、设备树LED驱动原理" class="headerlink" title="一、设备树LED驱动原理"></a>一、设备树LED驱动原理</h1><p>使用设备树来向 Linux 内核传递相关的寄存器物理地址，Linux 驱动文件使用OF函数从设备树中获取所需的属性值，然后使用获取到的属性值来初始化相关的 IO。重点内容如下： </p>
+<p>①、在 imx6ull-alientek-emmc.dts 文件中创建相应的设备节点。 </p>
+<p>②、编写驱动程序(在第四十二章实验基础上完成)，获取设备树中的相关属性值。 </p>
+<p>③、使用获取到的有关属性值来初始化 LED 所使用的 GPIO。</p>
+<h1 id="二、修改设备树文件"><a href="#二、修改设备树文件" class="headerlink" title="二、修改设备树文件"></a>二、修改设备树文件</h1><p>在根节点“/”下创建一个名为“alphaled”的子节点，打开 imx6ull-alientek-emmc.dts 文件， 在根节点“/”最后面输入如下所示内容： </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">1 alphaled &#123; 2 #address-cells &#x3D; &lt;1&gt;;</span><br><span class="line">3 #size-cells &#x3D; &lt;1&gt;;</span><br><span class="line">4 compatible &#x3D; &quot;atkalpha-led&quot;; 5 status &#x3D; &quot;okay&quot;; 6 reg &#x3D; &lt; 0X020C406C 0X04 &#x2F;* CCM_CCGR1_BASE *&#x2F;</span><br><span class="line">7 0X020E0068 0X04 &#x2F;* SW_MUX_GPIO1_IO03_BASE *&#x2F;</span><br><span class="line">8 0X020E02F4 0X04 &#x2F;* SW_PAD_GPIO1_IO03_BASE *&#x2F;</span><br><span class="line">9 0X0209C000 0X04 &#x2F;* GPIO1_DR_BASE *&#x2F;</span><br><span class="line">10 0X0209C004 0X04 &gt;; &#x2F;* GPIO1_GDIR_BASE *&#x2F;</span><br><span class="line">11 &#125;;</span><br></pre></td></tr></table></figure>
+<p>第 2、3 行，属性#address-cells 和#size-cells 都为 1，表示 reg 属性中起始地址占用一个字长 </p>
+<p>(cell)，地址长度也占用一个字长(cell)。 </p>
+<p>第 4 行，属性 compatbile 设置 alphaled 节点兼容性为“atkalpha-led”。 </p>
+<p>第 5 行，属性 status 设置状态为“okay”。 </p>
+<p>第 6~10 行，reg 属性，非常重要！reg 属性设置了驱动里面所要使用的寄存器物理地址，比 </p>
+<p>如第 6 行的“0X020C406C 0X04”表示 I.MX6ULL 的 CCM_CCGR1 寄存器，其中寄存器首地 </p>
+<p>址为 0X020C406C，长度为 4 个字节。 </p>
+<h1 id="三、编写驱动"><a href="#三、编写驱动" class="headerlink" title="三、编写驱动"></a>三、编写驱动</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;* dtsled设备结构体 *&#x2F;</span><br><span class="line">struct dtsled_dev&#123;</span><br><span class="line">	………………</span><br><span class="line">	struct device_node	*nd; &#x2F;* 设备节点 *&#x2F;</span><br><span class="line">&#125;;</span><br><span class="line">………………</span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 驱动出口函数</span><br><span class="line"> * @param 		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int __init led_init(void)</span><br><span class="line">&#123;</span><br><span class="line">	u32 val &#x3D; 0;</span><br><span class="line">	int ret;</span><br><span class="line">	u32 regdata[14];</span><br><span class="line">	const char *str;</span><br><span class="line">	struct property *proper;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 获取设备树中的属性数据 *&#x2F;</span><br><span class="line">	&#x2F;* 1、获取设备节点：alphaled *&#x2F;</span><br><span class="line">	dtsled.nd &#x3D; of_find_node_by_path(&quot;&#x2F;alphaled&quot;);</span><br><span class="line">	if(dtsled.nd &#x3D;&#x3D; NULL) &#123;</span><br><span class="line">		printk(&quot;alphaled node nost find!\r\n&quot;);</span><br><span class="line">		return -EINVAL;</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		printk(&quot;alphaled node find!\r\n&quot;);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 2、获取compatible属性内容 *&#x2F;</span><br><span class="line">	proper &#x3D; of_find_property(dtsled.nd, &quot;compatible&quot;, NULL);</span><br><span class="line">	if(proper &#x3D;&#x3D; NULL) &#123;</span><br><span class="line">		printk(&quot;compatible property find failed\r\n&quot;);</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		printk(&quot;compatible &#x3D; %s\r\n&quot;, (char*)proper-&gt;value);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 3、获取status属性内容 *&#x2F;</span><br><span class="line">	ret &#x3D; of_property_read_string(dtsled.nd, &quot;status&quot;, &amp;str);</span><br><span class="line">	if(ret &lt; 0)&#123;</span><br><span class="line">		printk(&quot;status read failed!\r\n&quot;);</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		printk(&quot;status &#x3D; %s\r\n&quot;,str);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 4、获取reg属性内容 *&#x2F;</span><br><span class="line">	ret &#x3D; of_property_read_u32_array(dtsled.nd, &quot;reg&quot;, regdata, 10);</span><br><span class="line">	if(ret &lt; 0) &#123;</span><br><span class="line">		printk(&quot;reg property read failed!\r\n&quot;);</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		u8 i &#x3D; 0;</span><br><span class="line">		printk(&quot;reg data:\r\n&quot;);</span><br><span class="line">		for(i &#x3D; 0; i &lt; 10; i++)</span><br><span class="line">			printk(&quot;%#X &quot;, regdata[i]);</span><br><span class="line">		printk(&quot;\r\n&quot;);</span><br><span class="line">	&#125;</span><br><span class="line">	IMX6U_CCM_CCGR1 &#x3D; of_iomap(dtsled.nd, 0);</span><br><span class="line">	SW_MUX_GPIO1_IO03 &#x3D; of_iomap(dtsled.nd, 1);</span><br><span class="line">  	SW_PAD_GPIO1_IO03 &#x3D; of_iomap(dtsled.nd, 2);</span><br><span class="line">	GPIO1_DR &#x3D; of_iomap(dtsled.nd, 3);</span><br><span class="line">	GPIO1_GDIR &#x3D; of_iomap(dtsled.nd, 4);</span><br><span class="line">	&#x2F;* 2、使能GPIO1时钟 *&#x2F;</span><br><span class="line">	val &#x3D; readl(IMX6U_CCM_CCGR1);</span><br><span class="line">	val &amp;&#x3D; ~(3 &lt;&lt; 26);	&#x2F;* 清楚以前的设置 *&#x2F;</span><br><span class="line">	val |&#x3D; (3 &lt;&lt; 26);	&#x2F;* 设置新值 *&#x2F;</span><br><span class="line">	writel(val, IMX6U_CCM_CCGR1);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 3、设置GPIO1_IO03的复用功能，将其复用为</span><br><span class="line">	 *    GPIO1_IO03，最后设置IO属性。</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	writel(5, SW_MUX_GPIO1_IO03);</span><br><span class="line">	</span><br><span class="line">	&#x2F;*寄存器SW_PAD_GPIO1_IO03设置IO属性</span><br><span class="line">	 *bit 16:0 HYS关闭</span><br><span class="line">	 *bit [15:14]: 00 默认下拉</span><br><span class="line">     *bit [13]: 0 kepper功能</span><br><span class="line">     *bit [12]: 1 pull&#x2F;keeper使能</span><br><span class="line">     *bit [11]: 0 关闭开路输出</span><br><span class="line">     *bit [7:6]: 10 速度100Mhz</span><br><span class="line">     *bit [5:3]: 110 R0&#x2F;6驱动能力</span><br><span class="line">     *bit [0]: 0 低转换率</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	writel(0x10B0, SW_PAD_GPIO1_IO03);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 4、设置GPIO1_IO03为输出功能 *&#x2F;</span><br><span class="line">	val &#x3D; readl(GPIO1_GDIR);</span><br><span class="line">	val &amp;&#x3D; ~(1 &lt;&lt; 3);	&#x2F;* 清除以前的设置 *&#x2F;</span><br><span class="line">	val |&#x3D; (1 &lt;&lt; 3);	&#x2F;* 设置为输出 *&#x2F;</span><br><span class="line">	writel(val, GPIO1_GDIR);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 5、默认关闭LED *&#x2F;</span><br><span class="line">	val &#x3D; readl(GPIO1_DR);</span><br><span class="line">	val |&#x3D; (1 &lt;&lt; 3);	</span><br><span class="line">	writel(val, GPIO1_DR);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 注册字符设备驱动 *&#x2F;</span><br><span class="line">	&#x2F;* 1、创建设备号 *&#x2F;</span><br><span class="line">	if (dtsled.major) &#123;		&#x2F;*  定义了设备号 *&#x2F;</span><br><span class="line">		dtsled.devid &#x3D; MKDEV(dtsled.major, 0);</span><br><span class="line">		register_chrdev_region(dtsled.devid, DTSLED_CNT, DTSLED_NAME);</span><br><span class="line">	&#125; else &#123;						&#x2F;* 没有定义设备号 *&#x2F;</span><br><span class="line">		alloc_chrdev_region(&amp;dtsled.devid, 0, DTSLED_CNT, DTSLED_NAME);	&#x2F;* 申请设备号 *&#x2F;</span><br><span class="line">		dtsled.major &#x3D; MAJOR(dtsled.devid);	&#x2F;* 获取分配号的主设备号 *&#x2F;</span><br><span class="line">		dtsled.minor &#x3D; MINOR(dtsled.devid);	&#x2F;* 获取分配号的次设备号 *&#x2F;</span><br><span class="line">	&#125;</span><br><span class="line">	printk(&quot;dtsled major&#x3D;%d,minor&#x3D;%d\r\n&quot;,dtsled.major, dtsled.minor);	</span><br><span class="line">	</span><br><span class="line">	&#x2F;* 2、初始化cdev *&#x2F;</span><br><span class="line">	dtsled.cdev.owner &#x3D; THIS_MODULE;</span><br><span class="line">	cdev_init(&amp;dtsled.cdev, &amp;dtsled_fops);</span><br><span class="line">	</span><br><span class="line">	&#x2F;* 3、添加一个cdev *&#x2F;</span><br><span class="line">	cdev_add(&amp;dtsled.cdev, dtsled.devid, DTSLED_CNT);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 4、创建类 *&#x2F;</span><br><span class="line">	dtsled.class &#x3D; class_create(THIS_MODULE, DTSLED_NAME);</span><br><span class="line">	if (IS_ERR(dtsled.class)) &#123;</span><br><span class="line">		return PTR_ERR(dtsled.class);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 5、创建设备 *&#x2F;</span><br><span class="line">	dtsled.device &#x3D; device_create(dtsled.class, NULL, dtsled.devid, NULL, DTSLED_NAME);</span><br><span class="line">	if (IS_ERR(dtsled.device)) &#123;</span><br><span class="line">		return PTR_ERR(dtsled.device);</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在设备结构体 dtsled_dev 中添加了成员变量 nd，nd 是 device_node 结构体类型指针，表示设备节点。如果我们要读取设备树某个节点的属性值，首先要先得到这个节点，一般在设备结构体中添加 device_node 指针变量来存放这个节点。</p>
+<p>通过 of_find_node_by_path 函数得到 alphaled 节点，后续其他的 OF 函数要使用 device_node。 </p>
+<p>通过 of_find_property 函数获取 alphaled 节点的 compatible 属性，返回值为 property 结构体类型指针变量，property 的成员变量 value 表示属性值。 </p>
+<p>通过 of_property_read_string 函数获取 alphaled 节点的 status 属性值。</p>
+<p>通过 of_property_read_u32_array 函数获取 alphaled 节点的 reg 属性所有值，并且将获取到的值都存放到 regdata 数组中</p>
+<p>第 192 行将获取到的 reg 属性值依次输出到终端上。 </p>
+<p>使用 of_iomap 函数一次性完成读取 reg 属性以及内存映射，of_iomap 函数是设备树推荐使用的 OF 函数。</p>
+
+    
+
+    
+
+    
+
+  </div>
+  <div class="article-info article-info-index">
+    
+    
+    
+
+    
+    <p class="article-more-link">
+      <a class="article-more-a" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-Linux%E8%AE%BE%E5%A4%87%E6%A0%91LED/">展开 >></a>
+    </p>
+    
+
+    
+    <div class="clearfix"></div>
+  </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-Linux驱动-Linux设备树" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -1310,155 +1407,9 @@
 
 
   
-    <article id="post-Linux移植-uboot移植" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-  
-  
-    <h1 itemprop="name">
-	
-	  <a class="article-title" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-uboot%E7%A7%BB%E6%A4%8D/" target="_blank">Linux移植-uboot移植</a>
-  
-    </h1>
-  
-
-
-  
-  
-<a href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-uboot%E7%A7%BB%E6%A4%8D/" class="archive-article-date">
-        <time datetime="2021-04-13T06:44:05.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-13</time>
-</a>
-
-  
-  
-    
-
-  
-  </header>
-  
-  <div class="article-entry" itemprop="articleBody">
-    
-     <a id="more"></a>
-
-<p>半导体厂商会将 uboot 移植到他们自己的原厂开发板上，测试好以后就会将这个 uboot 发布出去，这就是原厂 BSP 包。我们一般做产品的时候就会参考原厂的开发板做硬件，然 后在原厂提供的 BSP 包上做修改，将 uboot 或者 linux kernel 移植到我们的硬件上。这个就是uboot 移植的一般流程： </p>
-<p>①、在 uboot 中找到参考的开发平台，一般是原厂的开发板。 </p>
-<p>②、参考原厂开发板移植 uboot 到我们所使用的开发板上。 </p>
-<h1 id="一、NXP官方Uboot编译与测试"><a href="#一、NXP官方Uboot编译与测试" class="headerlink" title="一、NXP官方Uboot编译与测试"></a>一、NXP官方Uboot编译与测试</h1><p>使用 mx6ull_14x14_evk_emmc_defconfig 作为默认配置文件。</p>
-<p>NXP 官方 I.MX6ULL EVK 开发板的 uboot 在正点原子 EMMC版本 I.MX6ULL 开发板上的运行情况： </p>
-<p>①、uboot 启动正常，DRAM 识别正确，SD 卡和 EMMC 驱动正常。 </p>
-<p>②、uboot 里面的 LCD 驱动默认是给 4.3 寸 480x272 分辨率的，如果使用的其他分辨率的屏幕需要修改驱动。 </p>
-<p>③、网络不能工作，识别不出来网络信息，需要修改驱动。 </p>
-<p>接下来我们要做的工作如下： </p>
-<p>①、前面我们一直使用着 NXP 官方开发板的 uboot 配置，接下来需要在 uboot 中添加我们自己的开发板，也就是正点原子的 I.MX6ULL 开发板。 </p>
-<p>②、解决 LCD 驱动和网络驱动的问题。 </p>
-<h1 id="二、移植NXP官方uboot到ALPHA开发板"><a href="#二、移植NXP官方uboot到ALPHA开发板" class="headerlink" title="二、移植NXP官方uboot到ALPHA开发板"></a>二、移植NXP官方uboot到ALPHA开发板</h1><p><strong>2.1 添加板子默认配置文件</strong><br>    借鉴NXP官方6ULL EVK开发板，默认配置文件也用他的，</p>
-<p><strong>2.2添加板子对应的头文件</strong><br>不同的板子，有一些需要配置的信息，一般是在一个头文件里面配置，每个板子有一个。对于NXP官方的6ULL EVK板子，这个头文件就是。复 制include/configs/mx6ullevk.h，并重命名为 mx6ull_alientek_emmc.h，</p>
-<p><strong>2.3 添加板子对应的板级文件夹</strong><br>每个板子都有特有的文件，也叫做板级文件。这里我们将mx6ullevk 的板级文件直接拷贝过来。</p>
-<p><strong>2.4 修改uboot的配置界面</strong></p>
-<p><strong>2.5 使用新添加的板子配置并编译Uboot</strong></p>
-<p><strong>2.6 LCD驱动修改</strong><br>    1、确定LCD IO初始化正确，mx6ull_alientek_emmc.c中的lcd_pads。<br>    2、LCD参数，mx6ull_alientek_emmc.c中的displays。fb_videomode表示RGB LCD参数。<br>    MX6ULL_LCDIF1_BASE_ADDR      (AIPS2_OFF_BASE_ADDR + 0x48000)<br>    AIPS2_OFF_BASE_ADDR         (ATZ2_BASE_ADDR + 0x80000)<br>    ATZ2_BASE_ADDR              AIPS2_ARB_BASE_ADDR<br>    AIPS2_ARB_BASE_ADDR             0x02100000<br>    MX6ULL_LCDIF1_BASE_ADDR = 0x02100000 +  0x80000 +  0x48000 = 0x21c8000</p>
-<p>​    Panel环境变量表示LCD ID。</p>
-<p><strong>2.7 网络驱动修改</strong><br>    6ULL网络方案采用内部MAC+外部PHY，6ULL官方开发板使用的PHY芯片就是KSZ8081。正点原子的ALPHA开发板没有使用KSZ8081，我们使用的LAN8720A。因此要修改驱动。<br>    LAN872有一个管理接口，叫做MDIO，两根线，MDIO和MDC，一个MDIO接口可以管理32个PHY芯片。MIDO通过PHY ADDR来确定访问那个PHY芯片。ALPHA开发板ENET1的PHY ADDR是0x0，ENET2的PHY ADDR是0X1.<br>每个LAN8720都有一个复位引脚，ENET1是SNVS_TAMPER7，ENET2是SNVS_TAMPER8。</p>
-<p>LAN8720驱动，因为所有的PHY，其前32个寄存器一模一样，因此uboot里面已经写好了通用PHY驱动，所以理论上不需要修改。</p>
-<p>驱动修改<br>1、修改PHY ADDR<br>2、删除原有的74LV595相关代码。<br>3、添加ALPHA开发板的网络复位IO</p>
-<p>2.8 其他需要修改的地方</p>
-<h1 id="三、bootcmd和bootargs环境变量"><a href="#三、bootcmd和bootargs环境变量" class="headerlink" title="三、bootcmd和bootargs环境变量"></a>三、bootcmd和bootargs环境变量</h1><p>3.1 bootcmd环境变量<br>    宏CONFIG_BOOTCOMMAND也可以设置bootcmd的值。</p>
-<pre><code>   &quot;run findfdt;&quot; \
-   &quot;mmc dev $&#123;mmcdev&#125;;&quot; \
-   &quot;mmc dev $&#123;mmcdev&#125;; if mmc rescan; then &quot; \
-       &quot;if run loadbootscript; then &quot; \
-           &quot;run bootscript; &quot; \
-       &quot;else &quot; \
-           &quot;if run loadimage; then &quot; \
-               &quot;run mmcboot; &quot; \
-           &quot;else run netboot; &quot; \
-           &quot;fi; &quot; \
-       &quot;fi; &quot; \
-   &quot;else run netboot; fi&quot;
-
-Findfdt 设置fdt_file环境变量，也就是dtb文件名字。
-</code></pre>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mmc dev 1   &#x2F;&#x2F;切换到emmc</span><br><span class="line">fatload mmc 1:1 80800000 zImage</span><br><span class="line">fatload mmc 1:1 83000000 imx6ull-14x14-evk.dtb</span><br><span class="line">booz 80800000 - 83000000</span><br></pre></td></tr></table></figure>
-
-<pre><code>&quot;loadbootscript=&quot; \
-    &quot;fatload mmc $&#123;mmcdev&#125;:$&#123;mmcpart&#125; $&#123;loadaddr&#125; $&#123;script&#125;;\0&quot; \
-展开：fatload mmc 1:1 80800000 boot.scr
-</code></pre>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">loadimage&#x3D;fatload mmc $&#123;mmcdev&#125;:$&#123;mmcpart&#125; $&#123;loadaddr&#125; $&#123;image&#125;\0&quot; \</span><br><span class="line">展开：fatload mmc 1:1 80800000 zImage</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&quot;loadfdt&#x3D;fatload mmc $&#123;mmcdev&#125;:$&#123;mmcpart&#125; $&#123;fdt_addr&#125; $&#123;fdt_file&#125;\0&quot; \</span><br><span class="line">展开：fatload mmc 1:1 83000000 imx6ull-14x14-evk.dtb</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">bootz $&#123;loadaddr&#125; - $&#123;fdt_addr&#125;;</span><br><span class="line">booz 80800000 - 83000000</span><br></pre></td></tr></table></figure>
-<p>3.2 bootargs环境变量<br>    宏CONFIG_BOOTARGS也可以设置bootargs的值</p>
-<p>mmcargs=setenv bootargs console=${console},${baudrate} “ <br>        CONFIG_BOOTARGS_CMA_SIZE \</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&quot;root&#x3D;$&#123;mmcroot&#125;\0&quot; \</span><br><span class="line">展开以后就是：</span><br><span class="line">bootargs console&#x3D; ttymxc0,115200 root&#x3D;&#x2F;dev&#x2F;mmcblk1p2</span><br></pre></td></tr></table></figure>
-<p>Bootargs是会传递给Linux内核，设置了一些东西，Bootargs环境变量也叫做命令行参数。</p>
-<h1 id="四、uboot启动Linux测试"><a href="#四、uboot启动Linux测试" class="headerlink" title="四、uboot启动Linux测试"></a>四、uboot启动Linux测试</h1><p><strong>4.1 从EMMC启动</strong></p>
-<p>从 EMMC 启动也就是将编译出来的 Linux 镜像文件 zImage 和设备树文件保存在 EMMC中，uboot 从 EMMC 中读取这两个文件并启动，这个是我们产品最终的启动方式。    </p>
-<p>1、首先查看EMMC里面是否有系统，linux镜像zImage和.dtb文件。先将当前设备切换到EMMC：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mmc dev 1	&#x2F;&#x2F;切换到EMMC</span><br><span class="line">fatls mmc 1:1  &#x2F;&#x2F;查看EMMC分区1里面的文件</span><br><span class="line">fatload mmc 1:1 80800000 zImage &#x2F;&#x2F;将zimage下载到DDR的0x80800000处</span><br><span class="line">fatload mmc 1:1 83000000 imx6ull-14x14-emmc-7-1024x600-c.dtb &#x2F;&#x2F;将dtb读取到0X83000000</span><br><span class="line">bootz 80800000 – 83000000 &#x2F;&#x2F;启动内核</span><br></pre></td></tr></table></figure>
-<p>如果内核启动成功，说明uboot支持emmc启动，验证成功。</p>
-<p><strong>4.2 从网络启动</strong></p>
-<p>从网络启动 linux 系统的唯一目的就是为了调试！不管是为了调试 linux 系统还是 linux 下的驱动，每次修改 linux 系统文件或者 linux 下的某个驱动以后都要将其烧写到 EMMC 中去测试，这样太麻烦了。可以设置 linux 从网络启动，也就是将 linux 镜像文件和根文件系统都放到 Ubuntu 下某个指定的文件夹中，每次重新编译 linux 内核或者某个 linux 驱动以后只需要使用 cp 命令将其拷贝到这个指定的文件夹中即可，这样就不用需要频繁的烧写 EMMC，加快了开发速度。</p>
-<p>我们可以通过 nfs 或者 tftp 从 Ubuntu 中下载 zImage 和设备树文件，根文件系统的话可以通过 nfs 挂载。</p>
-<p>现通过tftp下载，将 zImage 和设备树文件放到 Ubuntu 下的 tftp 目录中，</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">tftp 80800000 zImage		&#x2F;&#x2F;从tftp服务器下载zimage</span><br><span class="line">tftp 83000000 imx6ull-14x14-emmc-7-1024x600-c.dtb &#x2F;&#x2F;从tftp服务器下载.dtb	</span><br><span class="line">bootz 80800000 – 83000000 &#x2F;&#x2F;启动系统</span><br></pre></td></tr></table></figure>
-<h1 id="五、uboot-DDR初始化"><a href="#五、uboot-DDR初始化" class="headerlink" title="五、uboot DDR初始化"></a>五、uboot DDR初始化</h1><p>1、裸机<br>imxdownload软件下载，会在bin文件头部添加IVT DCD数据，</p>
-<p>2、uboot<br>uboot编译生成u-boot.imx。u-boot.imx已经包含了IVT DCD数据。<br>u-boot.imx的头部信息是怎么添加的？u-boot.imx的DCD中的DDR初始化代码该怎么修改？<br>uboot编译会输出</p>
-<p>  ./tools/mkimage -n board/freescale/mx6ull_alientek_emmc/imximage.cfg.cfgtmp -T imximage -e 0x87800000 -d u-boot.bin u-boot.imx    </p>
-<p>可以看出uboot使用/tools/mkimage工具，向u-boot.bin添加board/freescale/mx6ull_alientek_emmc/imximage.cfg.cfgtmp文件信息，从而得到u-boot.imx。</p>
-<p>默认只有imximage.cfg文件，imximage.cfg里面保存的就是DCD数据。DDR初始化也此文件里面。<br>我们要修改DDR初始化代码，就需要修改imximage.cfg文件。此文件默认拷贝的NXP给IMX6ULL EVK开发板写的，默认是给512MB DDR3L写的。</p>
-<h1 id="六、总结"><a href="#六、总结" class="headerlink" title="六、总结"></a>六、总结</h1><p>①、不管是购买的开发板还是自己做的开发板，基本都是参考半导体厂商的 dmeo 板，而半导体厂商会在他们自己的开发板上移植好uboot、linux kernel 和 rootfs 等，最终制作好 BSP包提供给用户。我们可以在官方提供的 BSP包的基础上添加我们的板子，也就是俗称的移植。 </p>
-<p>②、我们购买的开发板或者自己做的板子一般都不会原封不动的照抄半导体厂商的 demo板，都会根据实际的情况来做修改，既然有修改就必然涉及到 uboot 下驱动的移植。 </p>
-<p>③、一般 uboot 中需要解决串口、NAND、EMMC 或 SD 卡、网络和 LCD 驱动，因为 uboot的主要目的就是启动 Linux 内核，所以不需要考虑太多的外设驱动。 </p>
-<p>④、在 uboot 中添加自己的板子信息，根据自己板子的实际情况来修改 uboot 中的驱动。</p>
-
-    
-
-    
-
-    
-
-  </div>
-  <div class="article-info article-info-index">
-    
-    
-    
-
-    
-    <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-uboot%E7%A7%BB%E6%A4%8D/">展开 >></a>
-    </p>
-    
-
-    
-    <div class="clearfix"></div>
-  </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/page/3/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/5/">Next &amp;raquo;</a>
+      <a class="extend prev" rel="prev" href="/page/3/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/5/">Next &amp;raquo;</a>
     </nav>
   
 

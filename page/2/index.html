@@ -195,6 +195,106 @@
             
 
   
+    <article id="post-Linux驱动-RTC驱动" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+  
+  
+    <h1 itemprop="name">
+	
+	  <a class="article-title" href="/2021/04/17/Linux%E9%A9%B1%E5%8A%A8-RTC%E9%A9%B1%E5%8A%A8/" target="_blank">Linux驱动-RTC驱动</a>
+  
+    </h1>
+  
+
+
+  
+  
+<a href="/2021/04/17/Linux%E9%A9%B1%E5%8A%A8-RTC%E9%A9%B1%E5%8A%A8/" class="archive-article-date">
+        <time datetime="2021-04-17T05:04:41.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-17</time>
+</a>
+
+  
+  
+    
+
+  
+  </header>
+  
+  <div class="article-entry" itemprop="articleBody">
+    
+     <a id="more"></a>
+
+<h1 id="Linux-内核-RTC-驱动"><a href="#Linux-内核-RTC-驱动" class="headerlink" title="Linux 内核 RTC 驱动"></a><strong>Linux</strong> <strong>内核</strong> <strong>RTC</strong> <strong>驱动</strong></h1><p>RTC 设备驱动是一个标准的字符设备驱动，应用程序通过 open、release、read、write 和 ioctl等函数完成对 RTC 设备的操作。Linux 内核将 RTC 设备抽象为 rtc_device 结构体，因此 RTC 设备驱动就是申请并初始化<br>rtc_device，最后将 rtc_device 注册到 Linux 内核里面，这样 Linux 内核就有一个 RTC 设备的。<br> rtc_device 结构体，此结构体定义在 include/linux/rtc.h 文件中，结构体内容如下(删除条件编译)：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">struct rtc_device</span><br><span class="line">&#123;</span><br><span class="line">    struct device dev; &#x2F;* 设备 *&#x2F;</span><br><span class="line">    struct module *owner;</span><br><span class="line"></span><br><span class="line">    int id; &#x2F;* ID *&#x2F; </span><br><span class="line">    char name[RTC_DEVICE_NAME_SIZE]; &#x2F;* 名字 *&#x2F;</span><br><span class="line"></span><br><span class="line">    const struct rtc_class_ops *ops; &#x2F;* RTC 设备底层操作函数 *&#x2F;</span><br><span class="line">    struct mutex ops_lock;</span><br><span class="line"></span><br><span class="line">    struct cdev char_dev; &#x2F;* 字符设备 *&#x2F;</span><br><span class="line">    unsigned long flags;</span><br><span class="line">	………………</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>RTC 设备的操作是用一个 rtc_class_ops 类型的操作集合(结构体)来表示的，就是是 ops 成员变量，这是一个 rtc_class_ops 类型的指针变量。rtc_class_ops为 RTC 设备的最底层操作函数集合，包括从 RTC 设备中读取时间、向 RTC 设备写入新的时间值等。因此，rtc_class_ops 是需要用户根据所使用的 RTC 设备编写的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">struct rtc_class_ops &#123;</span><br><span class="line">    int (*open)(struct device *);</span><br><span class="line">    void (*release)(struct device *);</span><br><span class="line">    int (*ioctl)(struct device *, unsigned int, unsigned long);</span><br><span class="line">    int (*read_time)(struct device *, struct rtc_time *);</span><br><span class="line">    int (*set_time)(struct device *, struct rtc_time *);</span><br><span class="line">    int (*read_alarm)(struct device *, struct rtc_wkalrm *);</span><br><span class="line">    int (*set_alarm)(struct device *, struct rtc_wkalrm *);</span><br><span class="line">    int (*proc)(struct device *, struct seq_file *);</span><br><span class="line">    int (*set_mmss64)(struct device *, time64_t secs);</span><br><span class="line">    int (*set_mmss)(struct device *, unsigned long secs);</span><br><span class="line">    int (*read_callback)(struct device *, int data);</span><br><span class="line">    int (*alarm_irq_enable)(struct device *, unsigned int enabled);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>rtc_class_ops 中的这些函数只是最底层的 RTC 设备操作函数，并不是提供给应用层的file_operations 函数操作集。RTC 是个字符设备，那么肯定有字符设备的 file_operations 函数操作集，Linux 内核提供了一个 RTC 通用字符设备驱动文件，文件名为 drivers/rtc/rtc-dev.c，rtc-dev.c 文件提供了所有 RTC 设备共用的 file_operations 函数操作集，如下所示：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">static const struct file_operations rtc_dev_fops &#x3D; &#123;</span><br><span class="line">    .owner &#x3D; THIS_MODULE,</span><br><span class="line">    .llseek &#x3D; no_llseek,</span><br><span class="line">    .read &#x3D; rtc_dev_read,</span><br><span class="line">    .poll &#x3D; rtc_dev_poll,</span><br><span class="line">    .unlocked_ioctl &#x3D; rtc_dev_ioctl,</span><br><span class="line">    .open &#x3D; rtc_dev_open,</span><br><span class="line">    .release &#x3D; rtc_dev_release,</span><br><span class="line">    .fasync &#x3D; rtc_dev_fasync,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>rtc_dev_fops是标准的字符设备操作集。应用程序可以通过 ioctl 函数来设置/读取时间、设置/读取闹钟的操作，那么驱动中对应的 rtc_dev_ioctl 函数就会执行， rtc_dev_ioctl 最终会通过操作 rtc_class_ops 中的 read_time、set_time 等函数来对具体 RTC 设备的读写操作。</p>
+<p> 如果向rtc_dev_ioctl 函数传入参数cmd=RTC_RD_TIME (时间读取命令)，就会调用 rtc_read_time 函数会调用_ _rtc_read_time函数，__rtc_read_time 函数再通过调用 rtc_class_ops 中的read_time 函数来从 RTC 设备中获取当前时间。rtc_dev_ioctl 函数对其他的命令处理都是类似的，传入参数cmd=RTC_ALM_READ (闹钟读取命令) ，就会调用 rtc_read_alarm ，而 rtc_read_alarm 函数再经过层层调用，最终会调用 rtc_class_ops 中的 read_alarm 函数来获取闹钟值。 </p>
+<p><img src="Linux%E9%A9%B1%E5%8A%A8-RTC%E9%A9%B1%E5%8A%A8.assets/1618637052010.png" alt="1618637052010"></p>
+<p>当 rtc_class_ops 准备好以后需要将其注册到 Linux 内核中，可以使用rtc_device_register函数完成注册工作。此函数会申请一个rtc_device并且初始化这个rtc_device，最后向调用者返回这个 rtc_device，当卸载 RTC 驱动的时候需要调用 rtc_device_unregister 函数来注销注册的 rtc_device，</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">struct rtc_device *rtc_device_register(const char *name, struct device *dev,</span><br><span class="line">								const struct rtc_class_ops *ops, struct module *owner)</span><br><span class="line">&#x2F;&#x2F;name：设备名字。</span><br><span class="line">&#x2F;&#x2F;dev：设备。</span><br><span class="line">&#x2F;&#x2F;ops：RTC 底层驱动函数集。</span><br><span class="line">&#x2F;&#x2F;owner：驱动模块拥有者。</span><br><span class="line">&#x2F;&#x2F;返回值：注册成功的话就返回 rtc_device，错误的话会返回一个负值。</span><br><span class="line"></span><br><span class="line">void rtc_device_unregister(struct rtc_device *rtc)</span><br><span class="line">&#x2F;&#x2F;rtc：要删除的 rtc_device。</span><br><span class="line">&#x2F;&#x2F;返回值：无。</span><br></pre></td></tr></table></figure>
+<h1 id="I-MX6U-内部-RTC-驱动分析"><a href="#I-MX6U-内部-RTC-驱动分析" class="headerlink" title="I.MX6U 内部 RTC 驱动分析"></a><strong>I.MX6U</strong> <strong>内部</strong> <strong>RTC</strong> <strong>驱动分析</strong></h1><p>I.MX6U 的 RTC 驱动不用自己编写，因为 NXP 已经写好了。其实对于大多数的 SOC 来讲，内部 RTC 驱动都不需要我们去编写，半导体厂商会编写好。得看一下这些原厂是怎么编写 RTC 驱动的。 </p>
+<p>分析驱动，先从设备树入手，打开 imx6ull.dtsi，在里面找到如下 snvs_rtc 设备节点，设置兼容属性 compatible 的值为“fsl,sec-v4.0-mon-rtc-lp”。驱动文件rtc-snvs.c中的设备树 ID 表有一条 compatible 属性，值为“fsl,sec-v4.0-mon-rtc-lp”，因此 imx6ull.dtsi 中的 snvs_rtc 设备节点会和此驱动匹配。该驱动文件采用标准的 platform 驱动框架，当设备和驱动匹配成功以后 snvs_rtc_probe 函数就会执行。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">static int snvs_rtc_probe(struct platform_device *pdev)</span><br><span class="line">&#123;</span><br><span class="line">    res &#x3D; platform_get_resource(pdev, IORESOURCE_MEM, 0);</span><br><span class="line"></span><br><span class="line">    mmio &#x3D; devm_ioremap_resource(&amp;pdev-&gt;dev, res);</span><br><span class="line">    ………………</span><br><span class="line">    data-&gt;regmap &#x3D; devm_regmap_init_mmio(&amp;pdev-&gt;dev, mmio, &amp;snvs_rtc_config);</span><br><span class="line">    ………………</span><br><span class="line">    data-&gt;irq &#x3D; platform_get_irq(pdev, 0);</span><br><span class="line">    ………………</span><br><span class="line">    &#x2F;* Initialize glitch detect *&#x2F;</span><br><span class="line">	regmap_write(data-&gt;regmap, data-&gt;offset + SNVS_LPPGDR,SNVS_LPPGDR_INIT);</span><br><span class="line">	</span><br><span class="line">	&#x2F;* Clear interrupt status *&#x2F;</span><br><span class="line">	regmap_write(data-&gt;regmap, data-&gt;offset + SNVS_LPSR,0xffffffff);</span><br><span class="line">	</span><br><span class="line">	&#x2F;* Enable RTC *&#x2F;</span><br><span class="line">	snvs_rtc_enable(data, true);</span><br><span class="line">	</span><br><span class="line">    ret &#x3D; devm_request_irq(&amp;pdev-&gt;dev, data-&gt;irq,snvs_rtc_irq_handler,</span><br><span class="line">    										IRQF_SHARED, &quot;rtc alarm&quot;, &amp;pdev-&gt;dev);</span><br><span class="line">    </span><br><span class="line">    data-&gt;rtc &#x3D; devm_rtc_device_register(&amp;pdev-&gt;dev, pdev-&gt;name,</span><br><span class="line">														&amp;snvs_rtc_ops, THIS_MODULE);	</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>调用 platform_get_resource 函数从设备树中获取到 RTC 外设寄存器基地址。 </p>
+<p>调用函数 devm_ioremap_resource 完成内存映射，得到 RTC 外设寄存器物理基地址对应的虚拟地址。 </p>
+<p>Linux3.1 引入了一个全新的 regmap 机制，regmap 用于提供一套方便的 API 函数去操作底层硬件寄存器，以提高代码的可重用性。snvs-rtc.c 文件会采用 regmap 机制来读写RTC 底层硬件寄存器。这里使用 devm_regmap_init_mmio 函数将 RTC 的硬件寄存器转化为regmap 形式，这样 regmap 机制的 regmap_write、regmap_read 等 API 函数才能操作寄存器。</p>
+<p>调用platform_get_irq从设备树中获取 RTC 的中断号。 </p>
+<p>调用regmap_write设置 RTC_ LPPGDR 寄存器值为 SNVS_LPPGDR_INIT= 0x41736166，这里就是用的 regmap 机制的 regmap_write 函数完成对寄存器进行写操作。 </p>
+<p>调用regmap_write设置 RTC_LPSR 寄存器，写入 0xffffffff，LPSR 是 RTC 状态寄存器，写 1 清零， 因此这一步就是清除 LPSR 寄存器。</p>
+<p>调用 snvs_rtc_enable 函数使能 RTC，此函数会设置 RTC_LPCR 寄存器。 </p>
+<p>调用devm_request_irq函数请求RTC中断，中断服务函数为snvs_rtc_irq_handler，用于 RTC 闹钟中断。 </p>
+<p>调用 devm_rtc_device_register 函数向系统注册 rtc_devcie，RTC 底层驱动集为 snvs_rtc_ops。snvs_rtc_ops操作集包含了读取/设置RTC时间，读取/设置闹钟等函数。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">static const struct rtc_class_ops snvs_rtc_ops &#x3D; &#123;</span><br><span class="line">    .read_time &#x3D; snvs_rtc_read_time,</span><br><span class="line">    .set_time &#x3D; snvs_rtc_set_time,</span><br><span class="line">    .read_alarm &#x3D; snvs_rtc_read_alarm,</span><br><span class="line">    .set_alarm &#x3D; snvs_rtc_set_alarm,</span><br><span class="line">    .alarm_irq_enable &#x3D; snvs_rtc_alarm_irq_enable,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+    
+
+    
+
+    
+
+  </div>
+  <div class="article-info article-info-index">
+    
+    
+    
+
+    
+    <p class="article-more-link">
+      <a class="article-more-a" href="/2021/04/17/Linux%E9%A9%B1%E5%8A%A8-RTC%E9%A9%B1%E5%8A%A8/">展开 >></a>
+    </p>
+    
+
+    
+    <div class="clearfix"></div>
+  </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-Linux驱动-LCD驱动" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -1181,135 +1281,9 @@
 
 
   
-    <article id="post-Linux驱动-Linux中断下半部机制" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-  
-  
-    <h1 itemprop="name">
-	
-	  <a class="article-title" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-Linux%E4%B8%AD%E6%96%AD%E4%B8%8B%E5%8D%8A%E9%83%A8%E6%9C%BA%E5%88%B6/" target="_blank">Linux驱动-Linux中断下半部机制</a>
-  
-    </h1>
-  
-
-
-  
-  
-<a href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-Linux%E4%B8%AD%E6%96%AD%E4%B8%8B%E5%8D%8A%E9%83%A8%E6%9C%BA%E5%88%B6/" class="archive-article-date">
-        <time datetime="2021-04-15T16:04:12.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-16</time>
-</a>
-
-  
-  
-    
-
-  
-  </header>
-  
-  <div class="article-entry" itemprop="articleBody">
-    
-     <a id="more"></a>
-
-<h1 id="上半部与下半部"><a href="#上半部与下半部" class="headerlink" title="上半部与下半部"></a>上半部与下半部</h1><p>上半部和下半部也称为顶半部和底半部。在使用 request_irq 申请中断的时候注册的中断服务函数属于中断处理的上半部，只要中断触发，那么中断处理函数就会执行。中断处理函数一定要快点执行完毕，越短越好，但是有些中断处理过程就是比较费时间，必须要对其进行处理，缩小中断处理函数的执行时间。</p>
-<p>中断处理过程可分为了两部分： </p>
-<p>上半部：上半部就是中断处理函数，那些处理过程比较快，不会占用很长时间的处理就可以放在上半部完成。 </p>
-<p>下半部：如果中断处理过程比较耗时，那么就将这些比较耗时的代码提出来，交给下半部去执行，这样中断处理函数就会快进快出。 </p>
-<p>因此，Linux 内核将中断分为上半部和下半部的主要目的就是实现中断处理函数的快进快出，那些对时间敏感、执行速度快的操作可以放到中断处理函数中，也就是上半部。剩下的所有工作都可以放到下半部去执行，</p>
-<p>①、如果要处理的内容不希望被其他中断打断，那么可以放到上半部。</p>
-<p>②、如果要处理的任务对时间敏感，可以放到上半部。 </p>
-<p>③、如果要处理的任务与硬件有关，可以放到上半部 </p>
-<p>④、除了上述三点以外的其他任务，优先考虑放到下半部。</p>
-<h2 id="下半部机制"><a href="#下半部机制" class="headerlink" title="下半部机制"></a>下半部机制</h2><h3 id="1、软中断"><a href="#1、软中断" class="headerlink" title="1、软中断"></a><strong>1、软中断</strong></h3><p>Linux内核使用结构体softirq_action表示软中断，softirq_action结构体定义在文件include/linux/interrupt.h中，</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">struct softirq_action</span><br><span class="line">&#123;</span><br><span class="line">	void (*action)(struct softirq_action *);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">static struct softirq_action softirq_vec[NR_SOFTIRQS];</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">示例代码softirq_vec 数组</span><br><span class="line">enum</span><br><span class="line">&#123;</span><br><span class="line">     HI_SOFTIRQ&#x3D;0, &#x2F;* 高优先级软中断 *&#x2F;</span><br><span class="line">     TIMER_SOFTIRQ, &#x2F;* 定时器软中断 *&#x2F;</span><br><span class="line">     NET_TX_SOFTIRQ, &#x2F;* 网络数据发送软中断 *&#x2F;</span><br><span class="line">     NET_RX_SOFTIRQ, &#x2F;* 网络数据接收软中断 *&#x2F;</span><br><span class="line">     BLOCK_SOFTIRQ, </span><br><span class="line">     BLOCK_IOPOLL_SOFTIRQ, </span><br><span class="line">     TASKLET_SOFTIRQ, &#x2F;* tasklet 软中断 *&#x2F;</span><br><span class="line">     SCHED_SOFTIRQ, &#x2F;* 调度软中断 *&#x2F;</span><br><span class="line">     HRTIMER_SOFTIRQ, &#x2F;* 高精度定时器软中断 *&#x2F;</span><br><span class="line">     RCU_SOFTIRQ, &#x2F;* RCU 软中断 *&#x2F;</span><br><span class="line">     NR_SOFTIRQS	&#x2F;*  *&#x2F;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>可以看出，一共有 10 个软中断，NR_SOFTIRQS 是枚举类型，NR_SOFTIRQS 为 10，softirq_action 结构体中的 action 成员变量就是软中断的服务函数，数组 softirq_vec 是个有 10 个 元素的全局数组，因此所有的 CPU(对于 SMP 系统而言)都可以访问到，每个 CPU 都有自己的触发和控制机制，并且只执行自己所触发的软中断。但是各个 CPU 所执行的软中断服务函数确是相同的，都是数组 softirq_vec 中定义的 action 函数。</p>
-<p>要使用软中断，必须先使用 open_softirq 函数注册对应的软中断处理函数，open_softirq 函数原型如下： </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void open_softirq(int nr, void (*action)(struct softirq_action *))</span><br></pre></td></tr></table></figure>
-<p>nr：要开启的软中断，在示例代码 51.1.2.3 中选择一个。<br>action：软中断对应的处理函数。<br>返回值：没有返回值。</p>
-<p>注册好软中断以后需要通过 raise_softirq 函数触发，raise_softirq 函数原型如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void raise_softirq(unsigned int nr)&#x2F;&#x2F;nr：要触发的软中断。返回值：没有返回值。</span><br></pre></td></tr></table></figure>
-<p>软中断必须在编译的时候静态注册！Linux内核使用 softirq_init 函数初始化软中断，softirq_init 函数定义在 kernel/softirq.c 文件里面，</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">void __init softirq_init(void)</span><br><span class="line">&#123;</span><br><span class="line">    int cpu;</span><br><span class="line"></span><br><span class="line">        for_each_possible_cpu(cpu) &#123;</span><br><span class="line">            per_cpu(tasklet_vec, cpu).tail &#x3D;</span><br><span class="line">            &amp;per_cpu(tasklet_vec, cpu).head;</span><br><span class="line">            per_cpu(tasklet_hi_vec, cpu).tail &#x3D;</span><br><span class="line">            &amp;per_cpu(tasklet_hi_vec, cpu).head;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        open_softirq(TASKLET_SOFTIRQ, tasklet_action);</span><br><span class="line">        open_softirq(HI_SOFTIRQ, tasklet_hi_action);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>softirq_init 函数默认会打开 TASKLET_SOFTIRQ (tasklet 软中断)和 HI_SOFTIRQ(高优先级软中断)。 </p>
-<h3 id="2、tasklet"><a href="#2、tasklet" class="headerlink" title="2、tasklet"></a><strong>2、tasklet</strong></h3><p>tasklet 是利用软中断来实现的另外一种下半部机制，在软中断和 tasklet 之间，建议使用 tasklet。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">struct tasklet_struct</span><br><span class="line">&#123;</span><br><span class="line">    struct tasklet_struct *next; &#x2F;* 下一个 tasklet *&#x2F;</span><br><span class="line">    unsigned long state; &#x2F;* tasklet 状态 *&#x2F;</span><br><span class="line">    atomic_t count; &#x2F;* 计数器，记录对 tasklet 的引用数 *&#x2F;</span><br><span class="line">    void (*func)(unsigned long); &#x2F;* tasklet 执行的函数 *&#x2F;</span><br><span class="line">    unsigned long data; &#x2F;* 函数 func 的参数 *&#x2F;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>func 函数就是 tasklet 要执行的处理函数，用户定义函数内容，相当于中断处理函数。</p>
-<p>如果要使用 tasklet，必须先定义一个 tasklet，然后使用 tasklet_init 函数初始化 tasklet，</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">void tasklet_init(struct tasklet_struct *t,void (*func)(unsigned long), </span><br><span class="line">																	unsigned long data); </span><br></pre></td></tr></table></figure>
-<p>t：要初始化的 tasklet<br>func：tasklet 的处理函数。<br>data：要传递给 func 函数的参数<br>返回值：没有返回值。</p>
-<p>也 可 以 使 用 宏 DECLARE_TASKLET 来 一 次 性 完 成 tasklet 的 定 义 和 初 始 化</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DECLARE_TASKLET(name, func, data)</span><br></pre></td></tr></table></figure>
-<p>其中 name 为要定义的 tasklet 名字，这个名字就是一个 tasklet_struct 类型的时候变量，func就是 tasklet 的处理函数，data 是传递给 func 函数的参数。 </p>
-<p>在上半部，也就是中断处理函数中调用 tasklet_schedule 函数就能使 tasklet 在合适的时间运行，</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void tasklet_schedule(struct tasklet_struct *t) </span><br></pre></td></tr></table></figure>
-<p><strong>t</strong>：要调度的 tasklet，也就是 DECLARE_TASKLET 宏里面的 name。 <strong>返回值：</strong>没有返回值。 </p>
-<p><strong>参考使用示例</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;* 定义 taselet *&#x2F;</span><br><span class="line">struct tasklet_struct testtasklet;</span><br><span class="line"></span><br><span class="line">&#x2F;* tasklet 处理函数 *&#x2F;</span><br><span class="line">void testtasklet_func(unsigned long data) &#123;</span><br><span class="line"> 	&#x2F;* tasklet 具体处理内容 *&#x2F;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;* 中断处理函数 *&#x2F;</span><br><span class="line">irqreturn_t test_handler(int irq, void *dev_id) &#123;</span><br><span class="line">     ......</span><br><span class="line">     &#x2F;* 调度 tasklet *&#x2F;</span><br><span class="line">     tasklet_schedule(&amp;testtasklet);</span><br><span class="line">     ......</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;* 驱动入口函数 *&#x2F;</span><br><span class="line">static int __init xxxx_init(void) &#123;</span><br><span class="line">     ......</span><br><span class="line">     &#x2F;* 初始化 tasklet *&#x2F;</span><br><span class="line">     tasklet_init(&amp;testtasklet, testtasklet_func, data);</span><br><span class="line">     &#x2F;* 注册中断处理函数 *&#x2F;</span><br><span class="line">     request_irq(xxx_irq, test_handler, 0, &quot;xxx&quot;, &amp;xxx_dev);</span><br><span class="line">     ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="3、工作队列"><a href="#3、工作队列" class="headerlink" title="3、工作队列"></a>3、工作队列</h3><p>工作队列是另外一种下半部执行方式，工作队列在进程上下文执行，工作队列将要推后的工作交给一个内核线程去执行，因为工作队列工作在进程上下文，因此工作队列允许睡眠或重新调度。因此如果你要推后的工作可以睡眠那么就可以选择工作队列，否则的话就只能选择软中断或 tasklet。</p>
-<p>Linux 内核使用 work_struct 结构体表示一个<strong>工作</strong>，</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">struct work_struct &#123;</span><br><span class="line">     atomic_long_t data; </span><br><span class="line">     struct list_head entry;</span><br><span class="line">     work_func_t func; &#x2F;* 工作队列处理函数 *&#x2F;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>这些工作组织成结构体workqueue_struct <strong>工作队列</strong>。</p>
-<p>Linux 内核使用<strong>工作者线程</strong>(worker thread)来处理工作队列中的各个工作，Linux 内核使用worker 结构体表示工作者线程，worker 结构体内容如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">struct worker &#123;</span><br><span class="line">………………</span><br><span class="line"> struct workqueue_struct *rescue_wq;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>每个 worker 都有一个工作队列，工作者线程处理自己工作队列中的所有工作。在实际的驱动开发中，只需要定义工作(work_struct)即可，关于工作队列和工作者线程基本不用去管。</p>
-<p>简单创建工作很简单，直接定义一个 work_struct 结构体变量即可，然后使用 INIT_WORK 宏来初始化工作.</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#define INIT_WORK(_work, _func)&#x2F;&#x2F;_work 表示要初始化的工作，_func 是工作对应的处理函数。</span><br></pre></td></tr></table></figure>
-<p>也可以使用 DECLARE_WORK 宏一次性完成工作的创建和初始化，宏定义如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#define DECLARE_WORK(n, f)&#x2F;&#x2F;n 表示定义的工作(work_struct)，f 表示工作对应的处理函数。</span><br></pre></td></tr></table></figure>
-<p>和 tasklet 一样，工作也是需要调度才能运行的，工作的调度函数为 schedule_work</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool schedule_work(struct work_struct *work)&#x2F;&#x2F;work：要调度的工作。返回值：0 成功，其他值 失败。</span><br></pre></td></tr></table></figure>
-<p><strong>参考使用示例</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;* 定义工作(work) *&#x2F;</span><br><span class="line">struct work_struct testwork;</span><br><span class="line"></span><br><span class="line">&#x2F;* work 处理函数 *&#x2F;</span><br><span class="line">void testwork_func_t(struct work_struct *work);</span><br><span class="line">&#123;</span><br><span class="line"> 	&#x2F;* work 具体处理内容 *&#x2F;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;* 中断处理函数 *&#x2F;</span><br><span class="line">irqreturn_t test_handler(int irq, void *dev_id) &#123;</span><br><span class="line">     ......</span><br><span class="line">     &#x2F;* 调度 work *&#x2F;</span><br><span class="line">     schedule_work(&amp;testwork);</span><br><span class="line">     ......</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;* 驱动入口函数 *&#x2F;</span><br><span class="line">static int __init xxxx_init(void) &#123;</span><br><span class="line">     ......</span><br><span class="line">     &#x2F;* 初始化 work *&#x2F;</span><br><span class="line">     INIT_WORK(&amp;testwork, testwork_func_t);</span><br><span class="line">     &#x2F;* 注册中断处理函数 *&#x2F;</span><br><span class="line">     request_irq(xxx_irq, test_handler, 0, &quot;xxx&quot;, &amp;xxx_dev);</span><br><span class="line">     ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-    
-
-    
-
-    
-
-  </div>
-  <div class="article-info article-info-index">
-    
-    
-    
-
-    
-    <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-Linux%E4%B8%AD%E6%96%AD%E4%B8%8B%E5%8D%8A%E9%83%A8%E6%9C%BA%E5%88%B6/">展开 >></a>
-    </p>
-    
-
-    
-    <div class="clearfix"></div>
-  </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/3/">Next &amp;raquo;</a>
+      <a class="extend prev" rel="prev" href="/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/3/">Next &amp;raquo;</a>
     </nav>
   
 

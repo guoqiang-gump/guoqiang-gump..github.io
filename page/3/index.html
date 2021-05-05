@@ -195,6 +195,132 @@
             
 
   
+    <article id="post-Linux驱动-Linux中断下半部机制" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+  
+  
+    <h1 itemprop="name">
+	
+	  <a class="article-title" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-Linux%E4%B8%AD%E6%96%AD%E4%B8%8B%E5%8D%8A%E9%83%A8%E6%9C%BA%E5%88%B6/" target="_blank">Linux驱动-Linux中断下半部机制</a>
+  
+    </h1>
+  
+
+
+  
+  
+<a href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-Linux%E4%B8%AD%E6%96%AD%E4%B8%8B%E5%8D%8A%E9%83%A8%E6%9C%BA%E5%88%B6/" class="archive-article-date">
+        <time datetime="2021-04-15T16:04:12.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-16</time>
+</a>
+
+  
+  
+    
+
+  
+  </header>
+  
+  <div class="article-entry" itemprop="articleBody">
+    
+     <a id="more"></a>
+
+<h1 id="上半部与下半部"><a href="#上半部与下半部" class="headerlink" title="上半部与下半部"></a>上半部与下半部</h1><p>上半部和下半部也称为顶半部和底半部。在使用 request_irq 申请中断的时候注册的中断服务函数属于中断处理的上半部，只要中断触发，那么中断处理函数就会执行。中断处理函数一定要快点执行完毕，越短越好，但是有些中断处理过程就是比较费时间，必须要对其进行处理，缩小中断处理函数的执行时间。</p>
+<p>中断处理过程可分为了两部分： </p>
+<p>上半部：上半部就是中断处理函数，那些处理过程比较快，不会占用很长时间的处理就可以放在上半部完成。 </p>
+<p>下半部：如果中断处理过程比较耗时，那么就将这些比较耗时的代码提出来，交给下半部去执行，这样中断处理函数就会快进快出。 </p>
+<p>因此，Linux 内核将中断分为上半部和下半部的主要目的就是实现中断处理函数的快进快出，那些对时间敏感、执行速度快的操作可以放到中断处理函数中，也就是上半部。剩下的所有工作都可以放到下半部去执行，</p>
+<p>①、如果要处理的内容不希望被其他中断打断，那么可以放到上半部。</p>
+<p>②、如果要处理的任务对时间敏感，可以放到上半部。 </p>
+<p>③、如果要处理的任务与硬件有关，可以放到上半部 </p>
+<p>④、除了上述三点以外的其他任务，优先考虑放到下半部。</p>
+<h2 id="下半部机制"><a href="#下半部机制" class="headerlink" title="下半部机制"></a>下半部机制</h2><h3 id="1、软中断"><a href="#1、软中断" class="headerlink" title="1、软中断"></a><strong>1、软中断</strong></h3><p>Linux内核使用结构体softirq_action表示软中断，softirq_action结构体定义在文件include/linux/interrupt.h中，</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">struct softirq_action</span><br><span class="line">&#123;</span><br><span class="line">	void (*action)(struct softirq_action *);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">static struct softirq_action softirq_vec[NR_SOFTIRQS];</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">示例代码softirq_vec 数组</span><br><span class="line">enum</span><br><span class="line">&#123;</span><br><span class="line">     HI_SOFTIRQ&#x3D;0, &#x2F;* 高优先级软中断 *&#x2F;</span><br><span class="line">     TIMER_SOFTIRQ, &#x2F;* 定时器软中断 *&#x2F;</span><br><span class="line">     NET_TX_SOFTIRQ, &#x2F;* 网络数据发送软中断 *&#x2F;</span><br><span class="line">     NET_RX_SOFTIRQ, &#x2F;* 网络数据接收软中断 *&#x2F;</span><br><span class="line">     BLOCK_SOFTIRQ, </span><br><span class="line">     BLOCK_IOPOLL_SOFTIRQ, </span><br><span class="line">     TASKLET_SOFTIRQ, &#x2F;* tasklet 软中断 *&#x2F;</span><br><span class="line">     SCHED_SOFTIRQ, &#x2F;* 调度软中断 *&#x2F;</span><br><span class="line">     HRTIMER_SOFTIRQ, &#x2F;* 高精度定时器软中断 *&#x2F;</span><br><span class="line">     RCU_SOFTIRQ, &#x2F;* RCU 软中断 *&#x2F;</span><br><span class="line">     NR_SOFTIRQS	&#x2F;*  *&#x2F;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>可以看出，一共有 10 个软中断，NR_SOFTIRQS 是枚举类型，NR_SOFTIRQS 为 10，softirq_action 结构体中的 action 成员变量就是软中断的服务函数，数组 softirq_vec 是个有 10 个 元素的全局数组，因此所有的 CPU(对于 SMP 系统而言)都可以访问到，每个 CPU 都有自己的触发和控制机制，并且只执行自己所触发的软中断。但是各个 CPU 所执行的软中断服务函数确是相同的，都是数组 softirq_vec 中定义的 action 函数。</p>
+<p>要使用软中断，必须先使用 open_softirq 函数注册对应的软中断处理函数，open_softirq 函数原型如下： </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void open_softirq(int nr, void (*action)(struct softirq_action *))</span><br></pre></td></tr></table></figure>
+<p>nr：要开启的软中断，在示例代码 51.1.2.3 中选择一个。<br>action：软中断对应的处理函数。<br>返回值：没有返回值。</p>
+<p>注册好软中断以后需要通过 raise_softirq 函数触发，raise_softirq 函数原型如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void raise_softirq(unsigned int nr)&#x2F;&#x2F;nr：要触发的软中断。返回值：没有返回值。</span><br></pre></td></tr></table></figure>
+<p>软中断必须在编译的时候静态注册！Linux内核使用 softirq_init 函数初始化软中断，softirq_init 函数定义在 kernel/softirq.c 文件里面，</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">void __init softirq_init(void)</span><br><span class="line">&#123;</span><br><span class="line">    int cpu;</span><br><span class="line"></span><br><span class="line">        for_each_possible_cpu(cpu) &#123;</span><br><span class="line">            per_cpu(tasklet_vec, cpu).tail &#x3D;</span><br><span class="line">            &amp;per_cpu(tasklet_vec, cpu).head;</span><br><span class="line">            per_cpu(tasklet_hi_vec, cpu).tail &#x3D;</span><br><span class="line">            &amp;per_cpu(tasklet_hi_vec, cpu).head;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        open_softirq(TASKLET_SOFTIRQ, tasklet_action);</span><br><span class="line">        open_softirq(HI_SOFTIRQ, tasklet_hi_action);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>softirq_init 函数默认会打开 TASKLET_SOFTIRQ (tasklet 软中断)和 HI_SOFTIRQ(高优先级软中断)。 </p>
+<h3 id="2、tasklet"><a href="#2、tasklet" class="headerlink" title="2、tasklet"></a><strong>2、tasklet</strong></h3><p>tasklet 是利用软中断来实现的另外一种下半部机制，在软中断和 tasklet 之间，建议使用 tasklet。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">struct tasklet_struct</span><br><span class="line">&#123;</span><br><span class="line">    struct tasklet_struct *next; &#x2F;* 下一个 tasklet *&#x2F;</span><br><span class="line">    unsigned long state; &#x2F;* tasklet 状态 *&#x2F;</span><br><span class="line">    atomic_t count; &#x2F;* 计数器，记录对 tasklet 的引用数 *&#x2F;</span><br><span class="line">    void (*func)(unsigned long); &#x2F;* tasklet 执行的函数 *&#x2F;</span><br><span class="line">    unsigned long data; &#x2F;* 函数 func 的参数 *&#x2F;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>func 函数就是 tasklet 要执行的处理函数，用户定义函数内容，相当于中断处理函数。</p>
+<p>如果要使用 tasklet，必须先定义一个 tasklet，然后使用 tasklet_init 函数初始化 tasklet，</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">void tasklet_init(struct tasklet_struct *t,void (*func)(unsigned long), </span><br><span class="line">																	unsigned long data); </span><br></pre></td></tr></table></figure>
+<p>t：要初始化的 tasklet<br>func：tasklet 的处理函数。<br>data：要传递给 func 函数的参数<br>返回值：没有返回值。</p>
+<p>也 可 以 使 用 宏 DECLARE_TASKLET 来 一 次 性 完 成 tasklet 的 定 义 和 初 始 化</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DECLARE_TASKLET(name, func, data)</span><br></pre></td></tr></table></figure>
+<p>其中 name 为要定义的 tasklet 名字，这个名字就是一个 tasklet_struct 类型的时候变量，func就是 tasklet 的处理函数，data 是传递给 func 函数的参数。 </p>
+<p>在上半部，也就是中断处理函数中调用 tasklet_schedule 函数就能使 tasklet 在合适的时间运行，</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void tasklet_schedule(struct tasklet_struct *t) </span><br></pre></td></tr></table></figure>
+<p><strong>t</strong>：要调度的 tasklet，也就是 DECLARE_TASKLET 宏里面的 name。 <strong>返回值：</strong>没有返回值。 </p>
+<p><strong>参考使用示例</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;* 定义 taselet *&#x2F;</span><br><span class="line">struct tasklet_struct testtasklet;</span><br><span class="line"></span><br><span class="line">&#x2F;* tasklet 处理函数 *&#x2F;</span><br><span class="line">void testtasklet_func(unsigned long data) &#123;</span><br><span class="line"> 	&#x2F;* tasklet 具体处理内容 *&#x2F;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;* 中断处理函数 *&#x2F;</span><br><span class="line">irqreturn_t test_handler(int irq, void *dev_id) &#123;</span><br><span class="line">     ......</span><br><span class="line">     &#x2F;* 调度 tasklet *&#x2F;</span><br><span class="line">     tasklet_schedule(&amp;testtasklet);</span><br><span class="line">     ......</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;* 驱动入口函数 *&#x2F;</span><br><span class="line">static int __init xxxx_init(void) &#123;</span><br><span class="line">     ......</span><br><span class="line">     &#x2F;* 初始化 tasklet *&#x2F;</span><br><span class="line">     tasklet_init(&amp;testtasklet, testtasklet_func, data);</span><br><span class="line">     &#x2F;* 注册中断处理函数 *&#x2F;</span><br><span class="line">     request_irq(xxx_irq, test_handler, 0, &quot;xxx&quot;, &amp;xxx_dev);</span><br><span class="line">     ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="3、工作队列"><a href="#3、工作队列" class="headerlink" title="3、工作队列"></a>3、工作队列</h3><p>工作队列是另外一种下半部执行方式，工作队列在进程上下文执行，工作队列将要推后的工作交给一个内核线程去执行，因为工作队列工作在进程上下文，因此工作队列允许睡眠或重新调度。因此如果你要推后的工作可以睡眠那么就可以选择工作队列，否则的话就只能选择软中断或 tasklet。</p>
+<p>Linux 内核使用 work_struct 结构体表示一个<strong>工作</strong>，</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">struct work_struct &#123;</span><br><span class="line">     atomic_long_t data; </span><br><span class="line">     struct list_head entry;</span><br><span class="line">     work_func_t func; &#x2F;* 工作队列处理函数 *&#x2F;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>这些工作组织成结构体workqueue_struct <strong>工作队列</strong>。</p>
+<p>Linux 内核使用<strong>工作者线程</strong>(worker thread)来处理工作队列中的各个工作，Linux 内核使用worker 结构体表示工作者线程，worker 结构体内容如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">struct worker &#123;</span><br><span class="line">………………</span><br><span class="line"> struct workqueue_struct *rescue_wq;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>每个 worker 都有一个工作队列，工作者线程处理自己工作队列中的所有工作。在实际的驱动开发中，只需要定义工作(work_struct)即可，关于工作队列和工作者线程基本不用去管。</p>
+<p>简单创建工作很简单，直接定义一个 work_struct 结构体变量即可，然后使用 INIT_WORK 宏来初始化工作.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#define INIT_WORK(_work, _func)&#x2F;&#x2F;_work 表示要初始化的工作，_func 是工作对应的处理函数。</span><br></pre></td></tr></table></figure>
+<p>也可以使用 DECLARE_WORK 宏一次性完成工作的创建和初始化，宏定义如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#define DECLARE_WORK(n, f)&#x2F;&#x2F;n 表示定义的工作(work_struct)，f 表示工作对应的处理函数。</span><br></pre></td></tr></table></figure>
+<p>和 tasklet 一样，工作也是需要调度才能运行的，工作的调度函数为 schedule_work</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool schedule_work(struct work_struct *work)&#x2F;&#x2F;work：要调度的工作。返回值：0 成功，其他值 失败。</span><br></pre></td></tr></table></figure>
+<p><strong>参考使用示例</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;* 定义工作(work) *&#x2F;</span><br><span class="line">struct work_struct testwork;</span><br><span class="line"></span><br><span class="line">&#x2F;* work 处理函数 *&#x2F;</span><br><span class="line">void testwork_func_t(struct work_struct *work);</span><br><span class="line">&#123;</span><br><span class="line"> 	&#x2F;* work 具体处理内容 *&#x2F;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;* 中断处理函数 *&#x2F;</span><br><span class="line">irqreturn_t test_handler(int irq, void *dev_id) &#123;</span><br><span class="line">     ......</span><br><span class="line">     &#x2F;* 调度 work *&#x2F;</span><br><span class="line">     schedule_work(&amp;testwork);</span><br><span class="line">     ......</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;* 驱动入口函数 *&#x2F;</span><br><span class="line">static int __init xxxx_init(void) &#123;</span><br><span class="line">     ......</span><br><span class="line">     &#x2F;* 初始化 work *&#x2F;</span><br><span class="line">     INIT_WORK(&amp;testwork, testwork_func_t);</span><br><span class="line">     &#x2F;* 注册中断处理函数 *&#x2F;</span><br><span class="line">     request_irq(xxx_irq, test_handler, 0, &quot;xxx&quot;, &amp;xxx_dev);</span><br><span class="line">     ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    
+
+    
+
+    
+
+  </div>
+  <div class="article-info article-info-index">
+    
+    
+    
+
+    
+    <p class="article-more-link">
+      <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-Linux%E4%B8%AD%E6%96%AD%E4%B8%8B%E5%8D%8A%E9%83%A8%E6%9C%BA%E5%88%B6/">展开 >></a>
+    </p>
+    
+
+    
+    <div class="clearfix"></div>
+  </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-Linux驱动-Linux中断" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -1199,106 +1325,9 @@
 
 
   
-    <article id="post-Linux驱动-Linux设备树LED" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-  
-  
-    <h1 itemprop="name">
-	
-	  <a class="article-title" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-Linux%E8%AE%BE%E5%A4%87%E6%A0%91LED/" target="_blank">Linux驱动-Linux设备树LED</a>
-  
-    </h1>
-  
-
-
-  
-  
-<a href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-Linux%E8%AE%BE%E5%A4%87%E6%A0%91LED/" class="archive-article-date">
-        <time datetime="2021-04-14T12:38:13.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-14</time>
-</a>
-
-  
-  
-    
-
-  
-  </header>
-  
-  <div class="article-entry" itemprop="articleBody">
-    
-     <a id="more"></a>
-
-<h1 id="一、设备树LED驱动原理"><a href="#一、设备树LED驱动原理" class="headerlink" title="一、设备树LED驱动原理"></a>一、设备树LED驱动原理</h1><p>使用设备树来向 Linux 内核传递相关的寄存器物理地址，Linux 驱动文件使用OF函数从设备树中获取所需的属性值，然后使用获取到的属性值来初始化相关的 IO。重点内容如下： </p>
-<p>①、在 imx6ull-alientek-emmc.dts 文件中创建相应的设备节点。 </p>
-<p>②、编写驱动程序(在第四十二章实验基础上完成)，获取设备树中的相关属性值。 </p>
-<p>③、使用获取到的有关属性值来初始化 LED 所使用的 GPIO。</p>
-<h1 id="二、修改设备树文件"><a href="#二、修改设备树文件" class="headerlink" title="二、修改设备树文件"></a>二、修改设备树文件</h1><p>在根节点“/”下创建一个名为“alphaled”的子节点，打开 imx6ull-alientek-emmc.dts 文件， 在根节点“/”最后面输入如下所示内容： </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">1 alphaled &#123; 2 #address-cells &#x3D; &lt;1&gt;;</span><br><span class="line">3 #size-cells &#x3D; &lt;1&gt;;</span><br><span class="line">4 compatible &#x3D; &quot;atkalpha-led&quot;; 5 status &#x3D; &quot;okay&quot;; 6 reg &#x3D; &lt; 0X020C406C 0X04 &#x2F;* CCM_CCGR1_BASE *&#x2F;</span><br><span class="line">7 0X020E0068 0X04 &#x2F;* SW_MUX_GPIO1_IO03_BASE *&#x2F;</span><br><span class="line">8 0X020E02F4 0X04 &#x2F;* SW_PAD_GPIO1_IO03_BASE *&#x2F;</span><br><span class="line">9 0X0209C000 0X04 &#x2F;* GPIO1_DR_BASE *&#x2F;</span><br><span class="line">10 0X0209C004 0X04 &gt;; &#x2F;* GPIO1_GDIR_BASE *&#x2F;</span><br><span class="line">11 &#125;;</span><br></pre></td></tr></table></figure>
-<p>第 2、3 行，属性#address-cells 和#size-cells 都为 1，表示 reg 属性中起始地址占用一个字长 </p>
-<p>(cell)，地址长度也占用一个字长(cell)。 </p>
-<p>第 4 行，属性 compatbile 设置 alphaled 节点兼容性为“atkalpha-led”。 </p>
-<p>第 5 行，属性 status 设置状态为“okay”。 </p>
-<p>第 6~10 行，reg 属性，非常重要！reg 属性设置了驱动里面所要使用的寄存器物理地址，比 </p>
-<p>如第 6 行的“0X020C406C 0X04”表示 I.MX6ULL 的 CCM_CCGR1 寄存器，其中寄存器首地 </p>
-<p>址为 0X020C406C，长度为 4 个字节。 </p>
-<h1 id="三、编写驱动"><a href="#三、编写驱动" class="headerlink" title="三、编写驱动"></a>三、编写驱动</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;* dtsled设备结构体 *&#x2F;</span><br><span class="line">struct dtsled_dev&#123;</span><br><span class="line">	………………</span><br><span class="line">	struct device_node	*nd; &#x2F;* 设备节点 *&#x2F;</span><br><span class="line">&#125;;</span><br><span class="line">………………</span><br><span class="line">&#x2F;*</span><br><span class="line"> * @description	: 驱动出口函数</span><br><span class="line"> * @param 		: 无</span><br><span class="line"> * @return 		: 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">static int __init led_init(void)</span><br><span class="line">&#123;</span><br><span class="line">	u32 val &#x3D; 0;</span><br><span class="line">	int ret;</span><br><span class="line">	u32 regdata[14];</span><br><span class="line">	const char *str;</span><br><span class="line">	struct property *proper;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 获取设备树中的属性数据 *&#x2F;</span><br><span class="line">	&#x2F;* 1、获取设备节点：alphaled *&#x2F;</span><br><span class="line">	dtsled.nd &#x3D; of_find_node_by_path(&quot;&#x2F;alphaled&quot;);</span><br><span class="line">	if(dtsled.nd &#x3D;&#x3D; NULL) &#123;</span><br><span class="line">		printk(&quot;alphaled node nost find!\r\n&quot;);</span><br><span class="line">		return -EINVAL;</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		printk(&quot;alphaled node find!\r\n&quot;);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 2、获取compatible属性内容 *&#x2F;</span><br><span class="line">	proper &#x3D; of_find_property(dtsled.nd, &quot;compatible&quot;, NULL);</span><br><span class="line">	if(proper &#x3D;&#x3D; NULL) &#123;</span><br><span class="line">		printk(&quot;compatible property find failed\r\n&quot;);</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		printk(&quot;compatible &#x3D; %s\r\n&quot;, (char*)proper-&gt;value);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 3、获取status属性内容 *&#x2F;</span><br><span class="line">	ret &#x3D; of_property_read_string(dtsled.nd, &quot;status&quot;, &amp;str);</span><br><span class="line">	if(ret &lt; 0)&#123;</span><br><span class="line">		printk(&quot;status read failed!\r\n&quot;);</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		printk(&quot;status &#x3D; %s\r\n&quot;,str);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 4、获取reg属性内容 *&#x2F;</span><br><span class="line">	ret &#x3D; of_property_read_u32_array(dtsled.nd, &quot;reg&quot;, regdata, 10);</span><br><span class="line">	if(ret &lt; 0) &#123;</span><br><span class="line">		printk(&quot;reg property read failed!\r\n&quot;);</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		u8 i &#x3D; 0;</span><br><span class="line">		printk(&quot;reg data:\r\n&quot;);</span><br><span class="line">		for(i &#x3D; 0; i &lt; 10; i++)</span><br><span class="line">			printk(&quot;%#X &quot;, regdata[i]);</span><br><span class="line">		printk(&quot;\r\n&quot;);</span><br><span class="line">	&#125;</span><br><span class="line">	IMX6U_CCM_CCGR1 &#x3D; of_iomap(dtsled.nd, 0);</span><br><span class="line">	SW_MUX_GPIO1_IO03 &#x3D; of_iomap(dtsled.nd, 1);</span><br><span class="line">  	SW_PAD_GPIO1_IO03 &#x3D; of_iomap(dtsled.nd, 2);</span><br><span class="line">	GPIO1_DR &#x3D; of_iomap(dtsled.nd, 3);</span><br><span class="line">	GPIO1_GDIR &#x3D; of_iomap(dtsled.nd, 4);</span><br><span class="line">	&#x2F;* 2、使能GPIO1时钟 *&#x2F;</span><br><span class="line">	val &#x3D; readl(IMX6U_CCM_CCGR1);</span><br><span class="line">	val &amp;&#x3D; ~(3 &lt;&lt; 26);	&#x2F;* 清楚以前的设置 *&#x2F;</span><br><span class="line">	val |&#x3D; (3 &lt;&lt; 26);	&#x2F;* 设置新值 *&#x2F;</span><br><span class="line">	writel(val, IMX6U_CCM_CCGR1);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 3、设置GPIO1_IO03的复用功能，将其复用为</span><br><span class="line">	 *    GPIO1_IO03，最后设置IO属性。</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	writel(5, SW_MUX_GPIO1_IO03);</span><br><span class="line">	</span><br><span class="line">	&#x2F;*寄存器SW_PAD_GPIO1_IO03设置IO属性</span><br><span class="line">	 *bit 16:0 HYS关闭</span><br><span class="line">	 *bit [15:14]: 00 默认下拉</span><br><span class="line">     *bit [13]: 0 kepper功能</span><br><span class="line">     *bit [12]: 1 pull&#x2F;keeper使能</span><br><span class="line">     *bit [11]: 0 关闭开路输出</span><br><span class="line">     *bit [7:6]: 10 速度100Mhz</span><br><span class="line">     *bit [5:3]: 110 R0&#x2F;6驱动能力</span><br><span class="line">     *bit [0]: 0 低转换率</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	writel(0x10B0, SW_PAD_GPIO1_IO03);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 4、设置GPIO1_IO03为输出功能 *&#x2F;</span><br><span class="line">	val &#x3D; readl(GPIO1_GDIR);</span><br><span class="line">	val &amp;&#x3D; ~(1 &lt;&lt; 3);	&#x2F;* 清除以前的设置 *&#x2F;</span><br><span class="line">	val |&#x3D; (1 &lt;&lt; 3);	&#x2F;* 设置为输出 *&#x2F;</span><br><span class="line">	writel(val, GPIO1_GDIR);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 5、默认关闭LED *&#x2F;</span><br><span class="line">	val &#x3D; readl(GPIO1_DR);</span><br><span class="line">	val |&#x3D; (1 &lt;&lt; 3);	</span><br><span class="line">	writel(val, GPIO1_DR);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 注册字符设备驱动 *&#x2F;</span><br><span class="line">	&#x2F;* 1、创建设备号 *&#x2F;</span><br><span class="line">	if (dtsled.major) &#123;		&#x2F;*  定义了设备号 *&#x2F;</span><br><span class="line">		dtsled.devid &#x3D; MKDEV(dtsled.major, 0);</span><br><span class="line">		register_chrdev_region(dtsled.devid, DTSLED_CNT, DTSLED_NAME);</span><br><span class="line">	&#125; else &#123;						&#x2F;* 没有定义设备号 *&#x2F;</span><br><span class="line">		alloc_chrdev_region(&amp;dtsled.devid, 0, DTSLED_CNT, DTSLED_NAME);	&#x2F;* 申请设备号 *&#x2F;</span><br><span class="line">		dtsled.major &#x3D; MAJOR(dtsled.devid);	&#x2F;* 获取分配号的主设备号 *&#x2F;</span><br><span class="line">		dtsled.minor &#x3D; MINOR(dtsled.devid);	&#x2F;* 获取分配号的次设备号 *&#x2F;</span><br><span class="line">	&#125;</span><br><span class="line">	printk(&quot;dtsled major&#x3D;%d,minor&#x3D;%d\r\n&quot;,dtsled.major, dtsled.minor);	</span><br><span class="line">	</span><br><span class="line">	&#x2F;* 2、初始化cdev *&#x2F;</span><br><span class="line">	dtsled.cdev.owner &#x3D; THIS_MODULE;</span><br><span class="line">	cdev_init(&amp;dtsled.cdev, &amp;dtsled_fops);</span><br><span class="line">	</span><br><span class="line">	&#x2F;* 3、添加一个cdev *&#x2F;</span><br><span class="line">	cdev_add(&amp;dtsled.cdev, dtsled.devid, DTSLED_CNT);</span><br><span class="line"></span><br><span class="line">	&#x2F;* 4、创建类 *&#x2F;</span><br><span class="line">	dtsled.class &#x3D; class_create(THIS_MODULE, DTSLED_NAME);</span><br><span class="line">	if (IS_ERR(dtsled.class)) &#123;</span><br><span class="line">		return PTR_ERR(dtsled.class);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	&#x2F;* 5、创建设备 *&#x2F;</span><br><span class="line">	dtsled.device &#x3D; device_create(dtsled.class, NULL, dtsled.devid, NULL, DTSLED_NAME);</span><br><span class="line">	if (IS_ERR(dtsled.device)) &#123;</span><br><span class="line">		return PTR_ERR(dtsled.device);</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>在设备结构体 dtsled_dev 中添加了成员变量 nd，nd 是 device_node 结构体类型指针，表示设备节点。如果我们要读取设备树某个节点的属性值，首先要先得到这个节点，一般在设备结构体中添加 device_node 指针变量来存放这个节点。</p>
-<p>通过 of_find_node_by_path 函数得到 alphaled 节点，后续其他的 OF 函数要使用 device_node。 </p>
-<p>通过 of_find_property 函数获取 alphaled 节点的 compatible 属性，返回值为 property 结构体类型指针变量，property 的成员变量 value 表示属性值。 </p>
-<p>通过 of_property_read_string 函数获取 alphaled 节点的 status 属性值。</p>
-<p>通过 of_property_read_u32_array 函数获取 alphaled 节点的 reg 属性所有值，并且将获取到的值都存放到 regdata 数组中</p>
-<p>第 192 行将获取到的 reg 属性值依次输出到终端上。 </p>
-<p>使用 of_iomap 函数一次性完成读取 reg 属性以及内存映射，of_iomap 函数是设备树推荐使用的 OF 函数。</p>
-
-    
-
-    
-
-    
-
-  </div>
-  <div class="article-info article-info-index">
-    
-    
-    
-
-    
-    <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-Linux%E8%AE%BE%E5%A4%87%E6%A0%91LED/">展开 >></a>
-    </p>
-    
-
-    
-    <div class="clearfix"></div>
-  </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/page/2/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/4/">Next &amp;raquo;</a>
+      <a class="extend prev" rel="prev" href="/page/2/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/4/">Next &amp;raquo;</a>
     </nav>
   
 

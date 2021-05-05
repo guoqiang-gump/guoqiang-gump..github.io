@@ -18,7 +18,7 @@
 <meta property="og:description" content="十四、多线程1.什么是线程？源代码 -编译和链接-&gt; 程序 -加载到内存中-&gt; 进程">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-05-04T14:32:47.000Z">
-<meta property="article:modified_time" content="2021-05-04T15:41:11.846Z">
+<meta property="article:modified_time" content="2021-05-05T03:10:53.915Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -224,7 +224,7 @@
       <!-- 百度字体平台:http://fontstore.baidu.com/static/editor/index.html -->
       <i class="icon-statistics"></i>
       <span class="post-meta-item-text"> 字数统计:</span>
-      <span class="post-count">4.4k字</span>
+      <span class="post-count">4.7k字</span>
     </span>
   </span>
 
@@ -233,7 +233,7 @@
     <span class="post-meta-item-icon">
       <i class="icon-book icon"></i>
       <span class="post-meta-item-text"> 阅读时长≈</span>
-      <span class="post-count">15分</span>
+      <span class="post-count">17分</span>
     </span>
   </span>
 </div>
@@ -265,9 +265,10 @@
 <p>pthread_create<br>    -&gt;创建一个新线程<br>        -&gt;调用线程过程函数(start_routine) 并传入线程参数指针(arg)<br>被创建的子线程和创建该子线程的父线程是并行的关系，其调度顺序无法预知，因此当pthread_create函数返回时子线程执行的位置无从确定，其线程过程函数可能尚未被调用，也可能正在执行，甚至可能已经返回。传递给线程的参数对象，一定要在线程过程函数不再使用它的情况下才能被释放。</p>
 <p>主线程和通过pthread_create函数创建的多个子线程，在时间上“同时”运行，如果不附加任何同步条件，则它们每一个执行步骤的先后顺序完全无法预知，这就叫做自由并发。</p>
 <p>为了让线程过程函数的实现更加灵活，可以通过线程参数传递特定的信息，帮助线程过程函数执行不同的任务。</p>
-<h2 id="5-汇合线程"><a href="#5-汇合线程" class="headerlink" title="5.汇合线程"></a>5.汇合线程</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">       创建点     汇合点</span><br><span class="line">--------+---------+-------&gt; 主线程</span><br><span class="line">        \________&#x2F; 子线程</span><br><span class="line">int phread_join(pthread_t tid, void** retval);</span><br><span class="line">成功返回0，失败返回错误码。</span><br><span class="line">tid - 线程标识</span><br><span class="line">retval - 线程退出码</span><br><span class="line">当调用pthread_join函数时：</span><br><span class="line">tid线程已经终止，立刻返回，返回线程退出码。</span><br><span class="line">tid线程尚未终止，阻塞等待，直到被汇合线程终止。</span><br></pre></td></tr></table></figure>
+<h2 id="5-汇合线程"><a href="#5-汇合线程" class="headerlink" title="5.汇合线程"></a>5.汇合线程</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">       创建点     汇合点</span><br><span class="line">--------+---------+-------&gt; 主线程</span><br><span class="line">        \________&#x2F; 子线程</span><br><span class="line">int phread_join(pthread_t tid, void** retval);</span><br><span class="line">成功返回0，失败返回错误码。</span><br><span class="line">tid - 线程标识</span><br><span class="line">retval - 线程退出码</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>当调用pthread_join函数时：<br>tid线程已经终止，立刻返回，返回线程退出码。<br>tid线程尚未终止，阻塞等待，直到被汇合线程终止。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">void* 线程过程函数(void* 线程参数指针) &#123;</span><br><span class="line">    线程的执行过程</span><br><span class="line">    return p;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>线程过程函数返回一个指针P，内核将p传给 retval-&gt;q[ ]，汇合线程函数phread_join(…, &amp;q);就可以得到线程过程函数返回的内容。</p>
+<p>线程过程函数返回一个指针P，内核将p传给线程退出码retval-&gt;q[ ]，汇合线程函数phread_join(…, &amp;q);就可以得到线程过程函数返回的内容。</p>
 <p>phread_join主要做的工作：</p>
 <ul>
 <li>等待子线程终止</li>
@@ -290,7 +291,7 @@
 <h2 id="9-取消-其它-线程"><a href="#9-取消-其它-线程" class="headerlink" title="9.取消(其它)线程"></a>9.取消(其它)线程</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">int pthread_cancel(pthread_t tid);</span><br><span class="line">成功返回0，失败返回错误码。</span><br><span class="line">tid - 被取消线程的TID。</span><br></pre></td></tr></table></figure>
 <p>该函数只是向特定线程发出取消请求，并不等待其终止运行。缺省情况下，线程在收到取消请求以后，并不会立即终止，而是仍继续运行，直到达到某个取消点。在取消点处，线程检查其自身是否已被取消，若是则立即终止。取消点通常出现在一些特定的系统调用中。</p>
 <p><strong>设置调用线程的取消状态为接受或忽略取消请求：</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">int pthread_setcancelstate(int state, int* oldstate);</span><br><span class="line">state - 取消状态，可取以下值：</span><br><span class="line">PTHREAD_CANCEL_ENABLE - 接受取消请求(缺省)</span><br><span class="line">PTHREAD_CANCEL_DISABLE - 忽略取消请求</span><br><span class="line">old_state - 输出原取消状态，可取NULL。</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">int pthread_setcancelstate(int state, int* oldstate);</span><br><span class="line">state - 取消状态，可取以下值：</span><br><span class="line">    PTHREAD_CANCEL_ENABLE - 接受取消请求(缺省)</span><br><span class="line">    PTHREAD_CANCEL_DISABLE - 忽略取消请求</span><br><span class="line">old_state - 输出原取消状态，可取NULL。</span><br></pre></td></tr></table></figure>
 <p><strong>设置调用线程的取消类型为延迟取消或立即取消：</strong></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">int pthread_setcanceltype(int type, int* oldtype);</span><br><span class="line">type - 取消类型，可取以下值：</span><br><span class="line">    PTHREAD_CANCEL_DEFERRED - 延迟取消(缺省)，接到取消请求，如果不是忽略的话，继续运行一段时间，直到执行取消点时再终止。</span><br><span class="line">    PTHREAD_CANEL_ASYNCHRONOUS - 立即取消，接到取消请求，如果不是忽略的话，立刻终止运行。</span><br><span class="line">old_type - 输出原取消类型，可取NULL。</span><br></pre></td></tr></table></figure>
 <h2 id="10-线程冲突"><a href="#10-线程冲突" class="headerlink" title="10.线程冲突"></a>10.线程冲突</h2><p>g = 0<br>线程1                                   线程2<br>把内存(g=0)中的值读入寄存器(eax=0)<br>把寄存器(eax=0-&gt;1)中的值加1<br>把寄存器(eax=1)中的值存入内存(g=1)<br>                                  把内存(g=1)中的值读入寄存器(eax=1)<br>                                  把寄存器(eax=1-&gt;2)中的值加1<br>                                  把寄存器(eax=2)中的值存入内存(g=2)<br>线程1                                   线程2<br>把内存(g=0)中的值读入寄存器(eax=0)<br>                                  把内存(g=0)中的值读入寄存器(eax=0)<br>把寄存器(eax=0-&gt;1)中的值加1<br>                                  把寄存器(eax=0-&gt;1)中的值加1<br>把寄存器(eax=1)中的值存入内存(g=1)<br>                                  把寄存器(eax=1)中的值存入内存(g=1)</p>
@@ -313,6 +314,30 @@
 <p>将信号量的值加1。那些正阻塞于针对该信号量的sem_wait函数调用中的一个线程或进程将被唤醒，并在对信号量减1之后从sem_wait函数中返回。</p>
 <p><strong>获取信号量的当前值</strong></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">int sem_getvalue(sem_t* sem, int* sval);</span><br><span class="line">成功返回0，失败返回-1。</span><br><span class="line">sem - 信号量</span><br><span class="line">sval - 输出信号量的当前值，即当前可分配资源数</span><br></pre></td></tr></table></figure>
+<h3 id="信号量与信号量集"><a href="#信号量与信号量集" class="headerlink" title="信号量与信号量集"></a>信号量与信号量集</h3><p>信号量 —— semaphore<br>信号量集 —— semaphore arrays</p>
+<ul>
+<li>信号量可以用于进程与进程之间、线程与线程之间的通信</li>
+<li>信号量集只可以用于进程与进程之间的通信</li>
+</ul>
+<p><strong>信号量</strong></p>
+<p>信号量其实就是一个计数器，用于控制同时访问共享资源的进程/线程的总数（IPC中的信号量集只控制进程）</p>
+<p>信号量的使用方式：</p>
+<ol>
+<li>先赋初值，就是允许并行的进程最大数量。</li>
+<li>如果有进程访问， 计数-1，到0就阻塞访问进程。</li>
+<li>如果有进程结束访问，计数 + 1。</li>
+</ol>
+<p><strong>信号量集</strong></p>
+<p>信号量集就是将多个信号量放入数组，统一管理，IPC使用的是信号量的数组(信号量集)，而不是单一的信号量。<br>信号量集其实就是一个计数器数组，只能控制进程数量而不能互发数据。</p>
+<p>信号量集的使用步骤：</p>
+<ol>
+<li>生成一个key，使用ftok()</li>
+<li>创建/获取 信号量集的ID semget()</li>
+<li>给信号量集中的每个信号量赋初始值 semctl()</li>
+<li>semop()负责进程访问或者结束访问时。计数的 +1和 -1</li>
+<li>如果不再使用信号量集，可以使用scmctl() 删除</li>
+</ol>
+<p>转载自链接：<a target="_blank" rel="noopener" href="https://blog.csdn.net/Robot__Man/article/details/52235965">https://blog.csdn.net/Robot__Man/article/details/52235965</a></p>
 <h2 id="13-条件变量"><a href="#13-条件变量" class="headerlink" title="13.条件变量"></a>13.条件变量</h2><p>线程1<br>    …<br>    if (后续操作所依赖的条件不满足)<br>        睡眠于条件变量;<br>    后续操作<br>    …<br>线程2<br>    …<br>    创建出后续操作所依赖的条件<br>    唤醒在条件变量中睡眠的线程<br>    …</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">静态初始化</span><br><span class="line">pthread_cond_t cond &#x3D; PTHREAD_COND_INITIALIZER;</span><br><span class="line"></span><br><span class="line">动态初始化</span><br><span class="line">pthread_cond_init(&amp;cond, NULL);&#x2F;&#x2F;动态创建</span><br><span class="line">...</span><br><span class="line">pthread_cond_destroy(&amp;cond);&#x2F;&#x2F;销毁</span><br></pre></td></tr></table></figure>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">等待条件变量，即在条件变量中睡眠：</span><br><span class="line">int pthread_cond_wait(pthread_cond_t* cond, pthread_mutex_t* mutex);</span><br><span class="line">当调用线程在cond条件变量中睡眠期间mutex互斥会被解锁，直到该线程从条件变量中苏醒，即从该函数中返回再重新拥有该互斥锁。</span><br></pre></td></tr></table></figure>

@@ -195,6 +195,152 @@
             
 
   
+    <article id="post-Linux移植-uboot移植" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+  
+  
+    <h1 itemprop="name">
+	
+	  <a class="article-title" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-uboot%E7%A7%BB%E6%A4%8D/" target="_blank">Linux移植-uboot移植</a>
+  
+    </h1>
+  
+
+
+  
+  
+<a href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-uboot%E7%A7%BB%E6%A4%8D/" class="archive-article-date">
+        <time datetime="2021-04-13T06:44:05.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-13</time>
+</a>
+
+  
+  
+    
+
+  
+  </header>
+  
+  <div class="article-entry" itemprop="articleBody">
+    
+     <a id="more"></a>
+
+<p>半导体厂商会将 uboot 移植到他们自己的原厂开发板上，测试好以后就会将这个 uboot 发布出去，这就是原厂 BSP 包。我们一般做产品的时候就会参考原厂的开发板做硬件，然 后在原厂提供的 BSP 包上做修改，将 uboot 或者 linux kernel 移植到我们的硬件上。这个就是uboot 移植的一般流程： </p>
+<p>①、在 uboot 中找到参考的开发平台，一般是原厂的开发板。 </p>
+<p>②、参考原厂开发板移植 uboot 到我们所使用的开发板上。 </p>
+<h1 id="一、NXP官方Uboot编译与测试"><a href="#一、NXP官方Uboot编译与测试" class="headerlink" title="一、NXP官方Uboot编译与测试"></a>一、NXP官方Uboot编译与测试</h1><p>使用 mx6ull_14x14_evk_emmc_defconfig 作为默认配置文件。</p>
+<p>NXP 官方 I.MX6ULL EVK 开发板的 uboot 在正点原子 EMMC版本 I.MX6ULL 开发板上的运行情况： </p>
+<p>①、uboot 启动正常，DRAM 识别正确，SD 卡和 EMMC 驱动正常。 </p>
+<p>②、uboot 里面的 LCD 驱动默认是给 4.3 寸 480x272 分辨率的，如果使用的其他分辨率的屏幕需要修改驱动。 </p>
+<p>③、网络不能工作，识别不出来网络信息，需要修改驱动。 </p>
+<p>接下来我们要做的工作如下： </p>
+<p>①、前面我们一直使用着 NXP 官方开发板的 uboot 配置，接下来需要在 uboot 中添加我们自己的开发板，也就是正点原子的 I.MX6ULL 开发板。 </p>
+<p>②、解决 LCD 驱动和网络驱动的问题。 </p>
+<h1 id="二、移植NXP官方uboot到ALPHA开发板"><a href="#二、移植NXP官方uboot到ALPHA开发板" class="headerlink" title="二、移植NXP官方uboot到ALPHA开发板"></a>二、移植NXP官方uboot到ALPHA开发板</h1><p><strong>2.1 添加板子默认配置文件</strong><br>    借鉴NXP官方6ULL EVK开发板，默认配置文件也用他的，</p>
+<p><strong>2.2添加板子对应的头文件</strong><br>不同的板子，有一些需要配置的信息，一般是在一个头文件里面配置，每个板子有一个。对于NXP官方的6ULL EVK板子，这个头文件就是。复 制include/configs/mx6ullevk.h，并重命名为 mx6ull_alientek_emmc.h，</p>
+<p><strong>2.3 添加板子对应的板级文件夹</strong><br>每个板子都有特有的文件，也叫做板级文件。这里我们将mx6ullevk 的板级文件直接拷贝过来。</p>
+<p><strong>2.4 修改uboot的配置界面</strong></p>
+<p><strong>2.5 使用新添加的板子配置并编译Uboot</strong></p>
+<p><strong>2.6 LCD驱动修改</strong><br>    1、确定LCD IO初始化正确，mx6ull_alientek_emmc.c中的lcd_pads。<br>    2、LCD参数，mx6ull_alientek_emmc.c中的displays。fb_videomode表示RGB LCD参数。<br>    MX6ULL_LCDIF1_BASE_ADDR      (AIPS2_OFF_BASE_ADDR + 0x48000)<br>    AIPS2_OFF_BASE_ADDR         (ATZ2_BASE_ADDR + 0x80000)<br>    ATZ2_BASE_ADDR              AIPS2_ARB_BASE_ADDR<br>    AIPS2_ARB_BASE_ADDR             0x02100000<br>    MX6ULL_LCDIF1_BASE_ADDR = 0x02100000 +  0x80000 +  0x48000 = 0x21c8000</p>
+<p>​    Panel环境变量表示LCD ID。</p>
+<p><strong>2.7 网络驱动修改</strong><br>    6ULL网络方案采用内部MAC+外部PHY，6ULL官方开发板使用的PHY芯片就是KSZ8081。正点原子的ALPHA开发板没有使用KSZ8081，我们使用的LAN8720A。因此要修改驱动。<br>    LAN872有一个管理接口，叫做MDIO，两根线，MDIO和MDC，一个MDIO接口可以管理32个PHY芯片。MIDO通过PHY ADDR来确定访问那个PHY芯片。ALPHA开发板ENET1的PHY ADDR是0x0，ENET2的PHY ADDR是0X1.<br>每个LAN8720都有一个复位引脚，ENET1是SNVS_TAMPER7，ENET2是SNVS_TAMPER8。</p>
+<p>LAN8720驱动，因为所有的PHY，其前32个寄存器一模一样，因此uboot里面已经写好了通用PHY驱动，所以理论上不需要修改。</p>
+<p>驱动修改<br>1、修改PHY ADDR<br>2、删除原有的74LV595相关代码。<br>3、添加ALPHA开发板的网络复位IO</p>
+<p>2.8 其他需要修改的地方</p>
+<h1 id="三、bootcmd和bootargs环境变量"><a href="#三、bootcmd和bootargs环境变量" class="headerlink" title="三、bootcmd和bootargs环境变量"></a>三、bootcmd和bootargs环境变量</h1><p>3.1 bootcmd环境变量<br>    宏CONFIG_BOOTCOMMAND也可以设置bootcmd的值。</p>
+<pre><code>   &quot;run findfdt;&quot; \
+   &quot;mmc dev $&#123;mmcdev&#125;;&quot; \
+   &quot;mmc dev $&#123;mmcdev&#125;; if mmc rescan; then &quot; \
+       &quot;if run loadbootscript; then &quot; \
+           &quot;run bootscript; &quot; \
+       &quot;else &quot; \
+           &quot;if run loadimage; then &quot; \
+               &quot;run mmcboot; &quot; \
+           &quot;else run netboot; &quot; \
+           &quot;fi; &quot; \
+       &quot;fi; &quot; \
+   &quot;else run netboot; fi&quot;
+
+Findfdt 设置fdt_file环境变量，也就是dtb文件名字。
+</code></pre>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mmc dev 1   &#x2F;&#x2F;切换到emmc</span><br><span class="line">fatload mmc 1:1 80800000 zImage</span><br><span class="line">fatload mmc 1:1 83000000 imx6ull-14x14-evk.dtb</span><br><span class="line">booz 80800000 - 83000000</span><br></pre></td></tr></table></figure>
+
+<pre><code>&quot;loadbootscript=&quot; \
+    &quot;fatload mmc $&#123;mmcdev&#125;:$&#123;mmcpart&#125; $&#123;loadaddr&#125; $&#123;script&#125;;\0&quot; \
+展开：fatload mmc 1:1 80800000 boot.scr
+</code></pre>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">loadimage&#x3D;fatload mmc $&#123;mmcdev&#125;:$&#123;mmcpart&#125; $&#123;loadaddr&#125; $&#123;image&#125;\0&quot; \</span><br><span class="line">展开：fatload mmc 1:1 80800000 zImage</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&quot;loadfdt&#x3D;fatload mmc $&#123;mmcdev&#125;:$&#123;mmcpart&#125; $&#123;fdt_addr&#125; $&#123;fdt_file&#125;\0&quot; \</span><br><span class="line">展开：fatload mmc 1:1 83000000 imx6ull-14x14-evk.dtb</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">bootz $&#123;loadaddr&#125; - $&#123;fdt_addr&#125;;</span><br><span class="line">booz 80800000 - 83000000</span><br></pre></td></tr></table></figure>
+<p>3.2 bootargs环境变量<br>    宏CONFIG_BOOTARGS也可以设置bootargs的值</p>
+<p>mmcargs=setenv bootargs console=${console},${baudrate} “ <br>        CONFIG_BOOTARGS_CMA_SIZE \</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&quot;root&#x3D;$&#123;mmcroot&#125;\0&quot; \</span><br><span class="line">展开以后就是：</span><br><span class="line">bootargs console&#x3D; ttymxc0,115200 root&#x3D;&#x2F;dev&#x2F;mmcblk1p2</span><br></pre></td></tr></table></figure>
+<p>Bootargs是会传递给Linux内核，设置了一些东西，Bootargs环境变量也叫做命令行参数。</p>
+<h1 id="四、uboot启动Linux测试"><a href="#四、uboot启动Linux测试" class="headerlink" title="四、uboot启动Linux测试"></a>四、uboot启动Linux测试</h1><p><strong>4.1 从EMMC启动</strong></p>
+<p>从 EMMC 启动也就是将编译出来的 Linux 镜像文件 zImage 和设备树文件保存在 EMMC中，uboot 从 EMMC 中读取这两个文件并启动，这个是我们产品最终的启动方式。    </p>
+<p>1、首先查看EMMC里面是否有系统，linux镜像zImage和.dtb文件。先将当前设备切换到EMMC：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mmc dev 1	&#x2F;&#x2F;切换到EMMC</span><br><span class="line">fatls mmc 1:1  &#x2F;&#x2F;查看EMMC分区1里面的文件</span><br><span class="line">fatload mmc 1:1 80800000 zImage &#x2F;&#x2F;将zimage下载到DDR的0x80800000处</span><br><span class="line">fatload mmc 1:1 83000000 imx6ull-14x14-emmc-7-1024x600-c.dtb &#x2F;&#x2F;将dtb读取到0X83000000</span><br><span class="line">bootz 80800000 – 83000000 &#x2F;&#x2F;启动内核</span><br></pre></td></tr></table></figure>
+<p>如果内核启动成功，说明uboot支持emmc启动，验证成功。</p>
+<p><strong>4.2 从网络启动</strong></p>
+<p>从网络启动 linux 系统的唯一目的就是为了调试！不管是为了调试 linux 系统还是 linux 下的驱动，每次修改 linux 系统文件或者 linux 下的某个驱动以后都要将其烧写到 EMMC 中去测试，这样太麻烦了。可以设置 linux 从网络启动，也就是将 linux 镜像文件和根文件系统都放到 Ubuntu 下某个指定的文件夹中，每次重新编译 linux 内核或者某个 linux 驱动以后只需要使用 cp 命令将其拷贝到这个指定的文件夹中即可，这样就不用需要频繁的烧写 EMMC，加快了开发速度。</p>
+<p>我们可以通过 nfs 或者 tftp 从 Ubuntu 中下载 zImage 和设备树文件，根文件系统的话可以通过 nfs 挂载。</p>
+<p>现通过tftp下载，将 zImage 和设备树文件放到 Ubuntu 下的 tftp 目录中，</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">tftp 80800000 zImage		&#x2F;&#x2F;从tftp服务器下载zimage</span><br><span class="line">tftp 83000000 imx6ull-14x14-emmc-7-1024x600-c.dtb &#x2F;&#x2F;从tftp服务器下载.dtb	</span><br><span class="line">bootz 80800000 – 83000000 &#x2F;&#x2F;启动系统</span><br></pre></td></tr></table></figure>
+<h1 id="五、uboot-DDR初始化"><a href="#五、uboot-DDR初始化" class="headerlink" title="五、uboot DDR初始化"></a>五、uboot DDR初始化</h1><p>1、裸机<br>imxdownload软件下载，会在bin文件头部添加IVT DCD数据，</p>
+<p>2、uboot<br>uboot编译生成u-boot.imx。u-boot.imx已经包含了IVT DCD数据。<br>u-boot.imx的头部信息是怎么添加的？u-boot.imx的DCD中的DDR初始化代码该怎么修改？<br>uboot编译会输出</p>
+<p>  ./tools/mkimage -n board/freescale/mx6ull_alientek_emmc/imximage.cfg.cfgtmp -T imximage -e 0x87800000 -d u-boot.bin u-boot.imx    </p>
+<p>可以看出uboot使用/tools/mkimage工具，向u-boot.bin添加board/freescale/mx6ull_alientek_emmc/imximage.cfg.cfgtmp文件信息，从而得到u-boot.imx。</p>
+<p>默认只有imximage.cfg文件，imximage.cfg里面保存的就是DCD数据。DDR初始化也此文件里面。<br>我们要修改DDR初始化代码，就需要修改imximage.cfg文件。此文件默认拷贝的NXP给IMX6ULL EVK开发板写的，默认是给512MB DDR3L写的。</p>
+<h1 id="六、总结"><a href="#六、总结" class="headerlink" title="六、总结"></a>六、总结</h1><p>①、不管是购买的开发板还是自己做的开发板，基本都是参考半导体厂商的 dmeo 板，而半导体厂商会在他们自己的开发板上移植好uboot、linux kernel 和 rootfs 等，最终制作好 BSP包提供给用户。我们可以在官方提供的 BSP包的基础上添加我们的板子，也就是俗称的移植。 </p>
+<p>②、我们购买的开发板或者自己做的板子一般都不会原封不动的照抄半导体厂商的 demo板，都会根据实际的情况来做修改，既然有修改就必然涉及到 uboot 下驱动的移植。 </p>
+<p>③、一般 uboot 中需要解决串口、NAND、EMMC 或 SD 卡、网络和 LCD 驱动，因为 uboot的主要目的就是启动 Linux 内核，所以不需要考虑太多的外设驱动。 </p>
+<p>④、在 uboot 中添加自己的板子信息，根据自己板子的实际情况来修改 uboot 中的驱动。</p>
+
+    
+
+    
+
+    
+
+  </div>
+  <div class="article-info article-info-index">
+    
+    
+    
+
+    
+    <p class="article-more-link">
+      <a class="article-more-a" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-uboot%E7%A7%BB%E6%A4%8D/">展开 >></a>
+    </p>
+    
+
+    
+    <div class="clearfix"></div>
+  </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-Linux移植-uboot启动流程" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -1259,98 +1405,9 @@
 
 
   
-    <article id="post-RAM与ROM" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-  
-  
-    <h1 itemprop="name">
-	
-	  <a class="article-title" href="/2021/04/11/RAM%E4%B8%8EROM/" target="_blank">RAM与ROM</a>
-  
-    </h1>
-  
-
-
-  
-  
-<a href="/2021/04/11/RAM%E4%B8%8EROM/" class="archive-article-date">
-        <time datetime="2021-04-11T09:51:51.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-11</time>
-</a>
-
-  
-  
-    
-
-  
-  </header>
-  
-  <div class="article-entry" itemprop="articleBody">
-    
-     <a id="more"></a>
-
-<p>RAM：随机存储器，可以随时进行读写操作，速度很快，掉电以后数据会丢失。比如内存 条、SRAM、SDRAM、DDR 等都是 RAM。RAM 一般用来保存程序数据、中间结果，们可以随意的对 RAM 中任何地址的数据进行读写操作， 非常方便。 </p>
-<p><strong>ROM</strong>：只读存储器，目前“只读存储器”这个定义不准确。手机是 4+64 或 6+128 配置，说的就是 RAM 为 4GB 或 6GB，ROM 为 64G 或 128GB。但是这个 ROM 是 Flash，比如 EMMC 或 UFS 存储器，因为历史原因，很多人还是将Flash 叫做 ROM。但是 EMMC 和 UFS，甚至是 NAND Flash，这些都是可以进行写操作的！只是写起来比较麻烦，要先发送要先进行擦除，然后在发送要写的地址或扇区，最后才是要写入的数据。相比于 RAM，向 ROM 或者 Flash 写入数据要复杂很多，因此意味着速度就会变慢(相比 RAM)， 但是 ROM 和 Flash 可以将容量做的很大，而且掉电以后数据不会丢失，适合用来存储资料。</p>
-<p>综上所述，RAM 速度快，可以直接和 CPU 进行通信，但是掉电以后数据会丢失，容量不 容易做大(和同价格的 Flash 相比)。ROM(目前来说，更适合叫做 Flash)速度虽然慢，但是容量大、适合存储数据。I.MX6U-ALPHA 开发板的256MB/512MB 的 DDR3 就是 RAM，而 512MB NANF Flash 或 8GB EMMC 就是 ROM。</p>
-<p><strong>SRAM</strong>：全称叫做 Static Random-Access Memory，也就是静态随机存储器，这里的“静态” 说的就是只要 SRAM 上电，那么 SRAM 里面的数据就会一直保存着，直到 SRAM 掉电。对于RAM而言需要可以随机的读取任意一个地址空间内的数据，因此采用了地址线和数据线分离的方式，SRAM 最大的缺点就是成本高！SRAM 突出的特点就是无需刷新(SDRAM 需要刷新)，读写速度快！所以 SRAM 通常作为 SOC 的内部 RAM 使用或 Cache 使用，</p>
-<p><strong>SDRAM</strong>：全称是 Synchronous Dynamic Random Access Memory，同步动态随机存储器，“同步”的意思是 SDRAM 工作需要时钟线，“动态”的意思是 SDRAM 中的数据需要不断的刷新来保证数据不会丢失，“随机”  的意思就是可以读写任意地址的数据。 与 SRAM 相比，SDRAM 集成度高、功耗低、成本低、适合做大容量存储，但是需要定时 刷新来保证数据不会丢失。因此 SDRAM 适合用来做内存条，SRAM 适合做高速缓存或 MCU 内部的 RAM。</p>
-<p>SDRAM 目前已经发展到了第四代，分别为：SDRAM、DDR SDRAM、DDR2  SDRAM、DDR3 SDRAM、DDR4 SDRAM。</p>
-<p><strong>DDR</strong> 内存是 SDRAM 的升级版本，SDRAM 分为 SDR SDRAM、DDR SDRAM、DDR2 SDRAM、DDR3 SDRAM、DDR4 SDRAM。可以看出 DDR 本质上还是SDRAM，只是随着技术的不断发展，DDR 也在不断的更新换代。</p>
-<p>DDR 全称是 Double Data Rate SDRAM，也就是双倍速率 SDRAM，看名字就知道 DDR 的速率(数据传输速率)比 SDRAM 高 1 倍！这 1 倍的速度不是简简单单的将 CLK 提高 1 倍， SDRAM 在一个 CLK 周期传输一次数据，DDR 在一个 CLK 周期传输两次数据，也就是在上升沿和下降沿各传输一次数据，这个概念叫做预取(prefetch)，相当于 DDR 的预取为 2bit，因此 DDR 的速度直接加倍！同样 133<del>200MHz的频率，DDR 的传输速度就变为了 266</del>400MT/S，所以大家常说的 DDR266、DDR400 就是这么来的。 </p>
-<p><strong>DDR2</strong> 的 IO 时钟是 DDR 的 2 倍，因此 DDR 内核时钟依旧是 133<del>200MHz 的时候，总线 速度就是 266</del>400MHz。而且 DDR2 在 DDR 基础上进一步增加预取(prefetch)，增加到了 4bit， 相当于比 DDR 多读取一倍的数据，因此 DDR2 的数据传输速率就是 533~800MT/s，这个也是大家常说的 DDR2 533、DDR2 800。</p>
-<p><strong>DDR3</strong> 在 DDR2 的基础上将预取(prefetch)提高到 8bit，因此又获得了比 DDR2 高一倍的传 输速率，因此在总线时钟同样为 266<del>400MHz 的情况下，DDR3 的传输速率就是 1066</del>1600MT/S。 </p>
-<p>I.MX6U 的 MMDC 外设用于连接 DDR，支持 LPDDR2、DDR3、DDR3L，最高支持 16 位数据 位宽。总线速度为 400MHz(实际是 396MHz)，数据传输速率最大为 800MT/S。</p>
-<p>LPDDR3、DDR3 和 DDR3L 的区别，这三个都是 DDR3，但是区别主要在于工作电压，LPDDR3 叫做低功耗 DDR3，工作电压为 1.2V。DDR3 叫做标压 DDR3，工作电压为 1.5V，一般台式内存条都是 DDR3。DDR3L 是低压 DDR3，工作电压为 1.35V，一般手机、嵌入式、笔记本等都使用 DDR3L。 </p>
-<p>正点原子的 I.MX6U-ALPHA 开发板上接了一个 256MB/512MB 的 DDR3L.</p>
-
-    
-
-    
-
-    
-
-  </div>
-  <div class="article-info article-info-index">
-    
-    
-    
-
-    
-    <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/11/RAM%E4%B8%8EROM/">展开 >></a>
-    </p>
-    
-
-    
-    <div class="clearfix"></div>
-  </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/page/4/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/6/">Next &amp;raquo;</a>
+      <a class="extend prev" rel="prev" href="/page/4/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><a class="page-number" href="/page/7/">7</a><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/6/">Next &amp;raquo;</a>
     </nav>
   
 

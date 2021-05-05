@@ -195,6 +195,95 @@
             
 
   
+    <article id="post-RAM与ROM" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+  
+  
+    <h1 itemprop="name">
+	
+	  <a class="article-title" href="/2021/04/11/RAM%E4%B8%8EROM/" target="_blank">RAM与ROM</a>
+  
+    </h1>
+  
+
+
+  
+  
+<a href="/2021/04/11/RAM%E4%B8%8EROM/" class="archive-article-date">
+        <time datetime="2021-04-11T09:51:51.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-11</time>
+</a>
+
+  
+  
+    
+
+  
+  </header>
+  
+  <div class="article-entry" itemprop="articleBody">
+    
+     <a id="more"></a>
+
+<p>RAM：随机存储器，可以随时进行读写操作，速度很快，掉电以后数据会丢失。比如内存 条、SRAM、SDRAM、DDR 等都是 RAM。RAM 一般用来保存程序数据、中间结果，们可以随意的对 RAM 中任何地址的数据进行读写操作， 非常方便。 </p>
+<p><strong>ROM</strong>：只读存储器，目前“只读存储器”这个定义不准确。手机是 4+64 或 6+128 配置，说的就是 RAM 为 4GB 或 6GB，ROM 为 64G 或 128GB。但是这个 ROM 是 Flash，比如 EMMC 或 UFS 存储器，因为历史原因，很多人还是将Flash 叫做 ROM。但是 EMMC 和 UFS，甚至是 NAND Flash，这些都是可以进行写操作的！只是写起来比较麻烦，要先发送要先进行擦除，然后在发送要写的地址或扇区，最后才是要写入的数据。相比于 RAM，向 ROM 或者 Flash 写入数据要复杂很多，因此意味着速度就会变慢(相比 RAM)， 但是 ROM 和 Flash 可以将容量做的很大，而且掉电以后数据不会丢失，适合用来存储资料。</p>
+<p>综上所述，RAM 速度快，可以直接和 CPU 进行通信，但是掉电以后数据会丢失，容量不 容易做大(和同价格的 Flash 相比)。ROM(目前来说，更适合叫做 Flash)速度虽然慢，但是容量大、适合存储数据。I.MX6U-ALPHA 开发板的256MB/512MB 的 DDR3 就是 RAM，而 512MB NANF Flash 或 8GB EMMC 就是 ROM。</p>
+<p><strong>SRAM</strong>：全称叫做 Static Random-Access Memory，也就是静态随机存储器，这里的“静态” 说的就是只要 SRAM 上电，那么 SRAM 里面的数据就会一直保存着，直到 SRAM 掉电。对于RAM而言需要可以随机的读取任意一个地址空间内的数据，因此采用了地址线和数据线分离的方式，SRAM 最大的缺点就是成本高！SRAM 突出的特点就是无需刷新(SDRAM 需要刷新)，读写速度快！所以 SRAM 通常作为 SOC 的内部 RAM 使用或 Cache 使用，</p>
+<p><strong>SDRAM</strong>：全称是 Synchronous Dynamic Random Access Memory，同步动态随机存储器，“同步”的意思是 SDRAM 工作需要时钟线，“动态”的意思是 SDRAM 中的数据需要不断的刷新来保证数据不会丢失，“随机”  的意思就是可以读写任意地址的数据。 与 SRAM 相比，SDRAM 集成度高、功耗低、成本低、适合做大容量存储，但是需要定时 刷新来保证数据不会丢失。因此 SDRAM 适合用来做内存条，SRAM 适合做高速缓存或 MCU 内部的 RAM。</p>
+<p>SDRAM 目前已经发展到了第四代，分别为：SDRAM、DDR SDRAM、DDR2  SDRAM、DDR3 SDRAM、DDR4 SDRAM。</p>
+<p><strong>DDR</strong> 内存是 SDRAM 的升级版本，SDRAM 分为 SDR SDRAM、DDR SDRAM、DDR2 SDRAM、DDR3 SDRAM、DDR4 SDRAM。可以看出 DDR 本质上还是SDRAM，只是随着技术的不断发展，DDR 也在不断的更新换代。</p>
+<p>DDR 全称是 Double Data Rate SDRAM，也就是双倍速率 SDRAM，看名字就知道 DDR 的速率(数据传输速率)比 SDRAM 高 1 倍！这 1 倍的速度不是简简单单的将 CLK 提高 1 倍， SDRAM 在一个 CLK 周期传输一次数据，DDR 在一个 CLK 周期传输两次数据，也就是在上升沿和下降沿各传输一次数据，这个概念叫做预取(prefetch)，相当于 DDR 的预取为 2bit，因此 DDR 的速度直接加倍！同样 133<del>200MHz的频率，DDR 的传输速度就变为了 266</del>400MT/S，所以大家常说的 DDR266、DDR400 就是这么来的。 </p>
+<p><strong>DDR2</strong> 的 IO 时钟是 DDR 的 2 倍，因此 DDR 内核时钟依旧是 133<del>200MHz 的时候，总线 速度就是 266</del>400MHz。而且 DDR2 在 DDR 基础上进一步增加预取(prefetch)，增加到了 4bit， 相当于比 DDR 多读取一倍的数据，因此 DDR2 的数据传输速率就是 533~800MT/s，这个也是大家常说的 DDR2 533、DDR2 800。</p>
+<p><strong>DDR3</strong> 在 DDR2 的基础上将预取(prefetch)提高到 8bit，因此又获得了比 DDR2 高一倍的传 输速率，因此在总线时钟同样为 266<del>400MHz 的情况下，DDR3 的传输速率就是 1066</del>1600MT/S。 </p>
+<p>I.MX6U 的 MMDC 外设用于连接 DDR，支持 LPDDR2、DDR3、DDR3L，最高支持 16 位数据 位宽。总线速度为 400MHz(实际是 396MHz)，数据传输速率最大为 800MT/S。</p>
+<p>LPDDR3、DDR3 和 DDR3L 的区别，这三个都是 DDR3，但是区别主要在于工作电压，LPDDR3 叫做低功耗 DDR3，工作电压为 1.2V。DDR3 叫做标压 DDR3，工作电压为 1.5V，一般台式内存条都是 DDR3。DDR3L 是低压 DDR3，工作电压为 1.35V，一般手机、嵌入式、笔记本等都使用 DDR3L。 </p>
+<p>正点原子的 I.MX6U-ALPHA 开发板上接了一个 256MB/512MB 的 DDR3L.</p>
+
+    
+
+    
+
+    
+
+  </div>
+  <div class="article-info article-info-index">
+    
+    
+    
+
+    
+    <p class="article-more-link">
+      <a class="article-more-a" href="/2021/04/11/RAM%E4%B8%8EROM/">展开 >></a>
+    </p>
+    
+
+    
+    <div class="clearfix"></div>
+  </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-IMX6U-GPT定时器" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -1384,128 +1473,9 @@
 
 
   
-    <article id="post-IMX6U定时" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-  
-  
-    <h1 itemprop="name">
-	
-	  <a class="article-title" href="/2021/03/04/IMX6U%E5%AE%9A%E6%97%B6/" target="_blank">IMX6U定时</a>
-  
-    </h1>
-  
-
-
-  
-  
-<a href="/2021/03/04/IMX6U%E5%AE%9A%E6%97%B6/" class="archive-article-date">
-        <time datetime="2021-03-03T16:00:25.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-03-04</time>
-</a>
-
-  
-  
-    
-
-  
-  </header>
-  
-  <div class="article-entry" itemprop="articleBody">
-    
-     <a id="more"></a>
-
-<h1 id="一、EPIT简介"><a href="#一、EPIT简介" class="headerlink" title="一、EPIT简介"></a>一、EPIT简介</h1><p>​    1、EPIT是32位的一个向下计数器。</p>
-<p>​    2、EPIT的时钟源可以选择，我们选择ipg_clk=66MHz。</p>
-<p>​    3、可以对时钟源进行分频，12位的分频器，0<del>4095分别代表1</del>4096分频。</p>
-<p>​    4、开启定时器以后，计数寄存器会每个时钟减1，如果和比较寄存器里面的值相等的话就会触发中断。</p>
-<p>​    EPIT有两种工作模式：Set-add-forget，一个是free-runing</p>
-<p>​    5、6ULL有两个EPIT定时器。</p>
-<p>​    EPIT_CR寄存器用于配置EPIT。</p>
-<h1 id="二、实验原理简介"><a href="#二、实验原理简介" class="headerlink" title="二、实验原理简介"></a>二、实验原理简介</h1><p>​    EPIT_CR bit0为1，设置EPIT使能，bit1为1，设置计数器的初始值为记载寄存器的值。Bit2为1使能比较中断，bit3为1设置定时器工作在set-and-forget模式下。Bit15~bit4设置分频值。Bit25:24设置时钟源的选择，我们设置为1，那么EPIT的时钟源就为ipg_clock=66MHz    </p>
-<p>​    EPIT_SR寄存器，只有bit0有效，表示中断状态，写1清零。当OCIF位为1的时候表示中断发生，为0的时候表示中断未发生。我们处理完定时器中断以后一定要清除中断标志位。</p>
-<p>​    EPIT_LR寄存器设置计数器的加载值。计数器每次计时到0以后就会读取LR寄存器的值重新开始计时。</p>
-<p>​    CMPR比较计数器，当计数器的值和CMPR相等以后就会产生比较中断。</p>
-<p>​    使用EPIT实现500ms周期的定时器。我们在EPIT中断服务函数里面让LED灯亮灭。</p>
-<h1 id="三、实验程序编写"><a href="#三、实验程序编写" class="headerlink" title="三、实验程序编写"></a>三、实验程序编写</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;***************************************************************</span><br><span class="line">描述   : EPIT定时器驱动文件。</span><br><span class="line"></span><br><span class="line">其他   : 配置EPIT定时器，实现EPIT定时器中断处理函数</span><br><span class="line">***************************************************************&#x2F;</span><br><span class="line">\#include &quot;bsp_epittimer.h&quot;</span><br><span class="line">\#include &quot;bsp_int.h&quot;</span><br><span class="line">\#include &quot;bsp_led.h&quot;</span><br><span class="line">&#x2F;*</span><br><span class="line"></span><br><span class="line"> \* @description   : 初始化EPIT定时器.</span><br><span class="line"> \*          EPIT定时器是32位向下计数器,时钟源使用ipg&#x3D;66Mhz    </span><br><span class="line"> \* @param - frac  : 分频值，范围为0~4095，分别对应1~4096分频。</span><br><span class="line"> \* @param - value  : 倒计数值。</span><br><span class="line"> \* @return     : 无</span><br><span class="line"> *&#x2F;</span><br><span class="line"></span><br><span class="line">void epit1_init(unsigned int frac, unsigned int value)</span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">  if(frac &gt; 0XFFF)</span><br><span class="line">​    frac &#x3D; 0XFFF;</span><br><span class="line">  EPIT1-&gt;CR &#x3D; 0; &#x2F;* 先清零CR寄存器 *&#x2F;</span><br><span class="line"></span><br><span class="line">  &#x2F;*</span><br><span class="line">   \* CR寄存器:</span><br><span class="line">   \* bit25:24 01 时钟源选择Peripheral clock&#x3D;66MHz</span><br><span class="line">   \* bit15:4 frac 分频值</span><br><span class="line">   \* bit3:  1 当计数器到0的话从LR重新加载数值</span><br><span class="line">   \* bit2:  1 比较中断使能</span><br><span class="line">   \* bit1:  1 初始计数值来源于LR寄存器值</span><br><span class="line">   \* bit0:  0 先关闭EPIT1</span><br><span class="line">   *&#x2F;</span><br><span class="line"></span><br><span class="line">  EPIT1-&gt;CR &#x3D; (1&lt;&lt;24 | frac &lt;&lt; 4 | 1&lt;&lt;3 | 1&lt;&lt;2 | 1&lt;&lt;1)</span><br><span class="line">  EPIT1-&gt;LR &#x3D; value; &#x2F;* 倒计数值 *&#x2F;</span><br><span class="line">  EPIT1-&gt;CMPR &#x3D; 0;  &#x2F;* 比较寄存器，当计数器值和此寄存器值相等的话就会产生中断 *&#x2F;</span><br><span class="line">  &#x2F;* 使能GIC中对应的中断     *&#x2F;</span><br><span class="line">  GIC_EnableIRQ(EPIT1_IRQn);</span><br><span class="line"></span><br><span class="line">  &#x2F;* 注册中断服务函数       *&#x2F;</span><br><span class="line">  system_register_irqhandler(EPIT1_IRQn, (system_irq_handler_t)epit1_irqhandler, NULL);  </span><br><span class="line">  EPIT1-&gt;CR |&#x3D; 1&lt;&lt;0; &#x2F;* 使能EPIT1 *&#x2F; </span><br><span class="line">&#125;</span><br><span class="line">&#x2F;*</span><br><span class="line"> \* @description     : EPIT中断处理函数</span><br><span class="line"> \* @param        : 无</span><br><span class="line"> \* @return       : 无</span><br><span class="line"> *&#x2F;</span><br><span class="line">void epit1_irqhandler(void)</span><br><span class="line">&#123; </span><br><span class="line">  static unsigned char state &#x3D; 0;</span><br><span class="line">  state &#x3D; !state;</span><br><span class="line">  if(EPIT1-&gt;SR &amp; (1&lt;&lt;0))     &#x2F;* 判断比较事件发生 *&#x2F;</span><br><span class="line">  &#123;</span><br><span class="line">​    led_switch(LED0, state);  &#x2F;* 定时器周期到，反转LED *&#x2F;</span><br><span class="line">  &#125;</span><br><span class="line">  EPIT1-&gt;SR |&#x3D; 1&lt;&lt;0;       &#x2F;* 清除中断标志位 *&#x2F;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-    
-
-    
-
-    
-
-  </div>
-  <div class="article-info article-info-index">
-    
-    
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">linux</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">IMX6U</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">蜂鸣器</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-    
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/Linux//" class="article-tag-list-link color1">Linux</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-    
-    <p class="article-more-link">
-      <a class="article-more-a" href="/2021/03/04/IMX6U%E5%AE%9A%E6%97%B6/">展开 >></a>
-    </p>
-    
-
-    
-    <div class="clearfix"></div>
-  </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/page/5/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/7/">Next &amp;raquo;</a>
+      <a class="extend prev" rel="prev" href="/page/5/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/7/">Next &amp;raquo;</a>
     </nav>
   
 
