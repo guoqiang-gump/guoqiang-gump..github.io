@@ -195,7 +195,7 @@
             
 
   
-    <article id="post-Linux驱动-Linux中断下半部机制" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-C-1" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -203,7 +203,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-Linux%E4%B8%AD%E6%96%AD%E4%B8%8B%E5%8D%8A%E9%83%A8%E6%9C%BA%E5%88%B6/" target="_blank">Linux驱动-Linux中断下半部机制</a>
+	  <a class="article-title" href="/2021/08/21/C-1/" target="_blank">C++_1</a>
   
     </h1>
   
@@ -211,8 +211,8 @@
 
   
   
-<a href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-Linux%E4%B8%AD%E6%96%AD%E4%B8%8B%E5%8D%8A%E9%83%A8%E6%9C%BA%E5%88%B6/" class="archive-article-date">
-        <time datetime="2021-04-15T16:04:12.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-16</time>
+<a href="/2021/08/21/C-1/" class="archive-article-date">
+        <time datetime="2021-08-21T03:22:05.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-08-21</time>
 </a>
 
   
@@ -224,10 +224,43 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="上半部与下半部"><a href="#上半部与下半部" class="headerlink" title="上半部与下半部"></a>上半部与下半部</h1><p>上半部和下半部也称为顶半部和底半部。在使用 request_irq 申请中断的时候注册的中断服务函数属于中断处理的上半部，只要中断触发，那么中断处理函数就会执行。中断处理函数一定要快点执行完毕，越短越好，但是有些中断处理过程就是比较费时间，必须要对其进行处理，缩小中断处理函数的执行时间。</p>
-    
-    <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-Linux%E4%B8%AD%E6%96%AD%E4%B8%8B%E5%8D%8A%E9%83%A8%E6%9C%BA%E5%88%B6/#more">more >></a>
-    
+    <h1 id="C-编程习惯："><a href="#C-编程习惯：" class="headerlink" title="C++编程习惯："></a>C++编程习惯：</h1><p>1 慎用宏，可以使用const、enum、inline替换</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">#define PAI 3.14</span><br><span class="line">--》const double PAI &#x3D; 3.14;</span><br><span class="line"></span><br><span class="line">#define SLEEP 0</span><br><span class="line">#define RUN	 1</span><br><span class="line">#define STOP  2</span><br><span class="line">--》enum STATE&#123;SLEEP,RUN,STOP&#125;;</span><br><span class="line"></span><br><span class="line">#define Max(a,b) ((a)&gt;(b)?(a):(b)) </span><br><span class="line">--》inline int Max(int a,int b)&#123;</span><br><span class="line">			return a &gt; b ? a : b;</span><br><span class="line">		&#125;</span><br></pre></td></tr></table></figure>
+<p>2 变量随用随声明同时初始化<br>3 尽量使用new/delete替换malloc/free<br>4 少用void* 、指针计算、联合体和强制转换<br>5 尽量使用string表示字符串，少用C风格的char*/char[]</p>
+<h1 id="C与C-区别"><a href="#C与C-区别" class="headerlink" title="C与C++区别"></a>C与C++区别</h1><p>1）都是编译型语言<br>2）都是强类型语言，但是C++更强<br>3）C++去除了C中不好的特性<br>4）C++增加了很多C语言中没有的好的语法特性，全面支持面向对象，比C语言更适合大型软件开发。</p>
+<h1 id="二-第一个C-程序"><a href="#二-第一个C-程序" class="headerlink" title="二 第一个C++程序"></a>二 第一个C++程序</h1><h2 id="1-编译方式"><a href="#1-编译方式" class="headerlink" title="1 编译方式"></a>1 编译方式</h2><p>1）gcc xx.cpp -lstdc++<br>2）g++ xx.cpp //推荐</p>
+<h2 id="2-文件扩展名"><a href="#2-文件扩展名" class="headerlink" title="2 文件扩展名"></a>2 文件扩展名</h2><p>1）.cpp //推荐<br>2）.cc<br>3）.C<br>4）.cxx                                                             </p>
+<h2 id="3-头文件"><a href="#3-头文件" class="headerlink" title="3 头文件"></a>3 头文件</h2><p>  #include  <iostream><br>  –》C++中和I/O相关的类型、对象、函数都在在头文件中<br>  –》C++中大多数头文件没有”.h”后缀</p>
+<p>  注：在C++中开发中，依然可以使用标准C库的头文件，另外在C++中还提供一套不带“.h”替换版本.<br>  #include &lt;stdio.h&gt; ==&gt; #include <cstdio><br>  #include &lt;stdlib.h&gt; ==&gt; #include <cstdlib><br>  #include &lt;string.h&gt; ==&gt; #include <cstring><br>  …</p>
+<h2 id="4-C-中标准输入和输出"><a href="#4-C-中标准输入和输出" class="headerlink" title="4 C++中标准输入和输出"></a>4 C++中标准输入和输出</h2><p>1）cin对象表示标准输入//类似scanf</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;从键盘读取一个int数据</span><br><span class="line">int num&#x3D;0;</span><br><span class="line">scanf(&quot;%d&quot;,&amp;num);&#x2F;&#x2F;C语言</span><br><span class="line">cin &gt;&gt; num;&#x2F;&#x2F;C++语言</span><br><span class="line">注：“&gt;&gt;”被称为输入(提取)操作符</span><br><span class="line">&#x2F;&#x2F;从键盘同时读取一个int和一个double数据</span><br><span class="line">int i&#x3D;0,double d &#x3D; 0.0;</span><br><span class="line">scanf(&quot;%d%lf&quot;,&amp;i,&amp;d);&#x2F;&#x2F;C语言</span><br><span class="line">cin &gt;&gt; i &gt;&gt; d;&#x2F;&#x2F;C++语言</span><br></pre></td></tr></table></figure>
+<p>2）cout对象表示标准输出//类似printf</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;打印输出一个int数据</span><br><span class="line">int num &#x3D; 123;</span><br><span class="line">printf(&quot;%d\n&quot;,num);&#x2F;&#x2F;C语言</span><br><span class="line">cout &lt;&lt; num &lt;&lt; endl;&#x2F;&#x2F;C++语言</span><br><span class="line">注：“&lt;&lt;”被称为输出(插入)操作符</span><br><span class="line">注：“endl”表示换行和&quot;\n&quot;类似</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F;同时打印输出一个int数据和一个double	</span><br><span class="line">int i&#x3D;100,double d&#x3D;1.23;</span><br><span class="line">printf(&quot;%d,%lf\n&quot;,i,d);&#x2F;&#x2F;C语言</span><br><span class="line">cout &lt;&lt; i &lt;&lt; &#39;,&#39; &lt;&lt; d &lt;&lt; endl;&#x2F;&#x2F;C++语言</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="三-名字空间-命名空间"><a href="#三-名字空间-命名空间" class="headerlink" title="三 名字空间(命名空间)"></a>三 名字空间(命名空间)</h2><p>1 名字空间作用<br>1）避免名字冲突<br>2）划分逻辑单元<br>2 定义<br>    namespace 名字空间名{<br>        名字空间成员1;<br>        名字空间成员2;<br>        …<br>    }<br>    注：名字空间成员可以是全局函数、全局变量、类型、名字空间.</p>
+<p>3 名字空间成员使用<br>1）作用域限定操作符”::”<br>    名字空间名::要访问的成员;</p>
+<p>​    std::cout //指定访问标准名字空间里面的cout</p>
+<p>2）名字空间指令<br>    using namespace 名字空间名;<br>    注：在该条指令以后的代码中，指定名字空间的成员都可见，可以直接访问，省略”名字空间名::”.</p>
+<p>​    using namespace std;<br>​    cout &lt;&lt; a;//ok</p>
+<p>3）名字空间声明<br>    using 名字空间名::名字空间成员;<br>    注：将名字空间中特定的一个成员引入到当前作用域，在该作用域访问这个成员就如同访问自己的局部成员一样，可以直接访问，省略”名字空间名::”</p>
+<p>4 全局作用域和匿名名字空间//了解<br>1）没有放在任何名字空间的成员属于全局作用域，可以直接访问，但如果和局部作用域的成员名字一样，局部优先；这时如果还希望访问全局作用域的成员可以通过“::xx”显式访问。<br>2）定义名字空间时可以没有名字，即为匿名名字空间，匿名空间中成员和全局作用域类似，可以直接访问，也可以通过”::xx”显式的访问，唯一的区别匿名空间的成员被局限在当前文件中使用。</p>
+<p>5 名字空间的嵌套与合并//了解<br>1）名字空间嵌套<br>2）名字空间合并：两个同名的空间会自动合并成一个</p>
+<h1 id="四-C-的结构体、联合体和枚举"><a href="#四-C-的结构体、联合体和枚举" class="headerlink" title="四 C++的结构体、联合体和枚举"></a>四 C++的结构体、联合体和枚举</h1><h2 id="1-C-的结构体"><a href="#1-C-的结构体" class="headerlink" title="1 C++的结构体"></a>1 C++的结构体</h2><p>1）当定义结构体变量时可以省略struct关键字<br>2）在C++的结构体内部可以直接定义函数，称为成员函数(方法)，在成员函数内部可以直接访问结构体的其它成员.</p>
+<h2 id="2-联合体-了解"><a href="#2-联合体-了解" class="headerlink" title="2 联合体//了解"></a>2 联合体//了解</h2><p>1）当定义联合体变量时可以省略union关键字<br>2）在C++中支持匿名联合</p>
+<h2 id="3-枚举"><a href="#3-枚举" class="headerlink" title="3 枚举"></a>3 枚举</h2><p>1）当定义枚举变量时可以省略enum关键字<br>2）C++中枚举被看作是独立数据类型，不能把枚举直接当做整型数来使用.    </p>
+<pre><code>    enum STATE&#123;SLEEP=0,RUN=1,STOP=2&#125;;
+    /*enum*/ STATE s;
+    s = RUN;//C:ok C++:ok
+    s = 1;//C:ok C++:error
+</code></pre>
+<h1 id="五-C-的字符串"><a href="#五-C-的字符串" class="headerlink" title="五 C++的字符串"></a>五 C++的字符串</h1><p>1 回顾C语言中的字符串，灵活，风险高<br>1）字面值常量字符串: “…”,如”youcw”，存储在代码区(只读)<br>2）字符指针：char*：<br>3）字符数组：char[]：存储在栈区容易越界，非常危险</p>
+<p>2 C++兼容C风格的字符串，同时增加了string类型，专门字符串：<br>1）定义<br>    string s1;//定义空字符串，存储在堆区，由系统进行管理<br>    string s2 = “xx”;//定义同时初始化<br>2）字符串拷贝：=<br>    string s1 = “youcw”;<br>    string s2 = “mindasheng”;<br>    s1 = s2;//将s2拷贝给s1<br>    cout &lt;&lt; s1 &lt;&lt; endl;//“mindasheng”<br>3）字符串连接：+ +=<br>    string s1 = “hello”;<br>    string s2 = “ world”;<br>    string s3 = s1 + s2;<br>    cout &lt;&lt; s3 &lt;&lt; endl;//“hello world”<br>4）字符串比较：== != &gt; &gt;= &lt; &lt;=<br>    if(s1 == s2){…}<br>5）随机访问: []<br>    string s = “minwei”;<br>    s[0] = ‘M’;<br>    s[3] = ‘W’;<br>    cout &lt;&lt; s &lt;&lt; endl;//MinWei</p>
+<p>6）暂时可以string理解为是”类”类型，里面包含了很多成员函数，常用的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">size()&#x2F;length();&#x2F;&#x2F;获取字符串长度</span><br><span class="line">c_str();&#x2F;&#x2F;返回字符串的起始地址(const char* )</span><br><span class="line"></span><br><span class="line">string str &#x3D; &quot;youcw&quot;;</span><br><span class="line">str.size();&#x2F;&#x2F;5</span><br><span class="line">str.length();&#x2F;&#x2F;5和size()等价	</span><br><span class="line"></span><br><span class="line">string s1 &#x3D; &quot;hello&quot;;&#x2F;&#x2F;C++风格</span><br><span class="line">const char* s2 &#x3D; &quot;world&quot;;&#x2F;&#x2F;C风格</span><br><span class="line"></span><br><span class="line">s1 &#x3D; s2;&#x2F;&#x2F;ok，</span><br><span class="line">s2 &#x3D; s1;&#x2F;&#x2F;error，</span><br><span class="line">s2 &#x3D; s1.c_str();</span><br></pre></td></tr></table></figure>
+
+<p>​    </p>
+
     
 
     
@@ -242,7 +275,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-Linux%E4%B8%AD%E6%96%AD%E4%B8%8B%E5%8D%8A%E9%83%A8%E6%9C%BA%E5%88%B6/">展开 >></a>
+      <a class="article-more-a" href="/2021/08/21/C-1/">展开 >></a>
     </p>
     
 
@@ -272,39 +305,167 @@
 
 
   
-    <article id="post-Linux驱动-Linux中断" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-C++" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
-      <header class="article-header">
-  
-  
-    <h1 itemprop="name">
-	
-	  <a class="article-title" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-Linux%E4%B8%AD%E6%96%AD/" target="_blank">Linux驱动-Linux中断</a>
-  
-    </h1>
-  
-
-
-  
-  
-<a href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-Linux%E4%B8%AD%E6%96%AD/" class="archive-article-date">
-        <time datetime="2021-04-15T13:17:29.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-15</time>
-</a>
-
-  
-  
-    
-
-  
-  </header>
-  
   <div class="article-entry" itemprop="articleBody">
     
-    <p>Linux 内核提供了完善的中断框架，我们只需要申请中断，然后注册中断处理函数即可，使用非常方便，不需要一系列复杂的寄存器配置。</p>
-    
-    <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-Linux%E4%B8%AD%E6%96%AD/#more">more >></a>
-    
+    <p>const</p>
+<p>const在谁后面谁就不可修改，const在最前面则将其后移一位即可，二者等效</p>
+<h4 id="作用"><a href="#作用" class="headerlink" title="作用"></a><a target="_blank" rel="noopener" href="https://interview.huihut.com/#/?id=%E4%BD%9C%E7%94%A8">作用</a></h4><ol>
+<li>修饰变量，说明该变量不可以被改变；</li>
+<li>修饰指针，分为指向常量的指针（pointer to const）和自身是常量的指针（常量指针，const pointer）；</li>
+<li>修饰引用，指向常量的引用（reference to const），用于形参类型，即避免了拷贝，又避免了函数对值的修改；</li>
+<li>修饰成员函数，说明该成员函数内不能修改成员变量。</li>
+</ol>
+<h4 id="const-的指针与引用"><a href="#const-的指针与引用" class="headerlink" title="const 的指针与引用"></a><a target="_blank" rel="noopener" href="https://interview.huihut.com/#/?id=const-%E7%9A%84%E6%8C%87%E9%92%88%E4%B8%8E%E5%BC%95%E7%94%A8">const 的指针与引用</a></h4><ul>
+<li>指针<ul>
+<li>指向常量的指针（pointer to const）</li>
+<li>自身是常量的指针（常量指针，const pointer）</li>
+</ul>
+</li>
+<li>引用<ul>
+<li>指向常量的引用（reference to const）</li>
+<li>没有 const reference，因为引用只是对象的别名，引用不是对象，不能用 const 修饰</li>
+</ul>
+</li>
+</ul>
+<h3 id="this-指针"><a href="#this-指针" class="headerlink" title="this 指针"></a><a target="_blank" rel="noopener" href="https://interview.huihut.com/#/?id=this-%E6%8C%87%E9%92%88">this 指针</a></h3><ol>
+<li>类中的成员函数(包括构造函数、析构函数)都有一个隐藏的当前类 类型的指针参数，名为this。在成员函数中访问类中其它成员，其本质都是通过this来实现的。</li>
+<li>对于普通的成员函数,this指针就是指向该成员函数的调用对象；对于构造函数,this指针就指向正在创建的对象。</li>
+<li><code>this</code> 指针是一个隐含于每一个非静态成员函数中的特殊指针。它指向调用该成员函数的那个对象。</li>
+<li>当对一个对象调用成员函数时，编译程序先将对象的地址赋给 <code>this</code> 指针，然后调用成员函数，每次成员函数存取数据成员时，都隐式使用 <code>this</code> 指针。</li>
+<li>当一个成员函数被调用时，自动向它传递一个隐含的参数，该参数是一个指向这个成员函数所在的对象的指针。</li>
+<li><code>this</code> 指针被隐含地声明为: <code>ClassName *const this</code>，这意味着不能给 <code>this</code> 指针赋值；在 <code>ClassName</code> 类的 <code>const</code> 成员函数中，<code>this</code> 指针被隐含地声明为：<code>const ClassName* const this</code>，这说明不能对 <code>this</code> 指针所指向的这种对象是不可修改的（即不能对这种对象的数据成员进行赋值操作）；</li>
+<li><code>this</code> 并不是一个常规变量，而是个右值，所以不能取得 <code>this</code> 的地址（不能 <code>&amp;this</code>）。</li>
+<li>在以下场景中，经常需要显式引用this指针：<ol>
+<li>为实现对象的链式引用；</li>
+<li>为避免对同一对象进行赋值操作；</li>
+<li>在实现一些数据结构时，如 <code>list</code>。</li>
+<li>–》区分作用域，(区分哪个是成员变量)<br>–》从成员函数返回调用对象自身(返回自引用)//重点掌握<br>–》从类的内部销毁对象自身(对象自销毁) //了解<br>–》作为成员函数实参，实现对象之间交互 //了解</li>
+</ol>
+</li>
+</ol>
+<h3 id="inline-内联函数"><a href="#inline-内联函数" class="headerlink" title="inline 内联函数"></a><a target="_blank" rel="noopener" href="https://interview.huihut.com/#/?id=inline-%E5%86%85%E8%81%94%E5%87%BD%E6%95%B0">inline 内联函数</a></h3><p> <a target="_blank" rel="noopener" href="https://www.cnblogs.com/chenwx-jay/p/inline_cpp.html">c++内联函数解析（inline） - 晴天Jay_chen - 博客园 (cnblogs.com)</a> </p>
+<p>使用inilne关键字修饰的函数，即为内联函数，编译器将会尝试进行内联优化，可以避免函数调用开销，提高代码执行效率.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">inline void func(void)&#123;...&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="特征"><a href="#特征" class="headerlink" title="特征"></a><a target="_blank" rel="noopener" href="https://interview.huihut.com/#/?id=%E7%89%B9%E5%BE%81">特征</a></h4><ul>
+<li>相当于把内联函数里面的内容写在调用内联函数处；</li>
+<li>相当于不用执行进入函数的步骤，直接执行函数体；</li>
+<li>相当于宏，却比宏多了类型检查，真正具有函数特性；</li>
+<li>编译器一般不内联包含循环、递归、switch 等复杂操作的内联函数；</li>
+<li>在类声明中定义的函数，除了虚函数的其他函数都会自动隐式地当成内联函数。</li>
+</ul>
+<h4 id="编译器对-inline-函数的处理步骤"><a href="#编译器对-inline-函数的处理步骤" class="headerlink" title="编译器对 inline 函数的处理步骤"></a><a target="_blank" rel="noopener" href="https://interview.huihut.com/#/?id=%E7%BC%96%E8%AF%91%E5%99%A8%E5%AF%B9-inline-%E5%87%BD%E6%95%B0%E7%9A%84%E5%A4%84%E7%90%86%E6%AD%A5%E9%AA%A4">编译器对 inline 函数的处理步骤</a></h4><ol>
+<li>将 inline 函数体复制到 inline 函数调用点处；</li>
+<li>为所用 inline 函数中的局部变量分配内存空间；</li>
+<li>将 inline 函数的的输入参数和返回值映射到调用方法的局部变量空间中；</li>
+<li>如果 inline 函数有多个返回点，将其转变为 inline 函数代码块末尾的分支（使用 GOTO）。</li>
+</ol>
+<h4 id="优缺点"><a href="#优缺点" class="headerlink" title="优缺点"></a><a target="_blank" rel="noopener" href="https://interview.huihut.com/#/?id=%E4%BC%98%E7%BC%BA%E7%82%B9">优缺点</a></h4><p>优点</p>
+<ol>
+<li>内联函数同宏函数一样将在被调用处进行代码展开，省去了参数压栈、栈帧开辟与回收，结果返回等，从而提高程序运行速度。</li>
+<li>内联函数相比宏函数来说，在代码展开时，会做安全检查或自动类型转换（同普通函数），而宏定义则不会。</li>
+<li>在类中声明同时定义的成员函数，自动转化为内联函数，因此内联函数可以访问类的成员变量，宏定义则不能。</li>
+<li>内联函数在运行时可调试，而宏定义不可以。</li>
+</ol>
+<p>缺点</p>
+<ol>
+<li>代码膨胀。内联是以代码膨胀（复制）为代价，消除函数调用带来的开销。如果执行函数体内代码的时间，相比于函数调用的开销较大，那么效率的收获会很少。另一方面，每一处内联函数的调用都要复制代码，将使程序的总代码量增大，消耗更多的内存空间。</li>
+<li>inline 函数无法随着函数库升级而升级。inline函数的改变需要重新编译，不像 non-inline 可以直接链接。</li>
+<li>是否内联，程序员不可控。内联函数只是对编译器的建议，是否对函数内联，决定权在于编译器。</li>
+</ol>
+<p>使用说明<br>–》多次调用小而简单的函数适合内联优化<br>–》调用次数极少或大而复杂的函数不适合内联<br>–》递归函数不能内联优化<br>–》虚函数不能内联优化//后面讲</p>
+<h3 id="volatile"><a href="#volatile" class="headerlink" title="volatile"></a><a target="_blank" rel="noopener" href="https://interview.huihut.com/#/?id=volatile">volatile</a></h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">volatile</span> <span class="keyword">int</span> i = <span class="number">10</span>; </span><br></pre></td></tr></table></figure>
+<ul>
+<li>volatile是标准C语言的关键字，被volatile修饰的变量表示易变的，告诉编译器每次使用该变量时，都要小心从内存中读取，而不是取寄存器的副本，防止编译器优化引起的错误变化</li>
+<li>volatile 关键字是一种类型修饰符，用它声明的类型变量表示可以被某些编译器未知的因素（操作系统、硬件、其它线程等）更改。所以使用 volatile 告诉编译器不应对这样的对象进行优化。</li>
+<li>volatile 关键字声明的变量，每次访问时都必须从内存中取出值（没有被 volatile 修饰的变量，可能由于编译器的优化，从 CPU 寄存器中取值）</li>
+<li>const 可以是 volatile （如只读的状态寄存器）</li>
+<li>指针可以是 volatile</li>
+</ul>
+<h3 id="sizeof"><a href="#sizeof" class="headerlink" title="sizeof()"></a><a target="_blank" rel="noopener" href="https://interview.huihut.com/#/?id=sizeof">sizeof()</a></h3><ul>
+<li>sizeof 对数组，得到整个数组所占空间大小。</li>
+<li>sizeof 对指针，得到指针本身所占空间大小。</li>
+</ul>
+<p><strong>结构体的sizeof</strong></p>
+<p>结构体的sizeof涉及到字节对齐问题。编译器默认会对结构体进行处理（实际上其它地方的数据变量也是如此），让宽度为2的基本数据类型（short等）都位于能被2整除的地址上，让宽度为4的基本数据类型（int等）都位于能被4整除的地址上，依次类推。这样，两个数中间就可能需要加入填充字节，所以整个结构体的sizeof值就增长了。 空结构体（不含数据成员）的sizeof值为1。 </p>
+<p><strong>联合体的sizeof</strong></p>
+<p>结构体在内存组织上市顺序式的，联合体则是重叠式，各成员共享一段内存；所以整个联合体的sizeof也就是每个成员sizeof的最大值。</p>
+<p><strong>数组的sizeof</strong></p>
+<p>数组的sizeof值等于数组所占用的内存字节数。</p>
+<p>注意：1）当字符数组表示字符串时，其sizeof值将’/0’计算进去。</p>
+<p>​       2）当数组为形参时，其sizeof值相当于指针的sizeof值。 </p>
+<p><strong>指针的sizeof</strong></p>
+<p>指针是用来记录另一个对象的地址，所以指针的内存大小当然就等于计算机内部地址总线的宽度。在32位计算机中，一个指针变量的返回值必定是4。指针变量的sizeof值与指针所指的对象没有任何关系。</p>
+<p><strong>函数的sizeof</strong></p>
+<p>sizeof也可对一个函数调用求值，其结果是函数返回值类型的大小，函数并不会被调用。</p>
+<p>对函数求值的形式：sizeof(函数名(实参表))</p>
+<p>注意：1）不可以对返回值类型为空的函数求值。 </p>
+<p>​      2）不可以对函数名求值。</p>
+<p>​      3）对有参数的函数，在用sizeof时，须写上实参表。</p>
+<p> <a target="_blank" rel="noopener" href="https://www.cnblogs.com/huolong-blog/p/7587711.html">c++中sizeof()的用法介绍 - Mr左 - 博客园 (cnblogs.com)</a> </p>
+<h3 id="extern-“C”"><a href="#extern-“C”" class="headerlink" title="extern “C”"></a><a target="_blank" rel="noopener" href="https://interview.huihut.com/#/?id=extern-quotcquot">extern “C”</a></h3><ul>
+<li>被 extern 限定的函数或变量是 extern 类型的</li>
+<li>被 <code>extern &quot;C&quot;</code> 修饰的变量和函数是按照 C 语言方式编译和链接的</li>
+</ul>
+<p><code>extern &quot;C&quot;</code> 的作用是让 C++ 编译器将 <code>extern &quot;C&quot;</code> 声明的代码当作 C 语言代码处理，可以避免 C++ 因符号修饰导致代码不能和C语言库中的符号进行链接的问题。</p>
+<h3 id="C-中-struct-和-class"><a href="#C-中-struct-和-class" class="headerlink" title="C++ 中 struct 和 class"></a><a target="_blank" rel="noopener" href="https://interview.huihut.com/#/?id=c-%E4%B8%AD-struct-%E5%92%8C-class">C++ 中 struct 和 class</a></h3><p>总的来说，struct 更适合看成是一个数据结构的实现体，class 更适合看成是一个对象的实现体。</p>
+<h4 id="区别"><a href="#区别" class="headerlink" title="区别"></a><a target="_blank" rel="noopener" href="https://interview.huihut.com/#/?id=%E5%8C%BA%E5%88%AB">区别</a></h4><ul>
+<li>最本质的一个区别就是默认的访问控制<ol>
+<li>默认的继承访问权限。struct 是 public 的，class 是 private 的。</li>
+<li>struct 作为数据结构的实现体，它默认的数据访问控制是 public 的，而 class 作为对象的实现体，它默认的成员变量访问控制是 private 的。</li>
+</ol>
+</li>
+</ul>
+<h3 id="C-实现-C-类"><a href="#C-实现-C-类" class="headerlink" title="C 实现 C++ 类"></a><a target="_blank" rel="noopener" href="https://interview.huihut.com/#/?id=c-%E5%AE%9E%E7%8E%B0-c-%E7%B1%BB">C 实现 C++ 类</a></h3><p>C 实现 C++ 的面向对象特性（封装、继承、多态）</p>
+<ul>
+<li>封装：使用函数指针把属性与方法封装到结构体中</li>
+<li>继承：结构体嵌套</li>
+<li>多态：父类与子类方法的函数指针不同</li>
+</ul>
+<h3 id="union-联合"><a href="#union-联合" class="headerlink" title="union 联合"></a><a target="_blank" rel="noopener" href="https://interview.huihut.com/#/?id=union-%E8%81%94%E5%90%88">union 联合</a></h3><p>联合（union）是一种节省空间的特殊的类，一个 union 可以有多个数据成员，但是在任意时刻只有一个数据成员可以有值。当某个成员被赋值后其他成员变为未定义状态。联合有如下特点：</p>
+<ul>
+<li>默认访问控制符为 public</li>
+<li>可以含有构造函数、析构函数</li>
+<li>不能含有引用类型的成员</li>
+<li>不能继承自其他类，不能作为基类</li>
+<li>不能含有虚函数</li>
+<li>匿名 union 在定义所在作用域可直接访问 union 成员</li>
+<li>匿名 union 不能包含 protected 成员或 private 成员</li>
+<li>全局匿名联合必须是静态（static）的</li>
+</ul>
+<h3 id="explicit（显式）关键字"><a href="#explicit（显式）关键字" class="headerlink" title="explicit（显式）关键字"></a><a target="_blank" rel="noopener" href="https://interview.huihut.com/#/?id=explicit%EF%BC%88%E6%98%BE%E5%BC%8F%EF%BC%89%E5%85%B3%E9%94%AE%E5%AD%97">explicit（显式）关键字</a></h3><ul>
+<li>explicit 修饰构造函数时，可以防止隐式转换和复制初始化</li>
+<li>explicit 修饰转换函数时，可以防止隐式转换，但 <a target="_blank" rel="noopener" href="https://zh.cppreference.com/w/cpp/language/implicit_conversion">按语境转换</a> 除外</li>
+</ul>
+<h3 id="friend-友元类和友元函数"><a href="#friend-友元类和友元函数" class="headerlink" title="friend 友元类和友元函数"></a><a target="_blank" rel="noopener" href="https://interview.huihut.com/#/?id=friend-%E5%8F%8B%E5%85%83%E7%B1%BB%E5%92%8C%E5%8F%8B%E5%85%83%E5%87%BD%E6%95%B0">friend 友元类和友元函数</a></h3><ul>
+<li>能访问私有成员</li>
+<li>破坏封装性</li>
+<li>友元关系不可传递</li>
+<li>友元关系的单向性</li>
+<li>友元声明的形式及数量不受限制</li>
+</ul>
+<h3 id="using"><a href="#using" class="headerlink" title="using"></a><a target="_blank" rel="noopener" href="https://interview.huihut.com/#/?id=using">using</a></h3><h4 id="using-声明"><a href="#using-声明" class="headerlink" title="using 声明"></a><a target="_blank" rel="noopener" href="https://interview.huihut.com/#/?id=using-%E5%A3%B0%E6%98%8E">using 声明</a></h4><p>一条 <code>using 声明</code> 语句一次只引入命名空间的一个成员。它使得我们可以清楚知道程序中所引用的到底是哪个名字。如：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> namespace_name::name;</span><br></pre></td></tr></table></figure>
+<h4 id="using-指示"><a href="#using-指示" class="headerlink" title="using 指示"></a><a target="_blank" rel="noopener" href="https://interview.huihut.com/#/?id=using-%E6%8C%87%E7%A4%BA">using 指示</a></h4><p><code>using 指示</code> 使得某个特定命名空间中所有名字都可见，这样我们就无需再为它们添加任何前缀限定符了。如：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> namespace_name name;</span><br></pre></td></tr></table></figure>
+<h4 id="尽量少使用-using-指示-污染命名空间"><a href="#尽量少使用-using-指示-污染命名空间" class="headerlink" title="尽量少使用 using 指示 污染命名空间"></a><a target="_blank" rel="noopener" href="https://interview.huihut.com/#/?id=%E5%B0%BD%E9%87%8F%E5%B0%91%E4%BD%BF%E7%94%A8-using-%E6%8C%87%E7%A4%BA-%E6%B1%A1%E6%9F%93%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4">尽量少使用 <code>using 指示</code> 污染命名空间</a></h4><blockquote>
+<p>一般说来，使用 using 命令比使用 using 编译命令更安全，这是由于它<strong>只导入了指定的名称</strong>。如果该名称与局部名称发生冲突，编译器将<strong>发出指示</strong>。using编译命令导入所有的名称，包括可能并不需要的名称。如果与局部名称发生冲突，则<strong>局部名称将覆盖名称空间版本</strong>，而编译器<strong>并不会发出警告</strong>。另外，名称空间的开放性意味着名称空间的名称可能分散在多个地方，这使得难以准确知道添加了哪些名称。</p>
+</blockquote>
+<h3 id="范围解析运算符"><a href="#范围解析运算符" class="headerlink" title=":: 范围解析运算符"></a><a target="_blank" rel="noopener" href="https://interview.huihut.com/#/?id=-%E8%8C%83%E5%9B%B4%E8%A7%A3%E6%9E%90%E8%BF%90%E7%AE%97%E7%AC%A6">:: 范围解析运算符</a></h3><h4 id="分类"><a href="#分类" class="headerlink" title="分类"></a><a target="_blank" rel="noopener" href="https://interview.huihut.com/#/?id=%E5%88%86%E7%B1%BB">分类</a></h4><ol>
+<li>全局作用域符（<code>::name</code>）：用于类型名称（类、类成员、成员函数、变量等）前，表示作用域为全局命名空间</li>
+<li>类作用域符（<code>class::name</code>）：用于表示指定类型的作用域范围是具体某个类的</li>
+<li>命名空间作用域符（<code>namespace::name</code>）:用于表示指定类型的作用域范围是具体某个命名空间的</li>
+</ol>
+<h3 id="enum-枚举类型"><a href="#enum-枚举类型" class="headerlink" title="enum 枚举类型"></a><a target="_blank" rel="noopener" href="https://interview.huihut.com/#/?id=enum-%E6%9E%9A%E4%B8%BE%E7%B1%BB%E5%9E%8B">enum 枚举类型</a></h3><h4 id="限定作用域的枚举类型"><a href="#限定作用域的枚举类型" class="headerlink" title="限定作用域的枚举类型"></a><a target="_blank" rel="noopener" href="https://interview.huihut.com/#/?id=%E9%99%90%E5%AE%9A%E4%BD%9C%E7%94%A8%E5%9F%9F%E7%9A%84%E6%9E%9A%E4%B8%BE%E7%B1%BB%E5%9E%8B">限定作用域的枚举类型</a></h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="keyword">class</span> <span class="title">open_modes</span> &#123;</span> input, output, append &#125;;</span><br></pre></td></tr></table></figure>
+<h4 id="不限定作用域的枚举类型"><a href="#不限定作用域的枚举类型" class="headerlink" title="不限定作用域的枚举类型"></a><a target="_blank" rel="noopener" href="https://interview.huihut.com/#/?id=%E4%B8%8D%E9%99%90%E5%AE%9A%E4%BD%9C%E7%94%A8%E5%9F%9F%E7%9A%84%E6%9E%9A%E4%B8%BE%E7%B1%BB%E5%9E%8B">不限定作用域的枚举类型</a></h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">color</span> &#123;</span> red, yellow, green &#125;;</span><br><span class="line"><span class="class"><span class="keyword">enum</span> &#123;</span> floatPrec = <span class="number">6</span>, doublePrec = <span class="number">10</span> &#125;;</span><br></pre></td></tr></table></figure>
+
+
+
+
+<h1 id="指针加法与数值加法"><a href="#指针加法与数值加法" class="headerlink" title="指针加法与数值加法"></a>指针加法与数值加法</h1><p><img src="C++.assets/1630226401807.png" alt="1630226401807"></p>
+
     
 
     
@@ -319,7 +480,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-Linux%E4%B8%AD%E6%96%AD/">展开 >></a>
+      <a class="article-more-a" href="/2021/08/19/C++/">展开 >></a>
     </p>
     
 
@@ -349,7 +510,7 @@
 
 
   
-    <article id="post-Linux驱动-内核定时器" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-UnixC-网络编程" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -357,7 +518,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%86%85%E6%A0%B8%E5%AE%9A%E6%97%B6%E5%99%A8/" target="_blank">Linux驱动-内核定时器</a>
+	  <a class="article-title" href="/2021/05/04/UnixC-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" target="_blank">UnixC-网络编程</a>
   
     </h1>
   
@@ -365,8 +526,8 @@
 
   
   
-<a href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%86%85%E6%A0%B8%E5%AE%9A%E6%97%B6%E5%99%A8/" class="archive-article-date">
-        <time datetime="2021-04-15T12:07:16.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-15</time>
+<a href="/2021/05/04/UnixC-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" class="archive-article-date">
+        <time datetime="2021-05-04T15:41:02.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-05-04</time>
 </a>
 
   
@@ -378,9 +539,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="1、内核时间管理简介"><a href="#1、内核时间管理简介" class="headerlink" title="1、内核时间管理简介"></a>1、内核时间管理简介</h1><p>Linux 要运行，需要一个系统时钟的，至于这个系统时钟是由哪个定时器提供的，这对于我们 Linux 驱动编写者来说，不需要深入研究这些具体的实现，只需要掌握相应的 API 函数即可。 </p>
+    <h1 id="十三、网络通信"><a href="#十三、网络通信" class="headerlink" title="十三、网络通信"></a>十三、网络通信</h1><h2 id="1-网络和网络协议"><a href="#1-网络和网络协议" class="headerlink" title="1.网络和网络协议"></a>1.网络和网络协议</h2><p><strong>1)什么是计算机网络？</strong></p>
     
-    <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%86%85%E6%A0%B8%E5%AE%9A%E6%97%B6%E5%99%A8/#more">more >></a>
+    <a class="article-more-a" href="/2021/05/04/UnixC-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/#more">more >></a>
     
     
 
@@ -396,7 +557,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%86%85%E6%A0%B8%E5%AE%9A%E6%97%B6%E5%99%A8/">展开 >></a>
+      <a class="article-more-a" href="/2021/05/04/UnixC-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/">展开 >></a>
     </p>
     
 
@@ -426,7 +587,7 @@
 
 
   
-    <article id="post-Linux驱动-并发与竞争-自旋锁" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-UnixC-线程" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -434,7 +595,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E8%87%AA%E6%97%8B%E9%94%81/" target="_blank">Linux驱动-并发与竞争-自旋锁</a>
+	  <a class="article-title" href="/2021/05/04/UnixC-%E7%BA%BF%E7%A8%8B/" target="_blank">UnixC-线程</a>
   
     </h1>
   
@@ -442,8 +603,8 @@
 
   
   
-<a href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E8%87%AA%E6%97%8B%E9%94%81/" class="archive-article-date">
-        <time datetime="2021-04-15T10:41:42.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-15</time>
+<a href="/2021/05/04/UnixC-%E7%BA%BF%E7%A8%8B/" class="archive-article-date">
+        <time datetime="2021-05-04T14:32:47.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-05-04</time>
 </a>
 
   
@@ -455,9 +616,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h2 id="1、自旋锁"><a href="#1、自旋锁" class="headerlink" title="1、自旋锁"></a>1、自旋锁</h2><p>当一个线程要访问某个共享资源的时候首先要先获取相应的锁，锁只能被一个线程持有，只要此线程不释放持有的锁，那么其他的线程就不能获取此锁。对于自旋锁而言，如果自旋锁正在被线程 A 持有，线程 B 想要获取自旋锁，那么线程 B 就会处于忙循环-旋转-等待状态，线程B不会进入休眠状态或者说去做其他的处理，而是会一直傻傻的在那里“转圈圈”的等待锁可用。(类别电话亭)</p>
+    <h1 id="十四、多线程"><a href="#十四、多线程" class="headerlink" title="十四、多线程"></a>十四、多线程</h1><h2 id="1-什么是线程？"><a href="#1-什么是线程？" class="headerlink" title="1.什么是线程？"></a>1.什么是线程？</h2><p>源代码 -编译和链接-&gt; 程序 -加载到内存中-&gt; 进程</p>
     
-    <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E8%87%AA%E6%97%8B%E9%94%81/#more">more >></a>
+    <a class="article-more-a" href="/2021/05/04/UnixC-%E7%BA%BF%E7%A8%8B/#more">more >></a>
     
     
 
@@ -473,7 +634,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E8%87%AA%E6%97%8B%E9%94%81/">展开 >></a>
+      <a class="article-more-a" href="/2021/05/04/UnixC-%E7%BA%BF%E7%A8%8B/">展开 >></a>
     </p>
     
 
@@ -503,7 +664,7 @@
 
 
   
-    <article id="post-Linux驱动-并发与竞争-信号量" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-UnixC-进程" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -511,7 +672,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E4%BF%A1%E5%8F%B7%E9%87%8F/" target="_blank">Linux驱动-并发与竞争-信号量</a>
+	  <a class="article-title" href="/2021/05/04/UnixC-%E8%BF%9B%E7%A8%8B/" target="_blank">UnixC-进程</a>
   
     </h1>
   
@@ -519,8 +680,8 @@
 
   
   
-<a href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E4%BF%A1%E5%8F%B7%E9%87%8F/" class="archive-article-date">
-        <time datetime="2021-04-15T10:41:22.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-15</time>
+<a href="/2021/05/04/UnixC-%E8%BF%9B%E7%A8%8B/" class="archive-article-date">
+        <time datetime="2021-05-04T11:45:28.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-05-04</time>
 </a>
 
   
@@ -532,9 +693,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="1、信号量"><a href="#1、信号量" class="headerlink" title="1、信号量"></a>1、信号量</h1><p>信号量是同步的一种方式。Linux 内核也提供了信号量机制，信号量常常用于控制对共享资源的访问。相比于自旋锁，信号量可以使线程进入休眠状态。</p>
+    <h1 id="十、进程"><a href="#十、进程" class="headerlink" title="十、进程"></a>十、进程</h1><h2 id="1-进程的基本概念"><a href="#1-进程的基本概念" class="headerlink" title="1.进程的基本概念"></a><strong>1.进程的基本概念</strong></h2><p>程序：磁盘上的可执行文件。</p>
     
-    <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E4%BF%A1%E5%8F%B7%E9%87%8F/#more">more >></a>
+    <a class="article-more-a" href="/2021/05/04/UnixC-%E8%BF%9B%E7%A8%8B/#more">more >></a>
     
     
 
@@ -550,7 +711,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E4%BF%A1%E5%8F%B7%E9%87%8F/">展开 >></a>
+      <a class="article-more-a" href="/2021/05/04/UnixC-%E8%BF%9B%E7%A8%8B/">展开 >></a>
     </p>
     
 
@@ -580,7 +741,7 @@
 
 
   
-    <article id="post-Linux驱动-并发与竞争-原子操作" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-UinxC-IO编程2" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -588,7 +749,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C/" target="_blank">Linux驱动-并发与竞争-原子操作</a>
+	  <a class="article-title" href="/2021/05/03/UinxC-IO%E7%BC%96%E7%A8%8B2/" target="_blank">UinxC-IO编程2</a>
   
     </h1>
   
@@ -596,8 +757,8 @@
 
   
   
-<a href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C/" class="archive-article-date">
-        <time datetime="2021-04-15T10:40:54.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-15</time>
+<a href="/2021/05/03/UinxC-IO%E7%BC%96%E7%A8%8B2/" class="archive-article-date">
+        <time datetime="2021-05-03T03:34:17.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-05-03</time>
 </a>
 
   
@@ -609,9 +770,10 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h2 id="1、原子操作"><a href="#1、原子操作" class="headerlink" title="1、原子操作"></a>1、原子操作</h2><p>原子操作就是指不能再进一步分割的操作，一般原子操作用于变量或者位操作。原子操作只能对整形变量或者位进行保护。C 语言里面简简单单的一句“a=3”，编译成汇编文件以后变成了 3 句，那么程 序在执行的时候肯定汇编语句一条一条的执行。</p>
+    <h1 id="九、文件"><a href="#九、文件" class="headerlink" title="九、文件"></a>九、文件</h1><h2 id="1-文件系统的物理结构"><a href="#1-文件系统的物理结构" class="headerlink" title="1.文件系统的物理结构"></a>1.文件系统的物理结构</h2><p>1)硬盘的物理结构：驱动臂、盘片、主轴、磁头、控制器</p>
+<p>2)磁表面存储器的读写原理</p>
     
-    <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C/#more">more >></a>
+    <a class="article-more-a" href="/2021/05/03/UinxC-IO%E7%BC%96%E7%A8%8B2/#more">more >></a>
     
     
 
@@ -627,7 +789,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C/">展开 >></a>
+      <a class="article-more-a" href="/2021/05/03/UinxC-IO%E7%BC%96%E7%A8%8B2/">展开 >></a>
     </p>
     
 
@@ -657,7 +819,7 @@
 
 
   
-    <article id="post-Linux驱动-并发与竞争-互斥体" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-UinxC-IO编程1" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -665,7 +827,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E4%BA%92%E6%96%A5%E4%BD%93/" target="_blank">Linux驱动-并发与竞争-互斥体</a>
+	  <a class="article-title" href="/2021/05/03/UinxC-IO%E7%BC%96%E7%A8%8B1/" target="_blank">UinxC-IO编程1</a>
   
     </h1>
   
@@ -673,8 +835,8 @@
 
   
   
-<a href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E4%BA%92%E6%96%A5%E4%BD%93/" class="archive-article-date">
-        <time datetime="2021-04-15T10:40:32.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-15</time>
+<a href="/2021/05/03/UinxC-IO%E7%BC%96%E7%A8%8B1/" class="archive-article-date">
+        <time datetime="2021-05-03T02:36:43.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-05-03</time>
 </a>
 
   
@@ -686,9 +848,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="1、互斥体"><a href="#1、互斥体" class="headerlink" title="1、互斥体"></a>1、互斥体</h1><p>Linux 提供了一个比信号量更专业的机制来进行互斥，它就是互斥体—mutex。互斥访问表示一次只有一个线程可以访问共享资源，不能递归申请互斥体。在编写 Linux 驱动的时候遇到需要互斥访问的地方建议使用 mutex。Linux 内核使用 mutex 结构体表示互斥体，定义如下</p>
+    <h1 id="一、GNU编译器-gcc"><a href="#一、GNU编译器-gcc" class="headerlink" title="一、GNU编译器(gcc)"></a>一、GNU编译器(gcc)</h1><h2 id="1-GCC的基本特点"><a href="#1-GCC的基本特点" class="headerlink" title="1.GCC的基本特点"></a>1.GCC的基本特点</h2><p>1)支持多种硬件架构</p>
     
-    <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E4%BA%92%E6%96%A5%E4%BD%93/#more">more >></a>
+    <a class="article-more-a" href="/2021/05/03/UinxC-IO%E7%BC%96%E7%A8%8B1/#more">more >></a>
     
     
 
@@ -704,7 +866,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E4%BA%92%E6%96%A5%E4%BD%93/">展开 >></a>
+      <a class="article-more-a" href="/2021/05/03/UinxC-IO%E7%BC%96%E7%A8%8B1/">展开 >></a>
     </p>
     
 
@@ -734,7 +896,7 @@
 
 
   
-    <article id="post-Linux驱动-并发与竞争简介" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-数据结构与算法" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -742,7 +904,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89%E7%AE%80%E4%BB%8B/" target="_blank">Linux驱动-并发与竞争简介</a>
+	  <a class="article-title" href="/2021/04/18/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/" target="_blank">数据结构与算法</a>
   
     </h1>
   
@@ -750,8 +912,8 @@
 
   
   
-<a href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89%E7%AE%80%E4%BB%8B/" class="archive-article-date">
-        <time datetime="2021-04-14T14:51:29.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-14</time>
+<a href="/2021/04/18/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/" class="archive-article-date">
+        <time datetime="2021-04-18T12:37:24.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-18</time>
 </a>
 
   
@@ -763,9 +925,11 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <p>Linux是一个多任务操作系统，肯定会存在多个任务共同操作同一段内存或者设备的情况，多个任务甚至中断都能访问的资源叫做共享资源，。在驱动开发中要注意对 共享资源的保护，也就是要处理对共享资源的并发访问。在 Linux 驱动编写过程中对于并发控制的管理非常重要，学习如何在 Linux 驱动中处理并发。</p>
+    <h1 id="1-数据结构理论"><a href="#1-数据结构理论" class="headerlink" title="1. 数据结构理论"></a>1. <strong>数据结构理论</strong></h1><p>数据：是描述客观事物的符号，是计算机中可以操作的对象，是能被计算机识别，并输入给计算机处理的符号集</p>
+<p>数据项:一个数据元素可以由若干个数据项组成。数据项是数据不可分割的最小单位。（耳、鼻、嘴、手、脚）</p>
+<p>数据元素:是组成数据的、有一定意义的基本单位,在计算机中通常作为整体处理。也被称为记录。（人）</p>
     
-    <a class="article-more-a" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89%E7%AE%80%E4%BB%8B/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/18/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/#more">more >></a>
     
     
 
@@ -781,7 +945,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89%E7%AE%80%E4%BB%8B/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/18/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/">展开 >></a>
     </p>
     
 
@@ -811,7 +975,7 @@
 
 
   
-    <article id="post-Linux驱动-pinctrl和gpio子系统BEEP" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux驱动-电容触摸屏驱动" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -819,7 +983,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-pinctrl%E5%92%8Cgpio%E5%AD%90%E7%B3%BB%E7%BB%9FBEEP/" target="_blank">Linux驱动-pinctrl和gpio子系统BEEP</a>
+	  <a class="article-title" href="/2021/04/18/Linux%E9%A9%B1%E5%8A%A8-%E7%94%B5%E5%AE%B9%E8%A7%A6%E6%91%B8%E5%B1%8F%E9%A9%B1%E5%8A%A8/" target="_blank">Linux驱动-电容触摸屏驱动</a>
   
     </h1>
   
@@ -827,8 +991,8 @@
 
   
   
-<a href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-pinctrl%E5%92%8Cgpio%E5%AD%90%E7%B3%BB%E7%BB%9FBEEP/" class="archive-article-date">
-        <time datetime="2021-04-14T14:36:06.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-14</time>
+<a href="/2021/04/18/Linux%E9%A9%B1%E5%8A%A8-%E7%94%B5%E5%AE%B9%E8%A7%A6%E6%91%B8%E5%B1%8F%E9%A9%B1%E5%8A%A8/" class="archive-article-date">
+        <time datetime="2021-04-18T02:57:18.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-18</time>
 </a>
 
   
@@ -840,10 +1004,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <p>编写蜂鸣器驱动需要做： </p>
-<p>①、在设备树中添加 SNVS_TAMPER1 引脚的 pinctrl 信息。 </p>
+    <p>①、电容触摸屏是 IIC 接口的，需要触摸 IC，所谓的电容触摸驱动就是 IIC 设备驱动。<br>②、触摸 IC 提供了中断信号引脚(INT)，可以通过中断来获取触摸信息。<br>③、电容触摸屏得到的是触摸位置绝对信息以及触摸屏是否有按下。<br>④、电容触摸屏不需要校准，</p>
     
-    <a class="article-more-a" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-pinctrl%E5%92%8Cgpio%E5%AD%90%E7%B3%BB%E7%BB%9FBEEP/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/18/Linux%E9%A9%B1%E5%8A%A8-%E7%94%B5%E5%AE%B9%E8%A7%A6%E6%91%B8%E5%B1%8F%E9%A9%B1%E5%8A%A8/#more">more >></a>
     
     
 
@@ -859,7 +1022,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-pinctrl%E5%92%8Cgpio%E5%AD%90%E7%B3%BB%E7%BB%9FBEEP/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/18/Linux%E9%A9%B1%E5%8A%A8-%E7%94%B5%E5%AE%B9%E8%A7%A6%E6%91%B8%E5%B1%8F%E9%A9%B1%E5%8A%A8/">展开 >></a>
     </p>
     
 
@@ -889,7 +1052,7 @@
 
 
   
-    <article id="post-Linux驱动-pinctrl和gpio子系统" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux驱动-串口驱动" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -897,7 +1060,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-pinctrl%E5%92%8Cgpio%E5%AD%90%E7%B3%BB%E7%BB%9F/" target="_blank">Linux驱动-pinctrl和gpio子系统</a>
+	  <a class="article-title" href="/2021/04/18/Linux%E9%A9%B1%E5%8A%A8-%E4%B8%B2%E5%8F%A3%E9%A9%B1%E5%8A%A8/" target="_blank">Linux驱动-串口驱动</a>
   
     </h1>
   
@@ -905,8 +1068,8 @@
 
   
   
-<a href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-pinctrl%E5%92%8Cgpio%E5%AD%90%E7%B3%BB%E7%BB%9F/" class="archive-article-date">
-        <time datetime="2021-04-14T13:11:33.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-14</time>
+<a href="/2021/04/18/Linux%E9%A9%B1%E5%8A%A8-%E4%B8%B2%E5%8F%A3%E9%A9%B1%E5%8A%A8/" class="archive-article-date">
+        <time datetime="2021-04-18T02:23:45.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-18</time>
 </a>
 
   
@@ -918,9 +1081,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <p>Linux 是一个庞大而完善的系统， 尤其是驱动框架，像 GPIO 这种最基本的驱动不可能采用“原始”的裸机驱动开发方式，Linux 内核提供了 pinctrl 和 gpio 子系统用于GPIO 驱动。</p>
+    <p>根据电平的不同，串口分为 TTL 和 RS232。不管是什么样的接口电平，其驱动程序都是一样的，通过外接 RS485 这样的芯片就可以将串口转换为 RS485 信号，正点原子的 I.MX6U-ALPHA 开发板就是这么做的。对于正点原子的 I.MX6U-ALPHA 开发板而言， RS232、RS485 以及 GPS 模 块接口通通连接到了 I.MX6U 的 UART3 接口上，因此这些外设最终都归结为 UART3 的串口驱动。学习一下如何驱动 I.MX6U-ALPHA 开发板上的 UART3 串口，进而实现 RS232、RS485 以及 GSP 驱动。</p>
     
-    <a class="article-more-a" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-pinctrl%E5%92%8Cgpio%E5%AD%90%E7%B3%BB%E7%BB%9F/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/18/Linux%E9%A9%B1%E5%8A%A8-%E4%B8%B2%E5%8F%A3%E9%A9%B1%E5%8A%A8/#more">more >></a>
     
     
 
@@ -936,7 +1099,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-pinctrl%E5%92%8Cgpio%E5%AD%90%E7%B3%BB%E7%BB%9F/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/18/Linux%E9%A9%B1%E5%8A%A8-%E4%B8%B2%E5%8F%A3%E9%A9%B1%E5%8A%A8/">展开 >></a>
     </p>
     
 
@@ -968,7 +1131,7 @@
   
   
     <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/page/2/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/4/">Next &amp;raquo;</a>
+      <a class="extend prev" rel="prev" href="/page/2/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/4/">Next &amp;raquo;</a>
     </nav>
   
 

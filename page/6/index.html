@@ -195,7 +195,7 @@
             
 
   
-    <article id="post-RAM与ROM" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux驱动-pinctrl和gpio子系统BEEP" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -203,7 +203,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/11/RAM%E4%B8%8EROM/" target="_blank">RAM与ROM</a>
+	  <a class="article-title" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-pinctrl%E5%92%8Cgpio%E5%AD%90%E7%B3%BB%E7%BB%9FBEEP/" target="_blank">Linux驱动-pinctrl和gpio子系统BEEP</a>
   
     </h1>
   
@@ -211,8 +211,8 @@
 
   
   
-<a href="/2021/04/11/RAM%E4%B8%8EROM/" class="archive-article-date">
-        <time datetime="2021-04-11T09:51:51.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-11</time>
+<a href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-pinctrl%E5%92%8Cgpio%E5%AD%90%E7%B3%BB%E7%BB%9FBEEP/" class="archive-article-date">
+        <time datetime="2021-04-14T14:36:06.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-14</time>
 </a>
 
   
@@ -224,9 +224,10 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <p>RAM：随机存储器，可以随时进行读写操作，速度很快，掉电以后数据会丢失。比如内存 条、SRAM、SDRAM、DDR 等都是 RAM。RAM 一般用来保存程序数据、中间结果，们可以随意的对 RAM 中任何地址的数据进行读写操作， 非常方便。 </p>
+    <p>编写蜂鸣器驱动需要做： </p>
+<p>①、在设备树中添加 SNVS_TAMPER1 引脚的 pinctrl 信息。 </p>
     
-    <a class="article-more-a" href="/2021/04/11/RAM%E4%B8%8EROM/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-pinctrl%E5%92%8Cgpio%E5%AD%90%E7%B3%BB%E7%BB%9FBEEP/#more">more >></a>
     
     
 
@@ -242,7 +243,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/11/RAM%E4%B8%8EROM/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-pinctrl%E5%92%8Cgpio%E5%AD%90%E7%B3%BB%E7%BB%9FBEEP/">展开 >></a>
     </p>
     
 
@@ -272,7 +273,7 @@
 
 
   
-    <article id="post-IMX6U-GPT定时器" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux驱动-pinctrl和gpio子系统" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -280,7 +281,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/11/IMX6U-GPT%E5%AE%9A%E6%97%B6%E5%99%A8/" target="_blank">IMX6U-GPT定时器</a>
+	  <a class="article-title" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-pinctrl%E5%92%8Cgpio%E5%AD%90%E7%B3%BB%E7%BB%9F/" target="_blank">Linux驱动-pinctrl和gpio子系统</a>
   
     </h1>
   
@@ -288,8 +289,8 @@
 
   
   
-<a href="/2021/04/11/IMX6U-GPT%E5%AE%9A%E6%97%B6%E5%99%A8/" class="archive-article-date">
-        <time datetime="2021-04-11T08:46:40.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-11</time>
+<a href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-pinctrl%E5%92%8Cgpio%E5%AD%90%E7%B3%BB%E7%BB%9F/" class="archive-article-date">
+        <time datetime="2021-04-14T13:11:33.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-14</time>
 </a>
 
   
@@ -301,9 +302,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="GPT-定时器简介"><a href="#GPT-定时器简介" class="headerlink" title="GPT 定时器简介"></a>GPT 定时器简介</h1><p>I.MX6U 的 GPT 定时器全称为 General Purpose Timer，可实现高精度延时。GPT 定时器是一个 32 位向上定时器(也就是从 0X00000000 开始向上递增计数)，GPT 定时器也可以跟一个值进行比较，当计数器值和这个值相等的话就发生比较事件，产生比较中断。GPT 定时器有一个 12 位的分频器，可以对 GPT 定时器的时钟源进行分频，GPT 定时器特性如下： </p>
+    <p>Linux 是一个庞大而完善的系统， 尤其是驱动框架，像 GPIO 这种最基本的驱动不可能采用“原始”的裸机驱动开发方式，Linux 内核提供了 pinctrl 和 gpio 子系统用于GPIO 驱动。</p>
     
-    <a class="article-more-a" href="/2021/04/11/IMX6U-GPT%E5%AE%9A%E6%97%B6%E5%99%A8/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-pinctrl%E5%92%8Cgpio%E5%AD%90%E7%B3%BB%E7%BB%9F/#more">more >></a>
     
     
 
@@ -319,7 +320,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/11/IMX6U-GPT%E5%AE%9A%E6%97%B6%E5%99%A8/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-pinctrl%E5%92%8Cgpio%E5%AD%90%E7%B3%BB%E7%BB%9F/">展开 >></a>
     </p>
     
 
@@ -349,7 +350,7 @@
 
 
   
-    <article id="post-IMX6U-EPIT定时器" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux驱动-Linux设备树LED" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -357,7 +358,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/11/IMX6U-EPIT%E5%AE%9A%E6%97%B6%E5%99%A8/" target="_blank">IMX6U-EPIT定时器</a>
+	  <a class="article-title" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-Linux%E8%AE%BE%E5%A4%87%E6%A0%91LED/" target="_blank">Linux驱动-Linux设备树LED</a>
   
     </h1>
   
@@ -365,8 +366,8 @@
 
   
   
-<a href="/2021/04/11/IMX6U-EPIT%E5%AE%9A%E6%97%B6%E5%99%A8/" class="archive-article-date">
-        <time datetime="2021-04-11T08:06:21.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-11</time>
+<a href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-Linux%E8%AE%BE%E5%A4%87%E6%A0%91LED/" class="archive-article-date">
+        <time datetime="2021-04-14T12:38:13.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-14</time>
 </a>
 
   
@@ -378,9 +379,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="EPIT简介"><a href="#EPIT简介" class="headerlink" title="EPIT简介"></a>EPIT简介</h1><p>EPIT 的全称是：Enhanced Periodic Interrupt Timer，直译过来就是增强的周期中断定时器， 它主要是完成周期性中断定时的。I.MX6U 的 EPIT 定时器只是完成周期性中断定时的，仅此一项功能！至于输入捕获、PWM 输出等这些功能，I.MX6U 由其它的外设来完成。 </p>
+    <h1 id="一、设备树LED驱动原理"><a href="#一、设备树LED驱动原理" class="headerlink" title="一、设备树LED驱动原理"></a>一、设备树LED驱动原理</h1><p>使用设备树来向 Linux 内核传递相关的寄存器物理地址，Linux 驱动文件使用OF函数从设备树中获取所需的属性值，然后使用获取到的属性值来初始化相关的 IO。重点内容如下： </p>
     
-    <a class="article-more-a" href="/2021/04/11/IMX6U-EPIT%E5%AE%9A%E6%97%B6%E5%99%A8/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-Linux%E8%AE%BE%E5%A4%87%E6%A0%91LED/#more">more >></a>
     
     
 
@@ -396,7 +397,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/11/IMX6U-EPIT%E5%AE%9A%E6%97%B6%E5%99%A8/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-Linux%E8%AE%BE%E5%A4%87%E6%A0%91LED/">展开 >></a>
     </p>
     
 
@@ -426,7 +427,7 @@
 
 
   
-    <article id="post-IMX6U中断" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux驱动-Linux设备树" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -434,7 +435,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/11/IMX6U%E4%B8%AD%E6%96%AD/" target="_blank">IMX6U中断</a>
+	  <a class="article-title" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-Linux%E8%AE%BE%E5%A4%87%E6%A0%91/" target="_blank">Linux驱动-Linux设备树</a>
   
     </h1>
   
@@ -442,8 +443,8 @@
 
   
   
-<a href="/2021/04/11/IMX6U%E4%B8%AD%E6%96%AD/" class="archive-article-date">
-        <time datetime="2021-04-11T04:26:49.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-11</time>
+<a href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-Linux%E8%AE%BE%E5%A4%87%E6%A0%91/" class="archive-article-date">
+        <time datetime="2021-04-14T07:37:33.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-14</time>
 </a>
 
   
@@ -455,9 +456,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h2 id="1、中断向量偏移"><a href="#1、中断向量偏移" class="headerlink" title="1、中断向量偏移"></a>1、中断向量偏移</h2><p>​    我们的裸机历程都是从0X87800000开始的，因此要设置中断向量偏移。</p>
+    <h1 id="一、设备树简介"><a href="#一、设备树简介" class="headerlink" title="一、设备树简介"></a>一、设备树简介</h1><p>设备树(Device Tree)，将这个词分开就是“设备”和“树”，描述设备树的文件叫做 DTS(Device Tree Source)，这个 DTS 文件采用树形结构描述板级设备，也就是开发板上的设备信息，比如CPU 数量、 内存基地址、IIC 接口上接了哪些设备、SPI 接口上接了哪些设备等等。板级信息文件都是.c 或.h 文件，如果都编码进 Linux 内核中，会导致 Linux 内核“虚胖”臃肿。</p>
     
-    <a class="article-more-a" href="/2021/04/11/IMX6U%E4%B8%AD%E6%96%AD/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-Linux%E8%AE%BE%E5%A4%87%E6%A0%91/#more">more >></a>
     
     
 
@@ -473,7 +474,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/11/IMX6U%E4%B8%AD%E6%96%AD/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-Linux%E8%AE%BE%E5%A4%87%E6%A0%91/">展开 >></a>
     </p>
     
 
@@ -503,7 +504,7 @@
 
 
   
-    <article id="post-IMX6U启动方式详解" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux驱动-字符设备驱动LED" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -511,7 +512,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/10/IMX6U%E5%90%AF%E5%8A%A8%E6%96%B9%E5%BC%8F%E8%AF%A6%E8%A7%A3/" target="_blank">I.MX6U启动方式详解</a>
+	  <a class="article-title" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8LED/" target="_blank">Linux驱动-字符设备驱动LED</a>
   
     </h1>
   
@@ -519,8 +520,8 @@
 
   
   
-<a href="/2021/04/10/IMX6U%E5%90%AF%E5%8A%A8%E6%96%B9%E5%BC%8F%E8%AF%A6%E8%A7%A3/" class="archive-article-date">
-        <time datetime="2021-04-10T13:09:13.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-10</time>
+<a href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8LED/" class="archive-article-date">
+        <time datetime="2021-04-14T06:49:01.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-14</time>
 </a>
 
   
@@ -532,9 +533,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="启动方式选择"><a href="#启动方式选择" class="headerlink" title="启动方式选择"></a>启动方式选择</h1><p>BOOT 的处理过程是发生在 I.MX6U 芯片上电以后，芯片会根据 BOOT_MODE[1:0]的设置 来选择 BOOT 方式。BOOT_MODE[1:0]的值是可以改变的，有两种方式，一种是改写 eFUSE(熔 丝)，一种是修改相应的 GPIO 高低电平。第一种修改 eFUSE 的方式只能修改一次，后面就不能再修改了，所以我们不使用。我们使用的是通过修改 BOOT_MODE[1:0]对应的 GPIO 高低电平来选择启动方式，所有的开发板都使用的这种方式。</p>
+    <h1 id="编写实验程序"><a href="#编写实验程序" class="headerlink" title="编写实验程序"></a>编写实验程序</h1><h1 id="一、编写实验程序"><a href="#一、编写实验程序" class="headerlink" title="一、编写实验程序"></a>一、编写实验程序</h1><h2 id="1、驱动设备程序"><a href="#1、驱动设备程序" class="headerlink" title="1、驱动设备程序"></a>1、驱动设备程序</h2>
     
-    <a class="article-more-a" href="/2021/04/10/IMX6U%E5%90%AF%E5%8A%A8%E6%96%B9%E5%BC%8F%E8%AF%A6%E8%A7%A3/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8LED/#more">more >></a>
     
     
 
@@ -550,7 +551,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/10/IMX6U%E5%90%AF%E5%8A%A8%E6%96%B9%E5%BC%8F%E8%AF%A6%E8%A7%A3/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8LED/">展开 >></a>
     </p>
     
 
@@ -580,7 +581,7 @@
 
 
   
-    <article id="post-IMX6U-GPIO详解" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux驱动-驱动开发简介" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -588,7 +589,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/10/IMX6U-GPIO%E8%AF%A6%E8%A7%A3/" target="_blank">I.MX6U的GPIO详解</a>
+	  <a class="article-title" href="/2021/04/13/Linux%E9%A9%B1%E5%8A%A8-%E9%A9%B1%E5%8A%A8%E5%BC%80%E5%8F%91%E7%AE%80%E4%BB%8B/" target="_blank">Linux驱动-驱动开放简介</a>
   
     </h1>
   
@@ -596,8 +597,8 @@
 
   
   
-<a href="/2021/04/10/IMX6U-GPIO%E8%AF%A6%E8%A7%A3/" class="archive-article-date">
-        <time datetime="2021-04-10T12:00:19.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-10</time>
+<a href="/2021/04/13/Linux%E9%A9%B1%E5%8A%A8-%E9%A9%B1%E5%8A%A8%E5%BC%80%E5%8F%91%E7%AE%80%E4%BB%8B/" class="archive-article-date">
+        <time datetime="2021-04-13T15:02:49.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-13</time>
 </a>
 
   
@@ -609,9 +610,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="I-MX6U-IO-命名"><a href="#I-MX6U-IO-命名" class="headerlink" title="I.MX6U IO 命名"></a><strong>I.MX6U IO</strong> <strong>命名</strong></h1><p>“IOMUXC_SW_MUC_CTL_PAD_GPIO1_IO00”的就是 GPIO 命名，命名形式就是“IOMUXC_SW_MUC_CTL_PAD_XX_XX”，后面的“XX_XX”就是 GPIO 命名， 比如：GPIO1_IO01、UART1_TX_DATA、JTAG_MOD、SNVS_TAMPER1 等等。</p>
+    <h1 id="一、裸机驱动开发回顾"><a href="#一、裸机驱动开发回顾" class="headerlink" title="一、裸机驱动开发回顾"></a>一、裸机驱动开发回顾</h1><p>​    1、底层，跟寄存器打交道，有些MCU提供了库。</p>
     
-    <a class="article-more-a" href="/2021/04/10/IMX6U-GPIO%E8%AF%A6%E8%A7%A3/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/13/Linux%E9%A9%B1%E5%8A%A8-%E9%A9%B1%E5%8A%A8%E5%BC%80%E5%8F%91%E7%AE%80%E4%BB%8B/#more">more >></a>
     
     
 
@@ -627,7 +628,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/10/IMX6U-GPIO%E8%AF%A6%E8%A7%A3/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/13/Linux%E9%A9%B1%E5%8A%A8-%E9%A9%B1%E5%8A%A8%E5%BC%80%E5%8F%91%E7%AE%80%E4%BB%8B/">展开 >></a>
     </p>
     
 
@@ -657,7 +658,7 @@
 
 
   
-    <article id="post-ARM汇编基础" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux驱动-字符设备驱动框架" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -665,7 +666,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/10/ARM%E6%B1%87%E7%BC%96%E5%9F%BA%E7%A1%80/" target="_blank">ARM汇编基础</a>
+	  <a class="article-title" href="/2021/04/13/Linux%E9%A9%B1%E5%8A%A8-%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8%E6%A1%86%E6%9E%B6/" target="_blank">Linux驱动-字符设备驱动框架</a>
   
     </h1>
   
@@ -673,8 +674,8 @@
 
   
   
-<a href="/2021/04/10/ARM%E6%B1%87%E7%BC%96%E5%9F%BA%E7%A1%80/" class="archive-article-date">
-        <time datetime="2021-04-10T09:47:50.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-10</time>
+<a href="/2021/04/13/Linux%E9%A9%B1%E5%8A%A8-%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8%E6%A1%86%E6%9E%B6/" class="archive-article-date">
+        <time datetime="2021-04-13T15:00:15.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-13</time>
 </a>
 
   
@@ -686,9 +687,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <p>对于 Cortex-A 芯片来讲，大部分芯片在上电以后 C 语言环境还没准备好，所以第一行程序肯定是汇编的，至于要写多少汇编程序，那就看你能在哪一步把 C 语言环境准备好。所谓的C语言环境就是保证 C 语言能够正常运行。C 语言中的函数调用涉及到出栈入栈，出栈入栈就要对堆栈进行操作，所谓的堆栈其实就是一段内存，这段内存比较特殊，由 SP 指针访问，SP 指针指向栈顶。芯片一上电 SP 指针还没有初始化，所以 C 语言没法运行，对于有些芯片还需要初始化 DDR，因为芯片本身没有 RAM，或者内部 RAM 不开放给用户使用，用户代码需要在DDR 中行，因此一开始要用汇编来初始化 DDR 控制器。</p>
+    <p>字符设备是 Linux 驱动中最基本的一类设备驱动，字符设备就是一个一个字节，按照字节流进行读写操作的设备，读写数据是分先后顺序的。最常见的点灯、按键、IIC、SPI，LCD 等等都是字符设备，这些设备的驱动就叫做字符设备驱动。</p>
     
-    <a class="article-more-a" href="/2021/04/10/ARM%E6%B1%87%E7%BC%96%E5%9F%BA%E7%A1%80/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/13/Linux%E9%A9%B1%E5%8A%A8-%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8%E6%A1%86%E6%9E%B6/#more">more >></a>
     
     
 
@@ -704,7 +705,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/10/ARM%E6%B1%87%E7%BC%96%E5%9F%BA%E7%A1%80/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/13/Linux%E9%A9%B1%E5%8A%A8-%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8%E6%A1%86%E6%9E%B6/">展开 >></a>
     </p>
     
 
@@ -734,7 +735,7 @@
 
 
   
-    <article id="post-Cortex-A7_MPCore" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux移植-内核MfgTool烧写" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -742,7 +743,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/10/Cortex-A7_MPCore/" target="_blank">Cortex-A7架构</a>
+	  <a class="article-title" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8MfgTool%E7%83%A7%E5%86%99/" target="_blank">Linux移植-内核MfgTool烧写</a>
   
     </h1>
   
@@ -750,8 +751,8 @@
 
   
   
-<a href="/2021/04/10/Cortex-A7_MPCore/" class="archive-article-date">
-        <time datetime="2021-04-10T09:20:48.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-10</time>
+<a href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8MfgTool%E7%83%A7%E5%86%99/" class="archive-article-date">
+        <time datetime="2021-04-13T11:21:56.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-13</time>
 </a>
 
   
@@ -763,9 +764,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="Cortex-A7-MPCore-简介"><a href="#Cortex-A7-MPCore-简介" class="headerlink" title="Cortex-A7 MPCore 简介"></a>Cortex-A7 MPCore 简介</h1><p>Cortex-A7 支持在一个处理器上选配 1~4 个内核。Cortex-A7 负责普通应用，因为 Cortex-A7省电。Cortex-A7 本身性能也不弱，不要看它叫做 Cortex-A7 但是它可是比 Cortex-A8 性能要强大，而且更省电。</p>
+    <p>前面移植好了 uboot 、 linux kernle、根文件系统。都是通过网络来测试的。在实际的产品开发中肯定不可能通过网络来运行，因此我们需要将 uboot、linux kernel、.dtb(设备树)和 rootfs 这四个文件烧写到板子上的 EMMC、NAND 或 QSPI Flash 等其他存储设备上，这样不管有没有网络我们的产品都可以正常运行。以下为如何使用 NXP 官方提供的 MfgTool 工具通过 USB OTG 口来烧写系统。</p>
     
-    <a class="article-more-a" href="/2021/04/10/Cortex-A7_MPCore/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8MfgTool%E7%83%A7%E5%86%99/#more">more >></a>
     
     
 
@@ -777,37 +778,11 @@
   <div class="article-info article-info-index">
     
     
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">linux</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">ARM</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
     
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/Linux//" class="article-tag-list-link color1">Linux</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/10/Cortex-A7_MPCore/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8MfgTool%E7%83%A7%E5%86%99/">展开 >></a>
     </p>
     
 
@@ -837,7 +812,7 @@
 
 
   
-    <article id="post-IMX6U-I2C-ap3216c" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux移植-内核根文件系统" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -845,7 +820,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/03/04/IMX6U-I2C-ap3216c/" target="_blank">IMX6U_I2C_ap3216c</a>
+	  <a class="article-title" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/" target="_blank">Linux移植-内核根文件系统</a>
   
     </h1>
   
@@ -853,8 +828,8 @@
 
   
   
-<a href="/2021/03/04/IMX6U-I2C-ap3216c/" class="archive-article-date">
-        <time datetime="2021-03-03T16:22:32.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-03-04</time>
+<a href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/" class="archive-article-date">
+        <time datetime="2021-04-13T09:28:41.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-13</time>
 </a>
 
   
@@ -866,9 +841,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="一、IIC协议详解"><a href="#一、IIC协议详解" class="headerlink" title="一、IIC协议详解"></a>一、IIC协议详解</h1><p>I2C 使用两条线在主控制器和从机之间进行数据通信。一条是 SCL(串行时钟线)，另外一条是 SDA(串行数据线)，这两条数据线需要接上拉电阻，总线空闲的时候 SCL 和 SDA 处于高电平。I2C总线支持多从机，通过从机地址来区分访问哪个从机。</p>
+    <h1 id="一、根文件系统简介"><a href="#一、根文件系统简介" class="headerlink" title="一、根文件系统简介"></a>一、根文件系统简介</h1><p>根文件系统也叫做rootfs。学习STM32的W25Q256、SD卡的时候接触过FATFS文件系统。Rootfs？=FATFS。不等于！</p>
     
-    <a class="article-more-a" href="/2021/03/04/IMX6U-I2C-ap3216c/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/#more">more >></a>
     
     
 
@@ -880,41 +855,11 @@
   <div class="article-info article-info-index">
     
     
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">linux</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">IMX6U</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">I2C</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
     
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/Linux//" class="article-tag-list-link color1">Linux</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/03/04/IMX6U-I2C-ap3216c/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/">展开 >></a>
     </p>
     
 
@@ -944,7 +889,7 @@
 
 
   
-    <article id="post-IMX6U串口" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux移植-内核移植" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -952,7 +897,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/03/04/IMX6U%E4%B8%B2%E5%8F%A3/" target="_blank">IMX6U串口</a>
+	  <a class="article-title" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8%E7%A7%BB%E6%A4%8D/" target="_blank">Linux移植-内核移植</a>
   
     </h1>
   
@@ -960,8 +905,8 @@
 
   
   
-<a href="/2021/03/04/IMX6U%E4%B8%B2%E5%8F%A3/" class="archive-article-date">
-        <time datetime="2021-03-03T16:10:18.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-03-04</time>
+<a href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8%E7%A7%BB%E6%A4%8D/" class="archive-article-date">
+        <time datetime="2021-04-13T09:02:30.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-13</time>
 </a>
 
   
@@ -973,9 +918,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="一、串口协议简介"><a href="#一、串口协议简介" class="headerlink" title="一、串口协议简介"></a>一、串口协议简介</h1><p><strong>UART</strong> <strong>通信格式</strong></p>
+    <h1 id="一、NXP官方开发板Linux内核编译"><a href="#一、NXP官方开发板Linux内核编译" class="headerlink" title="一、NXP官方开发板Linux内核编译"></a>一、NXP官方开发板Linux内核编译</h1><p>编译NXP官方EVK开发板对应的Linux系统，默认配置文件存放路径arch/arm/configs。最终编译出：zImage，和 imx6ull-14x14-evk-emmc.dtb，imx6ull-14x14-evk.dtb。</p>
     
-    <a class="article-more-a" href="/2021/03/04/IMX6U%E4%B8%B2%E5%8F%A3/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8%E7%A7%BB%E6%A4%8D/#more">more >></a>
     
     
 
@@ -987,41 +932,11 @@
   <div class="article-info article-info-index">
     
     
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">linux</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">IMX6U</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">串口</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
     
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/Linux//" class="article-tag-list-link color1">Linux</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/03/04/IMX6U%E4%B8%B2%E5%8F%A3/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8%E7%A7%BB%E6%A4%8D/">展开 >></a>
     </p>
     
 
@@ -1053,7 +968,7 @@
   
   
     <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/page/5/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/7/">Next &amp;raquo;</a>
+      <a class="extend prev" rel="prev" href="/page/5/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><a class="page-number" href="/page/8/">8</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/7/">Next &amp;raquo;</a>
     </nav>
   
 

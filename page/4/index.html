@@ -195,7 +195,7 @@
             
 
   
-    <article id="post-Linux驱动-Linux设备树LED" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux驱动-SPI驱动" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -203,7 +203,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-Linux%E8%AE%BE%E5%A4%87%E6%A0%91LED/" target="_blank">Linux驱动-Linux设备树LED</a>
+	  <a class="article-title" href="/2021/04/17/Linux%E9%A9%B1%E5%8A%A8-SPI%E9%A9%B1%E5%8A%A8/" target="_blank">Linux驱动-SPI驱动</a>
   
     </h1>
   
@@ -211,8 +211,8 @@
 
   
   
-<a href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-Linux%E8%AE%BE%E5%A4%87%E6%A0%91LED/" class="archive-article-date">
-        <time datetime="2021-04-14T12:38:13.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-14</time>
+<a href="/2021/04/17/Linux%E9%A9%B1%E5%8A%A8-SPI%E9%A9%B1%E5%8A%A8/" class="archive-article-date">
+        <time datetime="2021-04-17T14:50:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-17</time>
 </a>
 
   
@@ -224,9 +224,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="一、设备树LED驱动原理"><a href="#一、设备树LED驱动原理" class="headerlink" title="一、设备树LED驱动原理"></a>一、设备树LED驱动原理</h1><p>使用设备树来向 Linux 内核传递相关的寄存器物理地址，Linux 驱动文件使用OF函数从设备树中获取所需的属性值，然后使用获取到的属性值来初始化相关的 IO。重点内容如下： </p>
+    <h1 id="Linux-下-SPI-驱动框架"><a href="#Linux-下-SPI-驱动框架" class="headerlink" title="Linux 下 SPI 驱动框架"></a><strong>Linux</strong> <strong>下</strong> <strong>SPI</strong> <strong>驱动框架</strong></h1><h2 id="SPI-主机驱动"><a href="#SPI-主机驱动" class="headerlink" title="SPI 主机驱动"></a><strong>SPI</strong> <strong>主机驱动</strong></h2><p>SPI 主机驱动就是 SOC 的 SPI 控制器驱动，类似 I2C 驱动里面的适配器驱动。Linux 内核使用 spi_master表示 SPI 主机驱动，spi_master 是个结构体，定义在 include/linux/spi/spi.h 文件中，内容如下(有缩减)：</p>
     
-    <a class="article-more-a" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-Linux%E8%AE%BE%E5%A4%87%E6%A0%91LED/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/17/Linux%E9%A9%B1%E5%8A%A8-SPI%E9%A9%B1%E5%8A%A8/#more">more >></a>
     
     
 
@@ -242,7 +242,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-Linux%E8%AE%BE%E5%A4%87%E6%A0%91LED/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/17/Linux%E9%A9%B1%E5%8A%A8-SPI%E9%A9%B1%E5%8A%A8/">展开 >></a>
     </p>
     
 
@@ -272,7 +272,7 @@
 
 
   
-    <article id="post-Linux驱动-Linux设备树" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux驱动-I2C驱动" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -280,7 +280,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-Linux%E8%AE%BE%E5%A4%87%E6%A0%91/" target="_blank">Linux驱动-Linux设备树</a>
+	  <a class="article-title" href="/2021/04/17/Linux%E9%A9%B1%E5%8A%A8-I2C%E9%A9%B1%E5%8A%A8/" target="_blank">Linux驱动-I2C驱动</a>
   
     </h1>
   
@@ -288,8 +288,8 @@
 
   
   
-<a href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-Linux%E8%AE%BE%E5%A4%87%E6%A0%91/" class="archive-article-date">
-        <time datetime="2021-04-14T07:37:33.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-14</time>
+<a href="/2021/04/17/Linux%E9%A9%B1%E5%8A%A8-I2C%E9%A9%B1%E5%8A%A8/" class="archive-article-date">
+        <time datetime="2021-04-17T05:51:36.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-17</time>
 </a>
 
   
@@ -301,9 +301,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="一、设备树简介"><a href="#一、设备树简介" class="headerlink" title="一、设备树简介"></a>一、设备树简介</h1><p>设备树(Device Tree)，将这个词分开就是“设备”和“树”，描述设备树的文件叫做 DTS(Device Tree Source)，这个 DTS 文件采用树形结构描述板级设备，也就是开发板上的设备信息，比如CPU 数量、 内存基地址、IIC 接口上接了哪些设备、SPI 接口上接了哪些设备等等。板级信息文件都是.c 或.h 文件，如果都编码进 Linux 内核中，会导致 Linux 内核“虚胖”臃肿。</p>
+    <h1 id="Linux-I2C驱动框架"><a href="#Linux-I2C驱动框架" class="headerlink" title="Linux I2C驱动框架"></a>Linux I2C驱动框架</h1><p>裸机篇中编写 AP3216C 驱动的四个文件：bsp_i2c.c、bsp_i2c.h、bsp_ap3216c.c 和 bsp_ap3216c.h。其中前两个是 I.MX6U 的 IIC 接口驱动，后两个文 件是 AP3216C 这个 I2C 设备驱动文件。相当于有两部分驱动： I2C 主机驱动、I2C 设备驱动。 </p>
     
-    <a class="article-more-a" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-Linux%E8%AE%BE%E5%A4%87%E6%A0%91/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/17/Linux%E9%A9%B1%E5%8A%A8-I2C%E9%A9%B1%E5%8A%A8/#more">more >></a>
     
     
 
@@ -319,7 +319,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-Linux%E8%AE%BE%E5%A4%87%E6%A0%91/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/17/Linux%E9%A9%B1%E5%8A%A8-I2C%E9%A9%B1%E5%8A%A8/">展开 >></a>
     </p>
     
 
@@ -349,7 +349,7 @@
 
 
   
-    <article id="post-Linux驱动-字符设备驱动LED" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux驱动-RTC驱动" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -357,7 +357,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8LED/" target="_blank">Linux驱动-字符设备驱动LED</a>
+	  <a class="article-title" href="/2021/04/17/Linux%E9%A9%B1%E5%8A%A8-RTC%E9%A9%B1%E5%8A%A8/" target="_blank">Linux驱动-RTC驱动</a>
   
     </h1>
   
@@ -365,8 +365,8 @@
 
   
   
-<a href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8LED/" class="archive-article-date">
-        <time datetime="2021-04-14T06:49:01.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-14</time>
+<a href="/2021/04/17/Linux%E9%A9%B1%E5%8A%A8-RTC%E9%A9%B1%E5%8A%A8/" class="archive-article-date">
+        <time datetime="2021-04-17T05:04:41.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-17</time>
 </a>
 
   
@@ -378,9 +378,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="编写实验程序"><a href="#编写实验程序" class="headerlink" title="编写实验程序"></a>编写实验程序</h1><h1 id="一、编写实验程序"><a href="#一、编写实验程序" class="headerlink" title="一、编写实验程序"></a>一、编写实验程序</h1><h2 id="1、驱动设备程序"><a href="#1、驱动设备程序" class="headerlink" title="1、驱动设备程序"></a>1、驱动设备程序</h2>
+    <h1 id="Linux-内核-RTC-驱动"><a href="#Linux-内核-RTC-驱动" class="headerlink" title="Linux 内核 RTC 驱动"></a><strong>Linux</strong> <strong>内核</strong> <strong>RTC</strong> <strong>驱动</strong></h1><p>RTC 设备驱动是一个标准的字符设备驱动，应用程序通过 open、release、read、write 和 ioctl等函数完成对 RTC 设备的操作。Linux 内核将 RTC 设备抽象为 rtc_device 结构体，因此 RTC 设备驱动就是申请并初始化<br>rtc_device，最后将 rtc_device 注册到 Linux 内核里面，这样 Linux 内核就有一个 RTC 设备的。</p>
     
-    <a class="article-more-a" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8LED/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/17/Linux%E9%A9%B1%E5%8A%A8-RTC%E9%A9%B1%E5%8A%A8/#more">more >></a>
     
     
 
@@ -396,7 +396,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8LED/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/17/Linux%E9%A9%B1%E5%8A%A8-RTC%E9%A9%B1%E5%8A%A8/">展开 >></a>
     </p>
     
 
@@ -426,7 +426,7 @@
 
 
   
-    <article id="post-Linux驱动-驱动开发简介" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux驱动-LCD驱动" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -434,7 +434,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/13/Linux%E9%A9%B1%E5%8A%A8-%E9%A9%B1%E5%8A%A8%E5%BC%80%E5%8F%91%E7%AE%80%E4%BB%8B/" target="_blank">Linux驱动-驱动开放简介</a>
+	  <a class="article-title" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-LCD%E9%A9%B1%E5%8A%A8/" target="_blank">Linux驱动-LCD驱动</a>
   
     </h1>
   
@@ -442,8 +442,8 @@
 
   
   
-<a href="/2021/04/13/Linux%E9%A9%B1%E5%8A%A8-%E9%A9%B1%E5%8A%A8%E5%BC%80%E5%8F%91%E7%AE%80%E4%BB%8B/" class="archive-article-date">
-        <time datetime="2021-04-13T15:02:49.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-13</time>
+<a href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-LCD%E9%A9%B1%E5%8A%A8/" class="archive-article-date">
+        <time datetime="2021-04-16T15:59:08.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-16</time>
 </a>
 
   
@@ -455,9 +455,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="一、裸机驱动开发回顾"><a href="#一、裸机驱动开发回顾" class="headerlink" title="一、裸机驱动开发回顾"></a>一、裸机驱动开发回顾</h1><p>​    1、底层，跟寄存器打交道，有些MCU提供了库。</p>
+    <h1 id="Framebuffer-设备"><a href="#Framebuffer-设备" class="headerlink" title="Framebuffer 设备"></a><strong>Framebuffer</strong> <strong>设备</strong></h1><p>裸机 LCD 驱动编写流程如下：<br>①、初始化 I.MX6U 的 eLCDIF 控制器，重点是 LCD 屏幕宽(width)、高(height)、hspw、hbp、hfp、vspw、vbp 和 vfp 等信息。</p>
     
-    <a class="article-more-a" href="/2021/04/13/Linux%E9%A9%B1%E5%8A%A8-%E9%A9%B1%E5%8A%A8%E5%BC%80%E5%8F%91%E7%AE%80%E4%BB%8B/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-LCD%E9%A9%B1%E5%8A%A8/#more">more >></a>
     
     
 
@@ -473,7 +473,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/13/Linux%E9%A9%B1%E5%8A%A8-%E9%A9%B1%E5%8A%A8%E5%BC%80%E5%8F%91%E7%AE%80%E4%BB%8B/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-LCD%E9%A9%B1%E5%8A%A8/">展开 >></a>
     </p>
     
 
@@ -503,7 +503,7 @@
 
 
   
-    <article id="post-Linux驱动-字符设备驱动框架" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux驱动-INPUT子系统" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -511,7 +511,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/13/Linux%E9%A9%B1%E5%8A%A8-%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8%E6%A1%86%E6%9E%B6/" target="_blank">Linux驱动-字符设备驱动框架</a>
+	  <a class="article-title" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-INPUT%E5%AD%90%E7%B3%BB%E7%BB%9F/" target="_blank">Linux驱动-INPUT子系统</a>
   
     </h1>
   
@@ -519,8 +519,8 @@
 
   
   
-<a href="/2021/04/13/Linux%E9%A9%B1%E5%8A%A8-%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8%E6%A1%86%E6%9E%B6/" class="archive-article-date">
-        <time datetime="2021-04-13T15:00:15.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-13</time>
+<a href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-INPUT%E5%AD%90%E7%B3%BB%E7%BB%9F/" class="archive-article-date">
+        <time datetime="2021-04-16T12:58:20.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-16</time>
 </a>
 
   
@@ -532,9 +532,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <p>字符设备是 Linux 驱动中最基本的一类设备驱动，字符设备就是一个一个字节，按照字节流进行读写操作的设备，读写数据是分先后顺序的。最常见的点灯、按键、IIC、SPI，LCD 等等都是字符设备，这些设备的驱动就叫做字符设备驱动。</p>
+    <h1 id="input-子系统"><a href="#input-子系统" class="headerlink" title="input 子系统"></a><strong>input</strong> <strong>子系统</strong></h1><p>按键、鼠标、键盘、触摸屏等都属于输入(input)设备，Linux 内核为此专门做了一个叫做 input子系统的框架来处理输入事件。输入设备本质上还是字符设备，只是在此基础上套上了 input 框架，用户只需要负责上报输入事件，比如按键值、坐标等信息，input 核心层负责处理这些事件。</p>
     
-    <a class="article-more-a" href="/2021/04/13/Linux%E9%A9%B1%E5%8A%A8-%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8%E6%A1%86%E6%9E%B6/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-INPUT%E5%AD%90%E7%B3%BB%E7%BB%9F/#more">more >></a>
     
     
 
@@ -550,7 +550,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/13/Linux%E9%A9%B1%E5%8A%A8-%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8%E6%A1%86%E6%9E%B6/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-INPUT%E5%AD%90%E7%B3%BB%E7%BB%9F/">展开 >></a>
     </p>
     
 
@@ -580,7 +580,7 @@
 
 
   
-    <article id="post-Linux移植-内核MfgTool烧写" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux驱动-MISC驱动" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -588,7 +588,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8MfgTool%E7%83%A7%E5%86%99/" target="_blank">Linux移植-内核MfgTool烧写</a>
+	  <a class="article-title" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-MISC%E9%A9%B1%E5%8A%A8/" target="_blank">Linux驱动-MISC驱动</a>
   
     </h1>
   
@@ -596,8 +596,8 @@
 
   
   
-<a href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8MfgTool%E7%83%A7%E5%86%99/" class="archive-article-date">
-        <time datetime="2021-04-13T11:21:56.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-13</time>
+<a href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-MISC%E9%A9%B1%E5%8A%A8/" class="archive-article-date">
+        <time datetime="2021-04-16T11:05:33.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-16</time>
 </a>
 
   
@@ -609,9 +609,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <p>前面移植好了 uboot 、 linux kernle、根文件系统。都是通过网络来测试的。在实际的产品开发中肯定不可能通过网络来运行，因此我们需要将 uboot、linux kernel、.dtb(设备树)和 rootfs 这四个文件烧写到板子上的 EMMC、NAND 或 QSPI Flash 等其他存储设备上，这样不管有没有网络我们的产品都可以正常运行。以下为如何使用 NXP 官方提供的 MfgTool 工具通过 USB OTG 口来烧写系统。</p>
+    <h1 id="MISC-设备驱动"><a href="#MISC-设备驱动" class="headerlink" title="MISC 设备驱动"></a><strong>MISC</strong> <strong>设备驱动</strong></h1><p>misc 的意思是混合、杂项的，因此 MISC 驱动也叫做杂项驱动，当某些外设无法进行分类的时候就可以使用 MISC 驱动。MISC 驱动其实就是最简单的字符设备驱动，通常嵌套在 platform 总线驱动中，实现复杂的驱动。</p>
     
-    <a class="article-more-a" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8MfgTool%E7%83%A7%E5%86%99/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-MISC%E9%A9%B1%E5%8A%A8/#more">more >></a>
     
     
 
@@ -627,7 +627,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8MfgTool%E7%83%A7%E5%86%99/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-MISC%E9%A9%B1%E5%8A%A8/">展开 >></a>
     </p>
     
 
@@ -657,7 +657,7 @@
 
 
   
-    <article id="post-Linux移植-内核根文件系统" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux驱动-platform设备驱动-设备树" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -665,7 +665,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/" target="_blank">Linux移植-内核根文件系统</a>
+	  <a class="article-title" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-platform%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-%E8%AE%BE%E5%A4%87%E6%A0%91/" target="_blank">Linux驱动-platform设备驱动-设备树</a>
   
     </h1>
   
@@ -673,8 +673,8 @@
 
   
   
-<a href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/" class="archive-article-date">
-        <time datetime="2021-04-13T09:28:41.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-13</time>
+<a href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-platform%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-%E8%AE%BE%E5%A4%87%E6%A0%91/" class="archive-article-date">
+        <time datetime="2021-04-16T10:24:46.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-16</time>
 </a>
 
   
@@ -686,9 +686,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="一、根文件系统简介"><a href="#一、根文件系统简介" class="headerlink" title="一、根文件系统简介"></a>一、根文件系统简介</h1><p>根文件系统也叫做rootfs。学习STM32的W25Q256、SD卡的时候接触过FATFS文件系统。Rootfs？=FATFS。不等于！</p>
+    <h1 id="设备树下的-platform-驱动"><a href="#设备树下的-platform-驱动" class="headerlink" title="设备树下的 platform 驱动"></a><strong>设备树下的</strong> <strong>platform</strong> <strong>驱动</strong></h1><p>platform 驱动框架分为总线、设备和驱动，其中总线不需要我们这些驱动程序员去管理，这个是 Linux 内核提供的，我们在编写驱动的时候只要关注于设备和驱动的具体实现即可。在没 有设备树的 Linux 内核下，我们需要分别编写并注册 platform_device 和 platform_driver，分别代 表设备和驱动。在使用设备树的时候，设备的描述被放到了设备树中，因此 platform_device 就不需要我们去编写了，我们只需要实现 platform_driver 即可。在编写基于设备树的 platform 驱动的时候我们需要注意一下几点：</p>
     
-    <a class="article-more-a" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-platform%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-%E8%AE%BE%E5%A4%87%E6%A0%91/#more">more >></a>
     
     
 
@@ -704,7 +704,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-platform%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-%E8%AE%BE%E5%A4%87%E6%A0%91/">展开 >></a>
     </p>
     
 
@@ -734,7 +734,7 @@
 
 
   
-    <article id="post-Linux移植-内核移植" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux驱动-platform设备驱动-非设备树" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -742,7 +742,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8%E7%A7%BB%E6%A4%8D/" target="_blank">Linux移植-内核移植</a>
+	  <a class="article-title" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-platform%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-%E9%9D%9E%E8%AE%BE%E5%A4%87%E6%A0%91/" target="_blank">Linux驱动-platform设备驱动-非设备树</a>
   
     </h1>
   
@@ -750,8 +750,8 @@
 
   
   
-<a href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8%E7%A7%BB%E6%A4%8D/" class="archive-article-date">
-        <time datetime="2021-04-13T09:02:30.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-13</time>
+<a href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-platform%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-%E9%9D%9E%E8%AE%BE%E5%A4%87%E6%A0%91/" class="archive-article-date">
+        <time datetime="2021-04-16T09:31:45.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-16</time>
 </a>
 
   
@@ -763,9 +763,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="一、NXP官方开发板Linux内核编译"><a href="#一、NXP官方开发板Linux内核编译" class="headerlink" title="一、NXP官方开发板Linux内核编译"></a>一、NXP官方开发板Linux内核编译</h1><p>编译NXP官方EVK开发板对应的Linux系统，默认配置文件存放路径arch/arm/configs。最终编译出：zImage，和 imx6ull-14x14-evk-emmc.dtb，imx6ull-14x14-evk.dtb。</p>
+    <p>使用platform 驱动框架来编写一个 LED 灯驱动，不使用设备树来描述设备信息，我们采用自定义platform_device这种“古老”方式来编写LED的设备信息。</p>
     
-    <a class="article-more-a" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8%E7%A7%BB%E6%A4%8D/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-platform%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-%E9%9D%9E%E8%AE%BE%E5%A4%87%E6%A0%91/#more">more >></a>
     
     
 
@@ -781,7 +781,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8%E7%A7%BB%E6%A4%8D/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-platform%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-%E9%9D%9E%E8%AE%BE%E5%A4%87%E6%A0%91/">展开 >></a>
     </p>
     
 
@@ -811,7 +811,7 @@
 
 
   
-    <article id="post-Linux移植-内核启动流程" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux驱动-platform设备驱动" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -819,7 +819,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/" target="_blank">Linux移植-内核启动流程</a>
+	  <a class="article-title" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-platform%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8/" target="_blank">Linux驱动-platform设备驱动</a>
   
     </h1>
   
@@ -827,8 +827,8 @@
 
   
   
-<a href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/" class="archive-article-date">
-        <time datetime="2021-04-13T07:51:53.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-13</time>
+<a href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-platform%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8/" class="archive-article-date">
+        <time datetime="2021-04-16T08:28:54.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-16</time>
 </a>
 
   
@@ -840,9 +840,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="一、vmlinux-lds简介"><a href="#一、vmlinux-lds简介" class="headerlink" title="一、vmlinux.lds简介"></a>一、vmlinux.lds简介</h1><p>从arch/arm/kernel/vmlinux.lds分析Linux内核第一行启动代码。找到ENTRY(stext)</p>
+    <h1 id="Linux-驱动的分离与分层"><a href="#Linux-驱动的分离与分层" class="headerlink" title="Linux 驱动的分离与分层"></a><strong>Linux</strong> <strong>驱动的分离与分层</strong></h1><h2 id="驱动的分隔与分离"><a href="#驱动的分隔与分离" class="headerlink" title="驱动的分隔与分离"></a><strong>驱动的分隔与分离</strong></h2>
     
-    <a class="article-more-a" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-platform%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8/#more">more >></a>
     
     
 
@@ -858,7 +858,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-platform%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8/">展开 >></a>
     </p>
     
 
@@ -888,7 +888,7 @@
 
 
   
-    <article id="post-Linux移植-内核Makefile详解" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux驱动-异步通知" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -896,7 +896,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8Makefile%E8%AF%A6%E8%A7%A3/" target="_blank">Linux移植-内核Makefile详解</a>
+	  <a class="article-title" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-%E5%BC%82%E6%AD%A5%E9%80%9A%E7%9F%A5/" target="_blank">Linux驱动-异步通知</a>
   
     </h1>
   
@@ -904,8 +904,8 @@
 
   
   
-<a href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8Makefile%E8%AF%A6%E8%A7%A3/" class="archive-article-date">
-        <time datetime="2021-04-13T07:31:04.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-13</time>
+<a href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-%E5%BC%82%E6%AD%A5%E9%80%9A%E7%9F%A5/" class="archive-article-date">
+        <time datetime="2021-04-16T07:40:56.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-16</time>
 </a>
 
   
@@ -917,9 +917,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="一、Linux顶层Makefile基本流程"><a href="#一、Linux顶层Makefile基本流程" class="headerlink" title="一、Linux顶层Makefile基本流程"></a>一、Linux顶层Makefile基本流程</h1><p>​    hdr-arch  = arm</p>
+    <h1 id="异步通知简介"><a href="#异步通知简介" class="headerlink" title="异步通知简介"></a>异步通知简介</h1><p>Linux 应用程序可以通过阻塞或者非阻塞这两种方式来访问驱动设备，通过阻塞方式访问的话应用程序会处于休眠态，等待驱动设备可以使用，非阻塞方式的话会通过 poll 函数来不断的轮询，查看驱动设备文件是否可以使用。这两种方式都需要应用程序主动的去查询设备的使用情况。</p>
     
-    <a class="article-more-a" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8Makefile%E8%AF%A6%E8%A7%A3/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-%E5%BC%82%E6%AD%A5%E9%80%9A%E7%9F%A5/#more">more >></a>
     
     
 
@@ -935,7 +935,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-%E5%86%85%E6%A0%B8Makefile%E8%AF%A6%E8%A7%A3/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-%E5%BC%82%E6%AD%A5%E9%80%9A%E7%9F%A5/">展开 >></a>
     </p>
     
 
@@ -967,7 +967,7 @@
   
   
     <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/page/3/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/5/">Next &amp;raquo;</a>
+      <a class="extend prev" rel="prev" href="/page/3/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/5/">Next &amp;raquo;</a>
     </nav>
   
 

@@ -18,7 +18,7 @@
 <meta property="og:description" content="一、连接脚本u-boot.lds详解程序的链接是由链接脚本来决定的，所以通过链接脚本可以找到程序的入口。如果没有编译过 uboot 的话链接 脚本为 arch&#x2F;arm&#x2F;cpu&#x2F;u-boot.lds。但是这个不是最终使用的链接脚本，最终的链接脚本是在这个链接脚本的基础上生成的。">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-12T15:24:43.000Z">
-<meta property="article:modified_time" content="2021-05-05T04:48:01.714Z">
+<meta property="article:modified_time" content="2021-05-05T05:05:16.325Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -243,7 +243,6 @@
 <p>TOTAL_MALLOC_LEN    (CONFIG_SYS_MALLOC_LEN + CONFIG_ENV_SIZE)</p>
 <p>CONFIG_SYS_MALLOC_LEN  (16 * SZ_1M) </p>
 <p>CONFIG_ENV_SIZE            SZ_8K</p>
-<p>​    </p>
 <p>mx6ullevk.c mx6ullevk.h这两个文件长打交道</p>
 <p>​    6、relocate_code函数</p>
 <p>​    relocate_code函数有一个参数，r0=gd-&gt;relocaddr=0X9FF47000，uboot重定位后的首地址。</p>
@@ -318,7 +317,6 @@
 <h1 id="三、bootz启动Linux内核过程"><a href="#三、bootz启动Linux内核过程" class="headerlink" title="三、bootz启动Linux内核过程"></a>三、bootz启动Linux内核过程</h1><p>​    Uboot启动Linux内核使用bootz命令，bootm。。bootz是如何启动Linux内核？uboot的生命是怎么终止的呢？linux又是怎么启动的呢？</p>
 <p>​    1、image全局变量</p>
 <p>bootm_headers_t images;    </p>
-<p>​    </p>
 <p>​    2、do_bootz函数</p>
 <p>tftp 80800000 zImage</p>
 <p>tftp 83000000 imx6ull-14x14-emmc-7-1024x600-c.dtb</p>

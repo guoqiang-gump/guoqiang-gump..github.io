@@ -195,7 +195,7 @@
             
 
   
-    <article id="post-Linux移植-uboot移植" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux驱动-阻塞和非阻塞-非阻塞IO" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -203,7 +203,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-uboot%E7%A7%BB%E6%A4%8D/" target="_blank">Linux移植-uboot移植</a>
+	  <a class="article-title" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-%E9%98%BB%E5%A1%9E%E5%92%8C%E9%9D%9E%E9%98%BB%E5%A1%9E-%E9%9D%9E%E9%98%BB%E5%A1%9EIO/" target="_blank">Linux驱动-非阻塞IO</a>
   
     </h1>
   
@@ -211,8 +211,8 @@
 
   
   
-<a href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-uboot%E7%A7%BB%E6%A4%8D/" class="archive-article-date">
-        <time datetime="2021-04-13T06:44:05.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-13</time>
+<a href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-%E9%98%BB%E5%A1%9E%E5%92%8C%E9%9D%9E%E9%98%BB%E5%A1%9E-%E9%9D%9E%E9%98%BB%E5%A1%9EIO/" class="archive-article-date">
+        <time datetime="2021-04-16T06:31:11.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-16</time>
 </a>
 
   
@@ -224,9 +224,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <p>半导体厂商会将 uboot 移植到他们自己的原厂开发板上，测试好以后就会将这个 uboot 发布出去，这就是原厂 BSP 包。我们一般做产品的时候就会参考原厂的开发板做硬件，然 后在原厂提供的 BSP 包上做修改，将 uboot 或者 linux kernel 移植到我们的硬件上。这个就是uboot 移植的一般流程：</p>
+    <h1 id="非阻塞-IO"><a href="#非阻塞-IO" class="headerlink" title="非阻塞 IO"></a>非阻塞 IO</h1><p>对于非阻塞 IO，应用程序对应的线程不会挂起，它要么一直轮询等待，直到设备资源可以使用，要么就直接放弃。当使用非阻塞IO时，应用程序使用非阻塞访问方式从设备读取数据，当设备不可用或数据未准备好的时候会立即向内核返回一个错误码，表示数据读取失败。应用程序会再次重新读取数据，这样一直往复循环，直到数据读取成功。</p>
     
-    <a class="article-more-a" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-uboot%E7%A7%BB%E6%A4%8D/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-%E9%98%BB%E5%A1%9E%E5%92%8C%E9%9D%9E%E9%98%BB%E5%A1%9E-%E9%9D%9E%E9%98%BB%E5%A1%9EIO/#more">more >></a>
     
     
 
@@ -242,7 +242,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/13/Linux%E7%A7%BB%E6%A4%8D-uboot%E7%A7%BB%E6%A4%8D/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-%E9%98%BB%E5%A1%9E%E5%92%8C%E9%9D%9E%E9%98%BB%E5%A1%9E-%E9%9D%9E%E9%98%BB%E5%A1%9EIO/">展开 >></a>
     </p>
     
 
@@ -272,14 +272,38 @@
 
 
   
-    <article id="post-Linux移植-uboot启动流程" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux驱动-阻塞和非阻塞-阻塞IO" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
+      <header class="article-header">
+  
+  
+    <h1 itemprop="name">
+	
+	  <a class="article-title" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-%E9%98%BB%E5%A1%9E%E5%92%8C%E9%9D%9E%E9%98%BB%E5%A1%9E-%E9%98%BB%E5%A1%9EIO/" target="_blank">Linux驱动-阻塞IO</a>
+  
+    </h1>
+  
+
+
+  
+  
+<a href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-%E9%98%BB%E5%A1%9E%E5%92%8C%E9%9D%9E%E9%98%BB%E5%A1%9E-%E9%98%BB%E5%A1%9EIO/" class="archive-article-date">
+        <time datetime="2021-04-16T06:31:02.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-16</time>
+</a>
+
+  
+  
+    
+
+  
+  </header>
+  
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="一、连接脚本u-boot-lds详解"><a href="#一、连接脚本u-boot-lds详解" class="headerlink" title="一、连接脚本u-boot.lds详解"></a>一、连接脚本u-boot.lds详解</h1><p>程序的链接是由链接脚本来决定的，所以通过链接脚本可以找到程序的入口。如果没有编译过 uboot 的话链接 脚本为 arch/arm/cpu/u-boot.lds。但是这个不是最终使用的链接脚本，最终的链接脚本是在这个链接脚本的基础上生成的。</p>
+    <p>这里的“IO”单片机的“GPIO”(也就是引脚)。 这里的 IO 指的是 Input/Output，也就是输入/输出，是应用程序对驱动设备的输入/输出操作。</p>
     
-    <a class="article-more-a" href="/2021/04/12/Linux%E7%A7%BB%E6%A4%8D-uboot%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-%E9%98%BB%E5%A1%9E%E5%92%8C%E9%9D%9E%E9%98%BB%E5%A1%9E-%E9%98%BB%E5%A1%9EIO/#more">more >></a>
     
     
 
@@ -295,7 +319,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/12/Linux%E7%A7%BB%E6%A4%8D-uboot%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-%E9%98%BB%E5%A1%9E%E5%92%8C%E9%9D%9E%E9%98%BB%E5%A1%9E-%E9%98%BB%E5%A1%9EIO/">展开 >></a>
     </p>
     
 
@@ -325,7 +349,7 @@
 
 
   
-    <article id="post-Linux移植-uboot-Makefile" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux驱动-Linux中断下半部机制" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -333,7 +357,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/12/Linux%E7%A7%BB%E6%A4%8D-uboot-Makefile/" target="_blank">IMX6U移植-uboot-Makefile</a>
+	  <a class="article-title" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-Linux%E4%B8%AD%E6%96%AD%E4%B8%8B%E5%8D%8A%E9%83%A8%E6%9C%BA%E5%88%B6/" target="_blank">Linux驱动-Linux中断下半部机制</a>
   
     </h1>
   
@@ -341,8 +365,8 @@
 
   
   
-<a href="/2021/04/12/Linux%E7%A7%BB%E6%A4%8D-uboot-Makefile/" class="archive-article-date">
-        <time datetime="2021-04-12T15:04:55.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-12</time>
+<a href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-Linux%E4%B8%AD%E6%96%AD%E4%B8%8B%E5%8D%8A%E9%83%A8%E6%9C%BA%E5%88%B6/" class="archive-article-date">
+        <time datetime="2021-04-15T16:04:12.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-16</time>
 </a>
 
   
@@ -354,9 +378,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="一、Uboot源码目录分析"><a href="#一、Uboot源码目录分析" class="headerlink" title="一、Uboot源码目录分析"></a>一、Uboot源码目录分析</h1><p>1、因为uboot会使用到一些经过编译才会生成的文件，因此我们在分析uboot的时候，需要先编译一下uboot。</p>
+    <h1 id="上半部与下半部"><a href="#上半部与下半部" class="headerlink" title="上半部与下半部"></a>上半部与下半部</h1><p>上半部和下半部也称为顶半部和底半部。在使用 request_irq 申请中断的时候注册的中断服务函数属于中断处理的上半部，只要中断触发，那么中断处理函数就会执行。中断处理函数一定要快点执行完毕，越短越好，但是有些中断处理过程就是比较费时间，必须要对其进行处理，缩小中断处理函数的执行时间。</p>
     
-    <a class="article-more-a" href="/2021/04/12/Linux%E7%A7%BB%E6%A4%8D-uboot-Makefile/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-Linux%E4%B8%AD%E6%96%AD%E4%B8%8B%E5%8D%8A%E9%83%A8%E6%9C%BA%E5%88%B6/#more">more >></a>
     
     
 
@@ -372,7 +396,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/12/Linux%E7%A7%BB%E6%A4%8D-uboot-Makefile/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-Linux%E4%B8%AD%E6%96%AD%E4%B8%8B%E5%8D%8A%E9%83%A8%E6%9C%BA%E5%88%B6/">展开 >></a>
     </p>
     
 
@@ -402,7 +426,7 @@
 
 
   
-    <article id="post-Linux移植-uboot简介" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux驱动-Linux中断" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -410,7 +434,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/12/Linux%E7%A7%BB%E6%A4%8D-uboot%E7%AE%80%E4%BB%8B/" target="_blank">Linux移植-uboot简介</a>
+	  <a class="article-title" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-Linux%E4%B8%AD%E6%96%AD/" target="_blank">Linux驱动-Linux中断</a>
   
     </h1>
   
@@ -418,8 +442,8 @@
 
   
   
-<a href="/2021/04/12/Linux%E7%A7%BB%E6%A4%8D-uboot%E7%AE%80%E4%BB%8B/" class="archive-article-date">
-        <time datetime="2021-04-12T13:51:24.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-12</time>
+<a href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-Linux%E4%B8%AD%E6%96%AD/" class="archive-article-date">
+        <time datetime="2021-04-15T13:17:29.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-15</time>
 </a>
 
   
@@ -431,9 +455,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="系统移植简介"><a href="#系统移植简介" class="headerlink" title="系统移植简介"></a>系统移植简介</h1><p>在移植 Linux之前，需要先移植一个 bootloader 代码，这个 bootloader 代码用于启动 Linux 内核，bootloader有很多，常用的就是 U-Boot。移植好 U-Boot 以后再移植 Linux 内核，移植完 Linux 内核以后 Linux 还不能正常启动，还需要再移植一个根文件系统(rootfs)，根文件系统里面包含了一些最 常用的命令和文件。所以 U-Boot、Linux kernel 和 rootfs 这三者一起构成了一个可以正常使用、功能完善的 Linux 系统。</p>
+    <p>Linux 内核提供了完善的中断框架，我们只需要申请中断，然后注册中断处理函数即可，使用非常方便，不需要一系列复杂的寄存器配置。</p>
     
-    <a class="article-more-a" href="/2021/04/12/Linux%E7%A7%BB%E6%A4%8D-uboot%E7%AE%80%E4%BB%8B/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-Linux%E4%B8%AD%E6%96%AD/#more">more >></a>
     
     
 
@@ -449,7 +473,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/12/Linux%E7%A7%BB%E6%A4%8D-uboot%E7%AE%80%E4%BB%8B/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-Linux%E4%B8%AD%E6%96%AD/">展开 >></a>
     </p>
     
 
@@ -479,7 +503,7 @@
 
 
   
-    <article id="post-IMX6U-PWM" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux驱动-内核定时器" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -487,7 +511,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/12/IMX6U-PWM/" target="_blank">IMX6U-PWM</a>
+	  <a class="article-title" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%86%85%E6%A0%B8%E5%AE%9A%E6%97%B6%E5%99%A8/" target="_blank">Linux驱动-内核定时器</a>
   
     </h1>
   
@@ -495,8 +519,8 @@
 
   
   
-<a href="/2021/04/12/IMX6U-PWM/" class="archive-article-date">
-        <time datetime="2021-04-12T09:27:23.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-12</time>
+<a href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%86%85%E6%A0%B8%E5%AE%9A%E6%97%B6%E5%99%A8/" class="archive-article-date">
+        <time datetime="2021-04-15T12:07:16.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-15</time>
 </a>
 
   
@@ -508,10 +532,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="一、PWM简介"><a href="#一、PWM简介" class="headerlink" title="一、PWM简介"></a>一、PWM简介</h1><p>PWM 全称是 PulseWidth Modulation，也就是脉冲宽度调制，</p>
-<p><strong>频率</strong>是开关速度，把一次开关算作一个周 期，那么频率就是 1 秒内进行了多少次开关。</p>
+    <h1 id="1、内核时间管理简介"><a href="#1、内核时间管理简介" class="headerlink" title="1、内核时间管理简介"></a>1、内核时间管理简介</h1><p>Linux 要运行，需要一个系统时钟的，至于这个系统时钟是由哪个定时器提供的，这对于我们 Linux 驱动编写者来说，不需要深入研究这些具体的实现，只需要掌握相应的 API 函数即可。 </p>
     
-    <a class="article-more-a" href="/2021/04/12/IMX6U-PWM/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%86%85%E6%A0%B8%E5%AE%9A%E6%97%B6%E5%99%A8/#more">more >></a>
     
     
 
@@ -527,7 +550,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/12/IMX6U-PWM/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%86%85%E6%A0%B8%E5%AE%9A%E6%97%B6%E5%99%A8/">展开 >></a>
     </p>
     
 
@@ -557,7 +580,7 @@
 
 
   
-    <article id="post-IMX6U-I2C-触摸屏" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux驱动-并发与竞争-自旋锁" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -565,7 +588,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/12/IMX6U-I2C-%E8%A7%A6%E6%91%B8%E5%B1%8F/" target="_blank">IMX6U_I2C_触摸屏</a>
+	  <a class="article-title" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E8%87%AA%E6%97%8B%E9%94%81/" target="_blank">Linux驱动-并发与竞争-自旋锁</a>
   
     </h1>
   
@@ -573,8 +596,8 @@
 
   
   
-<a href="/2021/04/12/IMX6U-I2C-%E8%A7%A6%E6%91%B8%E5%B1%8F/" class="archive-article-date">
-        <time datetime="2021-04-12T08:51:26.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-12</time>
+<a href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E8%87%AA%E6%97%8B%E9%94%81/" class="archive-article-date">
+        <time datetime="2021-04-15T10:41:42.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-15</time>
 </a>
 
   
@@ -586,9 +609,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="一、多点电容触摸屏简介"><a href="#一、多点电容触摸屏简介" class="headerlink" title="一、多点电容触摸屏简介"></a>一、多点电容触摸屏简介</h1><p>ATK-7016 这款屏幕其实是由 TFT LCD+触摸屏组合起来的。底下是 LCD 面板，上面是触摸面板，将两个封装到一起就成了带有触摸屏的 LCD 屏幕。电容触摸屏也是需要一个驱动 IC的，驱动 IC一般会提供一个 I2C 接口给主控制器，主控制器可以通过 I2C 接口来读取驱动 IC 里面的触摸坐标数据。</p>
+    <h2 id="1、自旋锁"><a href="#1、自旋锁" class="headerlink" title="1、自旋锁"></a>1、自旋锁</h2><p>当一个线程要访问某个共享资源的时候首先要先获取相应的锁，锁只能被一个线程持有，只要此线程不释放持有的锁，那么其他的线程就不能获取此锁。对于自旋锁而言，如果自旋锁正在被线程 A 持有，线程 B 想要获取自旋锁，那么线程 B 就会处于忙循环-旋转-等待状态，线程B不会进入休眠状态或者说去做其他的处理，而是会一直傻傻的在那里“转圈圈”的等待锁可用。(类别电话亭)</p>
     
-    <a class="article-more-a" href="/2021/04/12/IMX6U-I2C-%E8%A7%A6%E6%91%B8%E5%B1%8F/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E8%87%AA%E6%97%8B%E9%94%81/#more">more >></a>
     
     
 
@@ -604,7 +627,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/12/IMX6U-I2C-%E8%A7%A6%E6%91%B8%E5%B1%8F/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E8%87%AA%E6%97%8B%E9%94%81/">展开 >></a>
     </p>
     
 
@@ -634,7 +657,7 @@
 
 
   
-    <article id="post-IMX6U-SPI" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux驱动-并发与竞争-信号量" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -642,7 +665,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/12/IMX6U-SPI/" target="_blank">IMX6U-SPI</a>
+	  <a class="article-title" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E4%BF%A1%E5%8F%B7%E9%87%8F/" target="_blank">Linux驱动-并发与竞争-信号量</a>
   
     </h1>
   
@@ -650,8 +673,8 @@
 
   
   
-<a href="/2021/04/12/IMX6U-SPI/" class="archive-article-date">
-        <time datetime="2021-04-12T07:06:28.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-12</time>
+<a href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E4%BF%A1%E5%8F%B7%E9%87%8F/" class="archive-article-date">
+        <time datetime="2021-04-15T10:41:22.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-15</time>
 </a>
 
   
@@ -663,9 +686,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="一、SPI协议详解"><a href="#一、SPI协议详解" class="headerlink" title="一、SPI协议详解"></a>一、SPI协议详解</h1><p>​    1、SPI相比I2C最大的优势有两点：一个是速度快，最高可以大几十M，甚至上百MHz，第二个就是SPI是个全双工。</p>
+    <h1 id="1、信号量"><a href="#1、信号量" class="headerlink" title="1、信号量"></a>1、信号量</h1><p>信号量是同步的一种方式。Linux 内核也提供了信号量机制，信号量常常用于控制对共享资源的访问。相比于自旋锁，信号量可以使线程进入休眠状态。</p>
     
-    <a class="article-more-a" href="/2021/04/12/IMX6U-SPI/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E4%BF%A1%E5%8F%B7%E9%87%8F/#more">more >></a>
     
     
 
@@ -681,7 +704,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/12/IMX6U-SPI/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E4%BF%A1%E5%8F%B7%E9%87%8F/">展开 >></a>
     </p>
     
 
@@ -711,7 +734,7 @@
 
 
   
-    <article id="post-IMX6U-RTC实时时钟" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux驱动-并发与竞争-原子操作" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -719,7 +742,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/11/IMX6U-RTC%E5%AE%9E%E6%97%B6%E6%97%B6%E9%92%9F/" target="_blank">IMX6U-RTC实时时钟</a>
+	  <a class="article-title" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C/" target="_blank">Linux驱动-并发与竞争-原子操作</a>
   
     </h1>
   
@@ -727,8 +750,8 @@
 
   
   
-<a href="/2021/04/11/IMX6U-RTC%E5%AE%9E%E6%97%B6%E6%97%B6%E9%92%9F/" class="archive-article-date">
-        <time datetime="2021-04-11T15:07:12.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-11</time>
+<a href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C/" class="archive-article-date">
+        <time datetime="2021-04-15T10:40:54.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-15</time>
 </a>
 
   
@@ -740,9 +763,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <p>实时时钟是很常用的一个外设，通过实时时钟我们就可以知道年、月、日和时间等信息。因此在需要记录时间的场合就需要实时时钟，可以使用专用的实时时钟芯片来完成此功能，I.MX6U 内部的SNVS 就提供了 RTC 功能。</p>
+    <h2 id="1、原子操作"><a href="#1、原子操作" class="headerlink" title="1、原子操作"></a>1、原子操作</h2><p>原子操作就是指不能再进一步分割的操作，一般原子操作用于变量或者位操作。原子操作只能对整形变量或者位进行保护。C 语言里面简简单单的一句“a=3”，编译成汇编文件以后变成了 3 句，那么程 序在执行的时候肯定汇编语句一条一条的执行。</p>
     
-    <a class="article-more-a" href="/2021/04/11/IMX6U-RTC%E5%AE%9E%E6%97%B6%E6%97%B6%E9%92%9F/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C/#more">more >></a>
     
     
 
@@ -758,7 +781,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/11/IMX6U-RTC%E5%AE%9E%E6%97%B6%E6%97%B6%E9%92%9F/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C/">展开 >></a>
     </p>
     
 
@@ -788,7 +811,7 @@
 
 
   
-    <article id="post-IMX6U-LCD显示" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux驱动-并发与竞争-互斥体" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -796,7 +819,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/11/IMX6U-LCD%E6%98%BE%E7%A4%BA/" target="_blank">IMX6U-LCD显示</a>
+	  <a class="article-title" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E4%BA%92%E6%96%A5%E4%BD%93/" target="_blank">Linux驱动-并发与竞争-互斥体</a>
   
     </h1>
   
@@ -804,8 +827,8 @@
 
   
   
-<a href="/2021/04/11/IMX6U-LCD%E6%98%BE%E7%A4%BA/" class="archive-article-date">
-        <time datetime="2021-04-11T12:14:42.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-11</time>
+<a href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E4%BA%92%E6%96%A5%E4%BD%93/" class="archive-article-date">
+        <time datetime="2021-04-15T10:40:32.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-15</time>
 </a>
 
   
@@ -817,9 +840,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="一、RGBLCD显示原理简介"><a href="#一、RGBLCD显示原理简介" class="headerlink" title="一、RGBLCD显示原理简介"></a>一、RGBLCD显示原理简介</h1><h2 id="1、像素点"><a href="#1、像素点" class="headerlink" title="1、像素点"></a>1、像素点</h2><p>RGBLCD屏幕他都是有由一个个的彩色小灯构成的。彩色点阵屏每个像素点有三个小灯，红色、绿色和蓝色，也叫做RGB。RGB就是光的三原色。通过调整RGB三种颜色的比例，就可以实现姹紫千红的世界。</p>
+    <h1 id="1、互斥体"><a href="#1、互斥体" class="headerlink" title="1、互斥体"></a>1、互斥体</h1><p>Linux 提供了一个比信号量更专业的机制来进行互斥，它就是互斥体—mutex。互斥访问表示一次只有一个线程可以访问共享资源，不能递归申请互斥体。在编写 Linux 驱动的时候遇到需要互斥访问的地方建议使用 mutex。Linux 内核使用 mutex 结构体表示互斥体，定义如下</p>
     
-    <a class="article-more-a" href="/2021/04/11/IMX6U-LCD%E6%98%BE%E7%A4%BA/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E4%BA%92%E6%96%A5%E4%BD%93/#more">more >></a>
     
     
 
@@ -835,7 +858,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/11/IMX6U-LCD%E6%98%BE%E7%A4%BA/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/15/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89-%E4%BA%92%E6%96%A5%E4%BD%93/">展开 >></a>
     </p>
     
 
@@ -865,7 +888,7 @@
 
 
   
-    <article id="post-IMX6U-DDR3" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux驱动-并发与竞争简介" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -873,7 +896,7 @@
   
     <h1 itemprop="name">
 	
-	  <a class="article-title" href="/2021/04/11/IMX6U-DDR3/" target="_blank">IMX6U-DDR3</a>
+	  <a class="article-title" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89%E7%AE%80%E4%BB%8B/" target="_blank">Linux驱动-并发与竞争简介</a>
   
     </h1>
   
@@ -881,8 +904,8 @@
 
   
   
-<a href="/2021/04/11/IMX6U-DDR3/" class="archive-article-date">
-        <time datetime="2021-04-11T11:49:13.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-11</time>
+<a href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89%E7%AE%80%E4%BB%8B/" class="archive-article-date">
+        <time datetime="2021-04-14T14:51:29.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-14</time>
 </a>
 
   
@@ -894,9 +917,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="一、DDR3"><a href="#一、DDR3" class="headerlink" title="一、DDR3"></a>一、DDR3</h1><p>1、传输速率    2、tRCD    3、CL参数    4、tRC    5、tRAS</p>
+    <p>Linux是一个多任务操作系统，肯定会存在多个任务共同操作同一段内存或者设备的情况，多个任务甚至中断都能访问的资源叫做共享资源，。在驱动开发中要注意对 共享资源的保护，也就是要处理对共享资源的并发访问。在 Linux 驱动编写过程中对于并发控制的管理非常重要，学习如何在 Linux 驱动中处理并发。</p>
     
-    <a class="article-more-a" href="/2021/04/11/IMX6U-DDR3/#more">more >></a>
+    <a class="article-more-a" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89%E7%AE%80%E4%BB%8B/#more">more >></a>
     
     
 
@@ -912,7 +935,7 @@
 
     
     <p class="article-more-link">
-      <a class="article-more-a" href="/2021/04/11/IMX6U-DDR3/">展开 >></a>
+      <a class="article-more-a" href="/2021/04/14/Linux%E9%A9%B1%E5%8A%A8-%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89%E7%AE%80%E4%BB%8B/">展开 >></a>
     </p>
     
 
@@ -944,7 +967,7 @@
   
   
     <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/page/4/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/6/">Next &amp;raquo;</a>
+      <a class="extend prev" rel="prev" href="/page/4/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><a class="page-number" href="/page/7/">7</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/6/">Next &amp;raquo;</a>
     </nav>
   
 
