@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="六 C++的布尔类型(bool)1 bool类型是C++中的基本数据类型，专门表示逻辑值，逻辑真用true表示，逻辑假false表示2 bool类型在内存占一个字节：1表示true，0表示false3 bool类型变量可以接收任意类型表达式结果，其值非0则为true，为0则为假。 八 C++的函数1 函数重载(overload)1）定义    在相同作用域，可以定义同名的函数，但是参数必须有所区分">
+  <meta name="description" content="六 C++的布尔类型(bool)1 bool类型是C++中的基本数据类型，专门表示逻辑值，逻辑真用true表示，逻辑假false表示2 bool类型在内存占一个字节：1表示true，0表示false3 bool类型变量可以接收任意类型表达式结果，其值非0则为true，为0则为假。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="C++_2">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/08/21/C-2/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="六 C++的布尔类型(bool)1 bool类型是C++中的基本数据类型，专门表示逻辑值，逻辑真用true表示，逻辑假false表示2 bool类型在内存占一个字节：1表示true，0表示false3 bool类型变量可以接收任意类型表达式结果，其值非0则为true，为0则为假。 八 C++的函数1 函数重载(overload)1）定义    在相同作用域，可以定义同名的函数，但是参数必须有所区分">
+<meta property="og:description" content="六 C++的布尔类型(bool)1 bool类型是C++中的基本数据类型，专门表示逻辑值，逻辑真用true表示，逻辑假false表示2 bool类型在内存占一个字节：1表示true，0表示false3 bool类型变量可以接收任意类型表达式结果，其值非0则为true，为0则为假。">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-08-21T03:32:40.000Z">
-<meta property="article:modified_time" content="2021-08-21T03:37:47.035Z">
+<meta property="article:modified_time" content="2021-09-24T05:34:37.563Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -245,6 +245,8 @@
   <div class="article-entry" itemprop="articleBody">
     
     <h1 id="六-C-的布尔类型-bool"><a href="#六-C-的布尔类型-bool" class="headerlink" title="六 C++的布尔类型(bool)"></a>六 C++的布尔类型(bool)</h1><p>1 bool类型是C++中的基本数据类型，专门表示逻辑值，逻辑真用true表示，逻辑假false表示<br>2 bool类型在内存占一个字节：1表示true，0表示false<br>3 bool类型变量可以接收任意类型表达式结果，其值非0则为true，为0则为假。</p>
+ <a id="more"></a> 
+
 <h1 id="八-C-的函数"><a href="#八-C-的函数" class="headerlink" title="八 C++的函数"></a>八 C++的函数</h1><h2 id="1-函数重载-overload"><a href="#1-函数重载-overload" class="headerlink" title="1 函数重载(overload)"></a>1 函数重载(overload)</h2><p>1）定义<br>    在相同作用域，可以定义同名的函数，但是参数必须有所区分，这样函数构成重载关系.<br>    注：函数重载与返回类型无关。</p>
 <p>2）函数重载匹配<br>    调用重载关系的函数时，编译器将根据实参和形参的匹配程度，自动选择最优的重载版本，当前g++编译器匹配一般规则：<br>    完全匹配&gt;=常量转换&gt;升级转换&gt;降级转换&gt;省略号</p>
 <p>3）函数重载原理<br>    C++的编译器在编译函数时，会进行换名，将参数表的类型信息整合到新的函数名中，因为重载关系的函数参数表有所区分，换出的新的函数名也一定有所区分，解决了函数重载和名字冲突的矛盾。</p>
@@ -275,7 +277,7 @@ b++;//error
 <p>5 引用和指针<br>1）如果从C语言角度看待引用的本质，可以认为引用就是通过指针实现的，但是在C++开发中，推荐使用引用，而不推荐使用指针.<br>    int i = 100;<br>    int* const pi = &i;<br>    int&amp; ri = i;<br>    * pi &lt;=等价=&gt; ri<br>2）指针可以不做初始化，其目标可以在初始化以后随意改变(指针常量除外)，而引用必须做初始化，而且一旦初始化所引用的目标不能再改变.</p>
 <p>//下面内容了解<br>3）可以定义指针的指针(二级指针)，但是不能定义引用的指针.<br>    int a = 10;<br>    int* p = &a;<br>    int** pp = &p;//二级指针</p>
 <hr>
-<p>​    int&amp; r = a;<br>​    int&amp;* pr = &r;//error,引用的指针<br>​    int* pr = &r;//ok,仅是普通指针<br>​<br>4）可以指针的引用(指针变量别名)，但是不能定义引用的引用。<br>​    int a = 100;<br>​    int* p = &a;<br>​    int* &amp; rp = p;//ok,指针的引用</p>
+<p>​    int&amp; r = a;<br>​    int&amp;* pr = &r;//error,引用的指针<br>​    int* pr = &r;//ok,仅是普通指针<br>​<br>4）可以指针的引用(指针变量别名)，但是不能定义引用的引用。<br>​    int a = 100;<br>​    int* p = &a;<br>    int* &amp; rp = p;//ok,指针的引用</p>
 <hr>
 <p>​    int&amp; r = a;<br>​    int&amp; &amp; rr = r;//error,引用用的引用<br>​    int&amp; rr = r;//ok,但是仅是一个普通引用<br>​<br>5）可以指针数组，但是不能定义引用数组<br>​    int i=10,j=20,k=30;<br>​    int* parr[3] = {&amp;i,&amp;j,&amp;k};//ok,指针数组<br>​    int&amp; rarr[3] = {i,j,k};//error<br>​<br>6）可以定义数组引用（数组别名）<br>​    int i=10,j=20,k=30;<br>​    int arr[3] = {i,j,k};<br>​    int (&amp;rarr)[3] = arr;//ok,    数组引用    </p>
 <p>7）和函数指针类似，也可以定义函数引用(函数别名)<br>    void func(int i){}<br>    int main(void){<br>        void (*pf)(int) = func;//函数指针<br>        void (&amp;rf)(int) = func;//函数引用<br>        pf(100);<br>        rf(100);<br>    }        </p>

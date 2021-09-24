@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="C++编程习惯：1 慎用宏，可以使用const、enum、inline替换 123456789101112#define PAI 3.14--》const double PAI &#x3D; 3.14;#define SLEEP 0#define RUN	 1#define STOP  2--》enum STATE&amp;#123;SLEEP,RUN,STOP&amp;#125;;#define Max(a,b">
+  <meta name="description" content="C++编程习惯：1 慎用宏，可以使用const、enum、inline替换">
 <meta property="og:type" content="article">
 <meta property="og:title" content="C++_1">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/08/21/C-1/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="C++编程习惯：1 慎用宏，可以使用const、enum、inline替换 123456789101112#define PAI 3.14--》const double PAI &#x3D; 3.14;#define SLEEP 0#define RUN	 1#define STOP  2--》enum STATE&amp;#123;SLEEP,RUN,STOP&amp;#125;;#define Max(a,b">
+<meta property="og:description" content="C++编程习惯：1 慎用宏，可以使用const、enum、inline替换">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-08-21T03:22:05.000Z">
-<meta property="article:modified_time" content="2021-08-21T03:32:04.740Z">
+<meta property="article:modified_time" content="2021-09-24T05:34:32.281Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -245,6 +245,8 @@
   <div class="article-entry" itemprop="articleBody">
     
     <h1 id="C-编程习惯："><a href="#C-编程习惯：" class="headerlink" title="C++编程习惯："></a>C++编程习惯：</h1><p>1 慎用宏，可以使用const、enum、inline替换</p>
+ <a id="more"></a> 
+
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">#define PAI 3.14</span><br><span class="line">--》const double PAI &#x3D; 3.14;</span><br><span class="line"></span><br><span class="line">#define SLEEP 0</span><br><span class="line">#define RUN	 1</span><br><span class="line">#define STOP  2</span><br><span class="line">--》enum STATE&#123;SLEEP,RUN,STOP&#125;;</span><br><span class="line"></span><br><span class="line">#define Max(a,b) ((a)&gt;(b)?(a):(b)) </span><br><span class="line">--》inline int Max(int a,int b)&#123;</span><br><span class="line">			return a &gt; b ? a : b;</span><br><span class="line">		&#125;</span><br></pre></td></tr></table></figure>
 <p>2 变量随用随声明同时初始化<br>3 尽量使用new/delete替换malloc/free<br>4 少用void* 、指针计算、联合体和强制转换<br>5 尽量使用string表示字符串，少用C风格的char*/char[]</p>
 <h1 id="C与C-区别"><a href="#C与C-区别" class="headerlink" title="C与C++区别"></a>C与C++区别</h1><p>1）都是编译型语言<br>2）都是强类型语言，但是C++更强<br>3）C++去除了C中不好的特性<br>4）C++增加了很多C语言中没有的好的语法特性，全面支持面向对象，比C语言更适合大型软件开发。</p>

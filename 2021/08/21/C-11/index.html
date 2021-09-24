@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="二十四 C++异常机制(exception)1 软件开发中的常见错误1）语法错误2）逻辑错误3）功能错误4）设计缺陷5）需求不符6）环境异常7）操作不当 2 传统C语言中的错误处理1）通过返回值表示错误优点：函数调用路径中的所有栈对象可以得到正确析构，内存管理安全。缺点：错误处理流程比较麻烦，需要逐层进行返回判断，代码臃肿。 2）通过远程跳转处理错误优点：错误处理流程比较简单，不需要逐层的返回值判">
+  <meta name="description" content="二十四 C++异常机制(exception)1 软件开发中的常见错误">
 <meta property="og:type" content="article">
 <meta property="og:title" content="C++_11">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/08/21/C-11/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="二十四 C++异常机制(exception)1 软件开发中的常见错误1）语法错误2）逻辑错误3）功能错误4）设计缺陷5）需求不符6）环境异常7）操作不当 2 传统C语言中的错误处理1）通过返回值表示错误优点：函数调用路径中的所有栈对象可以得到正确析构，内存管理安全。缺点：错误处理流程比较麻烦，需要逐层进行返回判断，代码臃肿。 2）通过远程跳转处理错误优点：错误处理流程比较简单，不需要逐层的返回值判">
+<meta property="og:description" content="二十四 C++异常机制(exception)1 软件开发中的常见错误">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-08-21T10:38:54.000Z">
-<meta property="article:modified_time" content="2021-08-21T10:39:50.785Z">
+<meta property="article:modified_time" content="2021-09-24T05:44:23.648Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,7 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="二十四-C-异常机制-exception"><a href="#二十四-C-异常机制-exception" class="headerlink" title="二十四 C++异常机制(exception)"></a>二十四 C++异常机制(exception)</h1><h2 id="1-软件开发中的常见错误"><a href="#1-软件开发中的常见错误" class="headerlink" title="1 软件开发中的常见错误"></a>1 软件开发中的常见错误</h2><p>1）语法错误<br>2）逻辑错误<br>3）功能错误<br>4）设计缺陷<br>5）需求不符<br>6）环境异常<br>7）操作不当</p>
+    <h1 id="二十四-C-异常机制-exception"><a href="#二十四-C-异常机制-exception" class="headerlink" title="二十四 C++异常机制(exception)"></a>二十四 C++异常机制(exception)</h1><h2 id="1-软件开发中的常见错误"><a href="#1-软件开发中的常见错误" class="headerlink" title="1 软件开发中的常见错误"></a>1 软件开发中的常见错误</h2> <a id="more"></a> 
+
+<p>1）语法错误<br>2）逻辑错误<br>3）功能错误<br>4）设计缺陷<br>5）需求不符<br>6）环境异常<br>7）操作不当</p>
 <h2 id="2-传统C语言中的错误处理"><a href="#2-传统C语言中的错误处理" class="headerlink" title="2 传统C语言中的错误处理"></a>2 传统C语言中的错误处理</h2><p>1）通过返回值表示错误<br>优点：函数调用路径中的所有栈对象可以得到正确析构，内存管理安全。<br>缺点：错误处理流程比较麻烦，需要逐层进行返回判断，代码臃肿。</p>
 <p>2）通过远程跳转处理错误<br>优点：错误处理流程比较简单，不需要逐层的返回值判断，一步到位的错误处理，代码精炼<br>缺点：函数调用路径中的栈对象失去了被析构的机制，有内存泄漏的风险</p>
 <h2 id="3-C-异常语法"><a href="#3-C-异常语法" class="headerlink" title="3 C++异常语法"></a>3 C++异常语法</h2><p>1）异常抛出<br>   throw 异常对象;<br>   注：异常对象可以是基本类型的数据，也可以是类类型对象.</p>

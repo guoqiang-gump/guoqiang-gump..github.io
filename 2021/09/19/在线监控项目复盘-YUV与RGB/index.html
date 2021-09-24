@@ -10,16 +10,14 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="YUV从采集的角度来说，一般的视频采集芯片输出的码流一般都是YUV数据流的形式，而从视频处理（例如H.264、MPEG视频编解码）的角度来说，也是在原始YUV码流进行编码和解析，所以，了解如何分析YUV数据流对于做视频领域的人而言，至关重要。YUV是指亮度参量和色度参量分开表示的像素格式，而这样分开的好处就是不但可以避免相互干扰，还可以降低色度的采样率而不会对图像质量影响太大。    人眼对">
-<meta property="og:type" content="article">
+  <meta property="og:type" content="article">
 <meta property="og:title" content="在线监控项目复盘-YUV与RGB">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/09/19/%E5%9C%A8%E7%BA%BF%E7%9B%91%E6%8E%A7%E9%A1%B9%E7%9B%AE%E5%A4%8D%E7%9B%98-YUV%E4%B8%8ERGB/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="YUV从采集的角度来说，一般的视频采集芯片输出的码流一般都是YUV数据流的形式，而从视频处理（例如H.264、MPEG视频编解码）的角度来说，也是在原始YUV码流进行编码和解析，所以，了解如何分析YUV数据流对于做视频领域的人而言，至关重要。YUV是指亮度参量和色度参量分开表示的像素格式，而这样分开的好处就是不但可以避免相互干扰，还可以降低色度的采样率而不会对图像质量影响太大。    人眼对">
 <meta property="og:locale">
 <meta property="og:image" content="https://img-blog.csdnimg.cn/20190530102442208.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FpbmJpbjIwMTU=,size_16,color_FFFFFF,t_70">
 <meta property="article:published_time" content="2021-09-19T03:22:38.000Z">
-<meta property="article:modified_time" content="2021-09-19T03:47:03.878Z">
+<meta property="article:modified_time" content="2021-09-24T05:33:54.168Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -247,6 +245,8 @@
   <div class="article-entry" itemprop="articleBody">
     
     <p> <img src="https://img-blog.csdnimg.cn/20190530102442208.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FpbmJpbjIwMTU=,size_16,color_FFFFFF,t_70" alt="img"> </p>
+ <a id="more"></a> 
+
 <h1 id="YUV"><a href="#YUV" class="headerlink" title="YUV"></a>YUV</h1><p>从采集的角度来说，一般的视频采集芯片输出的码流一般都是YUV数据流的形式，而从视频处理（例如H.264、MPEG视频编解码）的角度来说，也是在原始YUV码流进行编码和解析，所以，了解如何分析YUV数据流对于做视频领域的人而言，至关重要。YUV是指亮度参量和色度参量分开表示的像素格式，而这样分开的好处就是不但可以避免相互干扰，还可以降低色度的采样率而不会对图像质量影响太大。</p>
 <p>   人眼对色度的敏感程度要低于对亮度的敏感程度。</p>
 <p>   YUV，分为三个分量，“Y”表示明亮度（Luminance或Luma），也就是灰度值；而“U”和“V” 表示的则是色度（Chrominance或Chroma），作用是描述影像色彩及饱和度，用于指定像素的颜色。与我们熟知的RGB类似，YUV也是一种颜色编码方法，主要用于电视系统以及模拟视频领域，它将亮度信息（Y）与色彩信息（UV）分离，没有UV信息一样可以显示完整的图像，只不过是黑白的，这样的设计很好地解决了彩色电视机与黑白电视的兼容问题。并且，YUV不像RGB那样要求三个独立的视频信号同时传输，所以用YUV方式传送占用极少的频宽。</p>

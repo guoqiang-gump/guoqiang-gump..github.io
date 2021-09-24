@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="十一 类型转换1 隐式类型转换12345678910char c &#x3D; &#39;A&#39;;int i &#x3D; c;&#x2F;&#x2F;隐式void func(int i)&amp;#123;&amp;#125;func(c);&#x2F;&#x2F;隐式int func(void)&amp;#123;		char c&#x3D;&#39;A&#39;;		return c;&#x2F;&#x2F;">
+  <meta name="description" content="十一 类型转换">
 <meta property="og:type" content="article">
 <meta property="og:title" content="C++_3">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/08/21/C-3/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="十一 类型转换1 隐式类型转换12345678910char c &#x3D; &#39;A&#39;;int i &#x3D; c;&#x2F;&#x2F;隐式void func(int i)&amp;#123;&amp;#125;func(c);&#x2F;&#x2F;隐式int func(void)&amp;#123;		char c&#x3D;&#39;A&#39;;		return c;&#x2F;&#x2F;">
+<meta property="og:description" content="十一 类型转换">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-08-21T03:37:55.000Z">
-<meta property="article:modified_time" content="2021-08-21T03:43:57.179Z">
+<meta property="article:modified_time" content="2021-09-24T05:35:17.971Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,7 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="十一-类型转换"><a href="#十一-类型转换" class="headerlink" title="十一 类型转换"></a>十一 类型转换</h1><h2 id="1-隐式类型转换"><a href="#1-隐式类型转换" class="headerlink" title="1 隐式类型转换"></a>1 隐式类型转换</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">char c &#x3D; &#39;A&#39;;</span><br><span class="line">int i &#x3D; c;&#x2F;&#x2F;隐式</span><br><span class="line"></span><br><span class="line">void func(int i)&#123;&#125;</span><br><span class="line">func(c);&#x2F;&#x2F;隐式</span><br><span class="line"></span><br><span class="line">int func(void)&#123;</span><br><span class="line">		char c&#x3D;&#39;A&#39;;</span><br><span class="line">		return c;&#x2F;&#x2F;隐式</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    <h1 id="十一-类型转换"><a href="#十一-类型转换" class="headerlink" title="十一 类型转换"></a>十一 类型转换</h1> <a id="more"></a> 
+
+<h2 id="1-隐式类型转换"><a href="#1-隐式类型转换" class="headerlink" title="1 隐式类型转换"></a>1 隐式类型转换</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">char c &#x3D; &#39;A&#39;;</span><br><span class="line">int i &#x3D; c;&#x2F;&#x2F;隐式</span><br><span class="line"></span><br><span class="line">void func(int i)&#123;&#125;</span><br><span class="line">func(c);&#x2F;&#x2F;隐式</span><br><span class="line"></span><br><span class="line">int func(void)&#123;</span><br><span class="line">		char c&#x3D;&#39;A&#39;;</span><br><span class="line">		return c;&#x2F;&#x2F;隐式</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h2 id="2-显示类型转换"><a href="#2-显示类型转换" class="headerlink" title="2 显示类型转换"></a>2 显示类型转换</h2><h3 id="2-1-C-兼容C中强制类型转换"><a href="#2-1-C-兼容C中强制类型转换" class="headerlink" title="2.1 C++兼容C中强制类型转换"></a>2.1 C++兼容C中强制类型转换</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">char c &#x3D; &#39;A&#39;;</span><br><span class="line"> 	int i &#x3D; (int)c;&#x2F;&#x2F;C风格</span><br><span class="line"> 	int i &#x3D; int(c);&#x2F;&#x2F;C++风格</span><br></pre></td></tr></table></figure>
 <h3 id="2-2-C-扩展了四种操作符形式显式转换"><a href="#2-2-C-扩展了四种操作符形式显式转换" class="headerlink" title="2.2 C++扩展了四种操作符形式显式转换"></a>2.2 C++扩展了四种操作符形式显式转换</h3><h4 id="1）静态类型转换-static-cast"><a href="#1）静态类型转换-static-cast" class="headerlink" title="1）静态类型转换:static_cast"></a>1）静态类型转换:static_cast</h4><p>语法：<br>    目标变量 = static_cast&lt;目标类型&gt;(源类型变量);<br>适用场景：<br>    主要用于将void* 转化为其它类型的指针，也可以用于向下造型(downcast)的显式转换</p>
 <h4 id="2）动态类型转换-dynamic-cast"><a href="#2）动态类型转换-dynamic-cast" class="headerlink" title="2）动态类型转换:dynamic_cast"></a>2）动态类型转换:dynamic_cast</h4><p>语法：<br>    目标变量 = dynamic_cast&lt;目标类型&gt;(源类型变量);<br>适用场景：<br>    主要用于具有多态特性父子类指针或引用之间的显式类型转换.<br>    动态类型转换过程中，会检查原类型变量和期望转换的类型是否一致，如果一致则转换成功，否则失败</p>

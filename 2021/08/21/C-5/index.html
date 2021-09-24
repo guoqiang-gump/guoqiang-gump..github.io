@@ -10,17 +10,17 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="十五 this指针和常成员函数1 this指针1）类中的成员函数(包括构造函数、析构函数)都有一个隐藏的当前类 类型的指针参数，名为this。在成员函数中访问类中其它成员，其本质都是通过this来实现的。2）对于普通的成员函数,this指针就是指向该成员函数的调用对象；对于构造函数,this指针就指向正在创建的对象。3）大多数情况，可以忽略this直接访问类中的成员，但是在以下几个特殊场景必须要显">
+  <meta name="description" content="十五 this指针和常成员函数1 this指针">
 <meta property="og:type" content="article">
 <meta property="og:title" content="C++_5">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/08/21/C-5/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="十五 this指针和常成员函数1 this指针1）类中的成员函数(包括构造函数、析构函数)都有一个隐藏的当前类 类型的指针参数，名为this。在成员函数中访问类中其它成员，其本质都是通过this来实现的。2）对于普通的成员函数,this指针就是指向该成员函数的调用对象；对于构造函数,this指针就指向正在创建的对象。3）大多数情况，可以忽略this直接访问类中的成员，但是在以下几个特殊场景必须要显">
+<meta property="og:description" content="十五 this指针和常成员函数1 this指针">
 <meta property="og:locale">
 <meta property="og:image" content="https://guoqiang-gump.github.io/2021/08/21/C-5/C-5.assets/1629518322069.png">
 <meta property="og:image" content="https://guoqiang-gump.github.io/2021/08/21/C-5/C-5.assets/1629518362287.png">
 <meta property="article:published_time" content="2021-08-21T03:56:19.000Z">
-<meta property="article:modified_time" content="2021-08-21T03:59:53.805Z">
+<meta property="article:modified_time" content="2021-09-24T05:37:30.578Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -247,7 +247,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="十五-this指针和常成员函数"><a href="#十五-this指针和常成员函数" class="headerlink" title="十五 this指针和常成员函数"></a>十五 this指针和常成员函数</h1><h2 id="1-this指针"><a href="#1-this指针" class="headerlink" title="1 this指针"></a>1 this指针</h2><p>1）类中的成员函数(包括构造函数、析构函数)都有一个隐藏的当前类 类型的指针参数，名为this。在成员函数中访问类中其它成员，其本质都是通过this来实现的。<br>2）对于普通的成员函数,this指针就是指向该成员函数的调用对象；对于构造函数,this指针就指向正在创建的对象。<br>3）大多数情况，可以忽略this直接访问类中的成员，但是在以下几个特殊场景必须要显式使用this指针:<br>–》区分作用域，(区分哪个是成员变量)<br>–》从成员函数返回调用对象自身(返回自引用)//重点掌握<br>–》从类的内部销毁对象自身(对象自销毁) //了解<br>–》作为成员函数实参，实现对象之间交互 //了解</p>
+    <h1 id="十五-this指针和常成员函数"><a href="#十五-this指针和常成员函数" class="headerlink" title="十五 this指针和常成员函数"></a>十五 this指针和常成员函数</h1><h2 id="1-this指针"><a href="#1-this指针" class="headerlink" title="1 this指针"></a>1 this指针</h2> <a id="more"></a> 
+
+<p>1）类中的成员函数(包括构造函数、析构函数)都有一个隐藏的当前类 类型的指针参数，名为this。在成员函数中访问类中其它成员，其本质都是通过this来实现的。<br>2）对于普通的成员函数,this指针就是指向该成员函数的调用对象；对于构造函数,this指针就指向正在创建的对象。<br>3）大多数情况，可以忽略this直接访问类中的成员，但是在以下几个特殊场景必须要显式使用this指针:<br>–》区分作用域，(区分哪个是成员变量)<br>–》从成员函数返回调用对象自身(返回自引用)//重点掌握<br>–》从类的内部销毁对象自身(对象自销毁) //了解<br>–》作为成员函数实参，实现对象之间交互 //了解</p>
 <h2 id="2-常成员函数-常函数"><a href="#2-常成员函数-常函数" class="headerlink" title="2 常成员函数(常函数)"></a>2 常成员函数(常函数)</h2><p>1）在一个成员函数参数表后面加上const，这个成员函数就是常成员函数。<br>    返回类型 函数名(参数表) const {函数体}<br>2）常成员函数中的this指针是一个常量指针，不能在常成员函数中修改成员变量的值。<br>eg：<br>void print(void) const {} &lt;=&gt; void print(const A* this)<br>3）被mutable关键字修饰的成员变量，可以在常成员函数中被修改。<br>4）非常对象既可以调用常函数也可以调用非常函数；而常对象只能调用常函数，不能调用非常函数.<br>    注：常对象也包括常指针和常引用<br>5）同一个类中，函数名形参表相同的成员函数，其常版本和非常版本可以构成有效的重载关系，常对象匹配常版本，非常对象匹配非常版本.</p>
 <h1 id="十六-析构函数-Destructor"><a href="#十六-析构函数-Destructor" class="headerlink" title="十六 析构函数(Destructor)"></a>十六 析构函数(Destructor)</h1><h2 id="1-语法"><a href="#1-语法" class="headerlink" title="1 语法"></a>1 语法</h2><p>​    class 类名{<br>​        <del>类名(void){<br>​            //主要负责清理对象生命周期中的动态资源<br>​        }<br>​    };<br>​    1）函数名必须是”</del>类名”<br>​    2）没有返回类型，也没有参数<br>​    3）不能被重载，一个类只能有一个析构函数、</p>
 <h2 id="2-当对象被销毁时，相应类的析构函数将被自动执行"><a href="#2-当对象被销毁时，相应类的析构函数将被自动执行" class="headerlink" title="2 当对象被销毁时，相应类的析构函数将被自动执行"></a>2 当对象被销毁时，相应类的析构函数将被自动执行</h2><p>1）栈对象当其离开所在作用域时，其析构函数被作用域终止“右化括号”调用<br>2）堆对象的析构函数被delete操作符调用</p>

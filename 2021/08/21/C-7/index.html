@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="二十 操作符重载(operator)1 双目操作符重载 L#R1.1 计算类双目操作符： + - …1）表达式结果是右值，不能对表达式结果再赋值2）左右操作数既可以是左值也可以是右值3）两种具体实现方式–》成员函数形式(左调右参)    L#R的表达式可以被编译器处理为”L.operator#(R)”成员函数调用形式，该函数的返回就是表达式结果。c1+2c &lt;&#x3D;&#x3D;&gt; c1.operat">
+  <meta name="description" content="二十 操作符重载(operator)1 双目操作符重载 L#R1.1 计算类双目操作符： + - …">
 <meta property="og:type" content="article">
 <meta property="og:title" content="C++_7">
 <meta property="og:url" content="https://guoqiang-gump.github.io/2021/08/21/C-7/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="二十 操作符重载(operator)1 双目操作符重载 L#R1.1 计算类双目操作符： + - …1）表达式结果是右值，不能对表达式结果再赋值2）左右操作数既可以是左值也可以是右值3）两种具体实现方式–》成员函数形式(左调右参)    L#R的表达式可以被编译器处理为”L.operator#(R)”成员函数调用形式，该函数的返回就是表达式结果。c1+2c &lt;&#x3D;&#x3D;&gt; c1.operat">
+<meta property="og:description" content="二十 操作符重载(operator)1 双目操作符重载 L#R1.1 计算类双目操作符： + - …">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-08-21T10:24:18.000Z">
-<meta property="article:modified_time" content="2021-08-21T10:31:33.298Z">
+<meta property="article:modified_time" content="2021-09-24T05:37:41.190Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -244,7 +244,9 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="二十-操作符重载-operator"><a href="#二十-操作符重载-operator" class="headerlink" title="二十 操作符重载(operator)"></a>二十 操作符重载(operator)</h1><h2 id="1-双目操作符重载-L-R"><a href="#1-双目操作符重载-L-R" class="headerlink" title="1 双目操作符重载 L#R"></a>1 双目操作符重载 L#R</h2><h3 id="1-1-计算类双目操作符：-…"><a href="#1-1-计算类双目操作符：-…" class="headerlink" title="1.1 计算类双目操作符： + - …"></a>1.1 计算类双目操作符： + - …</h3><p>1）表达式结果是右值，不能对表达式结果再赋值<br>2）左右操作数既可以是左值也可以是右值<br>3）两种具体实现方式<br>–》成员函数形式(左调右参)<br>    L#R的表达式可以被编译器处理为”L.operator#(R)”成员函数调用形式，该函数的返回就是表达式结果。<br>c1+2c &lt;==&gt; c1.operator+(c2);<br>第一个const：修饰返回值，禁止对表达式结果再赋值<br>第二个const：常引用参数，修饰传入的参数c2，支持常量型右操作数，<br>第三个const：常成员函数，修饰调用的对象c1，支持常量型左操作数</p>
+    <h1 id="二十-操作符重载-operator"><a href="#二十-操作符重载-operator" class="headerlink" title="二十 操作符重载(operator)"></a>二十 操作符重载(operator)</h1><h2 id="1-双目操作符重载-L-R"><a href="#1-双目操作符重载-L-R" class="headerlink" title="1 双目操作符重载 L#R"></a>1 双目操作符重载 L#R</h2><h3 id="1-1-计算类双目操作符：-…"><a href="#1-1-计算类双目操作符：-…" class="headerlink" title="1.1 计算类双目操作符： + - …"></a>1.1 计算类双目操作符： + - …</h3> <a id="more"></a> 
+
+<p>1）表达式结果是右值，不能对表达式结果再赋值<br>2）左右操作数既可以是左值也可以是右值<br>3）两种具体实现方式<br>–》成员函数形式(左调右参)<br>    L#R的表达式可以被编译器处理为”L.operator#(R)”成员函数调用形式，该函数的返回就是表达式结果。<br>c1+2c &lt;==&gt; c1.operator+(c2);<br>第一个const：修饰返回值，禁止对表达式结果再赋值<br>第二个const：常引用参数，修饰传入的参数c2，支持常量型右操作数，<br>第三个const：常成员函数，修饰调用的对象c1，支持常量型左操作数</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">const Complex operator+(const Complex&amp; c)const&#123;&#125;;</span><br></pre></td></tr></table></figure>
 <p>–》全局函数形式(左右都参)<br>    L#R的表达式可以被编译器处理为”operator#(L,R)”全局函数调用形式，该函数的返回就是表达式结果。<br>    注：通过friend关键字可以把一个全局函数声明为某个类的友元，对于友元函数可以访问类中的任何成员，可以定义在类的内部，但本质还是全局函数。<br>c2-c1 ==&gt; operator-(c2, c1);</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">friend const Complex operator-(const Complex&amp; l, const Complex&amp; r)&#123;&#125;</span><br></pre></td></tr></table></figure>
