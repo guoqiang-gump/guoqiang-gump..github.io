@@ -18,7 +18,7 @@
 <meta property="og:description" content="Linux 内核提供了完善的中断框架，我们只需要申请中断，然后注册中断处理函数即可，使用非常方便，不需要一系列复杂的寄存器配置。">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-15T13:17:29.000Z">
-<meta property="article:modified_time" content="2021-05-05T04:44:19.268Z">
+<meta property="article:modified_time" content="2021-10-06T13:45:56.334Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -224,7 +224,7 @@
       <!-- 百度字体平台:http://fontstore.baidu.com/static/editor/index.html -->
       <i class="icon-statistics"></i>
       <span class="post-meta-item-text"> 字数统计:</span>
-      <span class="post-count">3.5k字</span>
+      <span class="post-count">3.7k字</span>
     </span>
   </span>
 
@@ -233,7 +233,7 @@
     <span class="post-meta-item-icon">
       <i class="icon-book icon"></i>
       <span class="post-meta-item-text"> 阅读时长≈</span>
-      <span class="post-count">14分</span>
+      <span class="post-count">15分</span>
     </span>
   </span>
 </div>
@@ -249,6 +249,13 @@
 
 <h1 id="Linux-中断-API-函数"><a href="#Linux-中断-API-函数" class="headerlink" title="Linux 中断 API 函数"></a><strong>Linux</strong> <strong>中断</strong> <strong>API</strong> <strong>函数</strong></h1><p><strong>1、中断号</strong></p>
 <p>每个中断都有一个中断号，通过中断号即可区分不同的中断，有的资料也把中断号叫做中断线。在 Linux 内核中使用一个 int 变量表示中断号，关于中断号就是裸机学的中断号了。</p>
+<p>编写驱动的时候需要用到中断号，我们用到中断号，中断信息已经写到了设备树里面，因此可以通过 irq_of_parse_and_map 函数从 interupts 属性中提取到对应的设备号，函数原型如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">unsigned int irq_of_parse_and_map(struct device_node *dev, int index)</span><br></pre></td></tr></table></figure>
+<p>dev：设备节点。 index：索引号，interrupts 属性可能包含多条中断信息，通过 index 指定要获取的信息。 返回值：中断号。</p>
+<p>如果使用 GPIO 的话，可以使用 gpio_to_irq 函数来获取 gpio 对应的中断号，函数原型如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int gpio_to_irq(unsigned int gpio)&#x2F;&#x2F;gpio：要获取的 GPIO 编号。返回值：GPIO 对应的中断号。</span><br></pre></td></tr></table></figure>
+
+
 <p><strong>2、request_irq 函数</strong></p>
 <p>在 Linux 内核中要想使用某个中断是需要申请的，request_irq 函数用于申请中断，request_irq函数可能会导致睡眠，因此不能在中断上下文或者其他禁止睡眠的代码段中使用 request_irq 函数。request_irq 函数会激活(使能)中断，所以不需要我们手动去使能中断，</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,</span><br><span class="line"> 															const char *name, void *dev)</span><br></pre></td></tr></table></figure>

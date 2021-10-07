@@ -23,7 +23,7 @@
 <meta property="og:image" content="https://img-blog.csdn.net/20140602173751953?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGVpeGlhb2h1YTEwMjA=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
 <meta property="og:image" content="https://img-blog.csdn.net/20140602173759515?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGVpeGlhb2h1YTEwMjA=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
 <meta property="article:published_time" content="2021-09-16T06:50:20.000Z">
-<meta property="article:modified_time" content="2021-09-24T05:32:28.397Z">
+<meta property="article:modified_time" content="2021-09-27T05:32:47.253Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -239,7 +239,7 @@
     <span class="post-meta-item-icon">
       <i class="icon-book icon"></i>
       <span class="post-meta-item-text"> 阅读时长≈</span>
-      <span class="post-count">12分</span>
+      <span class="post-count">13分</span>
     </span>
   </span>
 </div>
@@ -254,7 +254,7 @@
 <h1 id="1-视频编码基本原理"><a href="#1-视频编码基本原理" class="headerlink" title="1.视频编码基本原理"></a>1.视频编码基本原理</h1><h2 id="（1）-视频信号的冗余信息"><a href="#（1）-视频信号的冗余信息" class="headerlink" title="（1）  视频信号的冗余信息"></a>（1）  视频信号的冗余信息</h2><p>以记录数字视频的YUV分量格式为例，YUV分别代表亮度与两个色差信号。例如对于现有的PAL制电视系统，其亮度信号采样频率为13.5MHz；色度信号的频带通常为亮度信号的一半或更少，为6.75MHz或3.375MHz。以4：2：2的采样频率为例，Y信号采用13.5MHz，色度信号U和V采用6.75MHz采样，采样信号以8bit量化，则可以计算出数字视频的码率为：</p>
  <a id="more"></a> 
 
-<p>13.5<em>8 + 6.75</em>8 + 6.75*8= 216Mbit/s</p>
+<p>13.5*8 + 6.75 * 8 + 6.75*8= 216Mbit/s</p>
 <p>如此大的数据量如果直接进行存储或传输将会遇到很大困难，因此必须采用压缩技术以减少码率。数字化后的视频信号能进行压缩主要依据两个基本条件：</p>
 <p>l  <strong>数据冗余</strong>。例如如空间冗余、时间冗余、结构冗余、信息熵冗余等，即图像的各像素之间存在着很强的相关性。消除这些冗余并不会导致信息损失，属于无损压缩。</p>
 <p>l  <strong>视觉冗余</strong>。人眼的一些特性比如亮度辨别阈值，视觉阈值，对亮度和色度的敏感度不同，使得在编码的时候引入适量的误差，也不会被察觉出来。可以利用人眼的视觉特性，以一定的客观失真换取数据压缩。这种压缩属于有损压缩。</p>

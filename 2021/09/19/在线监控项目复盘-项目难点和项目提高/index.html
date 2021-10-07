@@ -18,7 +18,7 @@
 <meta property="og:description" content="项目存在问题和难点： 1、环境配置。一开始在开发板上出厂系统没有nginx，自己编译的bulidroot文件系统不知道为什么不能识别出摄像头。只能硬着头皮编译移植nginx，搞了差不多两天才编译成功。所以感觉到bulidroot文件系统移植库真的太方便了。">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-09-19T12:16:55.000Z">
-<meta property="article:modified_time" content="2021-09-24T05:32:21.142Z">
+<meta property="article:modified_time" content="2021-09-27T06:32:37.385Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -224,7 +224,7 @@
       <!-- 百度字体平台:http://fontstore.baidu.com/static/editor/index.html -->
       <i class="icon-statistics"></i>
       <span class="post-meta-item-text"> 字数统计:</span>
-      <span class="post-count">607字</span>
+      <span class="post-count">703字</span>
     </span>
   </span>
 
@@ -248,10 +248,9 @@
 <p>1、环境配置。一开始在开发板上出厂系统没有nginx，自己编译的bulidroot文件系统不知道为什么不能识别出摄像头。只能硬着头皮编译移植nginx，搞了差不多两天才编译成功。所以感觉到bulidroot文件系统移植库真的太方便了。</p>
  <a id="more"></a> 
 
-<p>发现imx6ull芯片的视频编码性能太弱了，而且开发板的文件系统移植库很麻烦，我就在win10下开发项目了。在win10配置环境也很麻烦，要用到cmake，我用cmake编译ffmpeg库和opencv库都没有成功，最后在网上下载别人编译好的库。</p>
-<p>2、多线程通信。在拉流端，ffmpeg线程拉流获取音视频数据，opencv线程需要接受ffmpeg的数据。这里面就是线程同步问题。一开始两根线程都是继承qthread类，重写他们的run函数，然后绑定两个线程的信号和槽，但是发现解决不了这个问题。后面看帖子，发现还有另外一种qt多线程，将opencv类继承自qobject，在将opencv类对象移动到qthread里面。绑定ffmpeg的信号和opencv的槽，这样就解决线程的同步问题了。Ffmpeg线程拉流到数据后，发送信号，opencv线程的槽函数就开始执行</p>
+<p>发现imx6ull芯片的视频编码性能太弱了，而且开发板的文件系统移植库很麻烦，我就在win10下开发项目了。在win10配置环境也很麻烦，要用到cmake，我用cmake编译ffmpeg库和opencv库都没有成功，编译的时候还会自动下载一些文件的，而且是要上外网上下载的，我都没有梯子，下载不了，后面找别人要了资源，买了vpn终于下载完了，最后终于得到了opencv的工程包，还需要再次编译得到动态库，最后编译动态库的时候一堆错误，真的哭了。最后在网上下载别人编译好的库。</p>
+<p>2、多线程通信。在拉流端，ffmpeg线程拉流获取音视频数据，opencv线程需要接受ffmpeg的数据。这里面就是线程同步问题。一开始两根线程都是继承qthread类，重写他们的run函数，然后绑定两个线程的信号和槽，但是发现解决不了这个问题，最后发现槽函数是运行在主线程的，并没有运行在子线程。后面看帖子，发现还有另外一种qt多线程，将opencv类继承自qobject，在将opencv类对象移动到qthread里面。绑定ffmpeg的信号和opencv的槽，这样就解决线程的同步问题了。Ffmpeg线程拉流到数据后，发送信号，opencv线程的槽函数就开始执行</p>
 <p>3、当加上识别人脸这个功能的时候，在qlable上显示的画面会花屏。还没处理掉这个问题，可能再开辟多一个线程识别人脸就不会出现这种问题了。</p>
-<p>4、音频的录音和播放都比较拉跨，有些参数可能设置的不好，</p>
 <p><strong><em>\</em>项目提高：**</strong></p>
 <p>1、可以优化对音频的采集和播放，开辟多一个线程处理音频，当然这里面又涉及到对线程的同步问题。看到网上不少项目使用sdl处理音频的，可以考虑用sdl库处理音频</p>
 <p>2、优化拉流端的拉流。有时候拉流端拉流很久才成功，有时候很快，所以应该对拉流设置个时间，超时就重试。</p>

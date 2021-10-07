@@ -10,15 +10,15 @@
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="description" content="异步通知简介Linux 应用程序可以通过阻塞或者非阻塞这两种方式来访问驱动设备，通过阻塞方式访问的话应用程序会处于休眠态，等待驱动设备可以使用，非阻塞方式的话会通过 poll 函数来不断的轮询，查看驱动设备文件是否可以使用。这两种方式都需要应用程序主动的去查询设备的使用情况。">
+  <meta name="description" content="异步通知(信号)简介Linux 应用程序可以通过阻塞或者非阻塞这两种方式来访问驱动设备，通过阻塞方式访问的话应用程序会处于休眠态，等待驱动设备可以使用，非阻塞方式的话会通过 poll 函数来不断的轮询，查看驱动设备文件是否可以使用。这两种方式都需要应用程序主动的去查询设备的使用情况。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux驱动-异步通知">
-<meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-%E5%BC%82%E6%AD%A5%E9%80%9A%E7%9F%A5/index.html">
+<meta property="og:url" content="https://guoqiang-gump.github.io/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-%E5%BC%82%E6%AD%A5%E9%80%9A%E7%9F%A5(%E4%BF%A1%E5%8F%B7)/index.html">
 <meta property="og:site_name" content="国强-阿甘">
-<meta property="og:description" content="异步通知简介Linux 应用程序可以通过阻塞或者非阻塞这两种方式来访问驱动设备，通过阻塞方式访问的话应用程序会处于休眠态，等待驱动设备可以使用，非阻塞方式的话会通过 poll 函数来不断的轮询，查看驱动设备文件是否可以使用。这两种方式都需要应用程序主动的去查询设备的使用情况。">
+<meta property="og:description" content="异步通知(信号)简介Linux 应用程序可以通过阻塞或者非阻塞这两种方式来访问驱动设备，通过阻塞方式访问的话应用程序会处于休眠态，等待驱动设备可以使用，非阻塞方式的话会通过 poll 函数来不断的轮询，查看驱动设备文件是否可以使用。这两种方式都需要应用程序主动的去查询设备的使用情况。">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-04-16T07:40:56.000Z">
-<meta property="article:modified_time" content="2021-05-05T04:43:09.122Z">
+<meta property="article:modified_time" content="2021-10-06T11:46:26.714Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -191,7 +191,7 @@
               class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="post-Linux驱动-异步通知" class="article article-type-post " itemscope itemprop="blogPost">
+            <article id="post-Linux驱动-异步通知(信号)" class="article article-type-post " itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
@@ -210,7 +210,7 @@
               <i class="icon-smile icon"></i> 阅读数：<span id="busuanzi_value_page_pv"></span>次
         </span>
 
-<a href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-%E5%BC%82%E6%AD%A5%E9%80%9A%E7%9F%A5/" class="archive-article-date">
+<a href="/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-%E5%BC%82%E6%AD%A5%E9%80%9A%E7%9F%A5(%E4%BF%A1%E5%8F%B7)/" class="archive-article-date">
         <time datetime="2021-04-16T07:40:56.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-16</time>
 </a>
 
@@ -244,7 +244,7 @@
   
   <div class="article-entry" itemprop="articleBody">
     
-    <h1 id="异步通知简介"><a href="#异步通知简介" class="headerlink" title="异步通知简介"></a>异步通知简介</h1><p>Linux 应用程序可以通过阻塞或者非阻塞这两种方式来访问驱动设备，通过阻塞方式访问的话应用程序会处于休眠态，等待驱动设备可以使用，非阻塞方式的话会通过 poll 函数来不断的轮询，查看驱动设备文件是否可以使用。这两种方式都需要应用程序主动的去查询设备的使用情况。</p>
+    <h1 id="异步通知-信号-简介"><a href="#异步通知-信号-简介" class="headerlink" title="异步通知(信号)简介"></a>异步通知(信号)简介</h1><p>Linux 应用程序可以通过阻塞或者非阻塞这两种方式来访问驱动设备，通过阻塞方式访问的话应用程序会处于休眠态，等待驱动设备可以使用，非阻塞方式的话会通过 poll 函数来不断的轮询，查看驱动设备文件是否可以使用。这两种方式都需要应用程序主动的去查询设备的使用情况。</p>
  <a id="more"></a> 
 
 <p>最好的方式就是驱动程序能主动向应用程序发出通知，报告自己可以访问，然后应用程序在从驱动程序中读取或写入数据，类似中断的机制。Linux 提供了异步通知这个机制来完成此功能。</p>
@@ -329,7 +329,7 @@
         </li>
         <li>
           <strong>本文链接：</strong>
-          <a href="https://guoqiang-gump.github.io/2021/04/16/Linux驱动-异步通知/" title="Linux驱动-异步通知" target="_blank">https://guoqiang-gump.github.io/2021/04/16/Linux驱动-异步通知/</a>
+          <a href="https://guoqiang-gump.github.io/2021/04/16/Linux驱动-异步通知(信号)/" title="Linux驱动-异步通知" target="_blank">https://guoqiang-gump.github.io/2021/04/16/Linux驱动-异步通知(信号)/</a>
         </li>
         <li>
           <strong>版权声明： </strong>
@@ -393,7 +393,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-     <!-- <img src="//pan.baidu.com/share/qrcode?url=https://guoqiang-gump.github.io/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-%E5%BC%82%E6%AD%A5%E9%80%9A%E7%9F%A5/" alt="微信分享二维码"> -->
+     <!-- <img src="//pan.baidu.com/share/qrcode?url=https://guoqiang-gump.github.io/2021/04/16/Linux%E9%A9%B1%E5%8A%A8-%E5%BC%82%E6%AD%A5%E9%80%9A%E7%9F%A5(%E4%BF%A1%E5%8F%B7)/" alt="微信分享二维码"> -->
     </div>
 </div>
 

@@ -17,7 +17,7 @@
 <meta property="og:locale">
 <meta property="og:image" content="https://img-blog.csdnimg.cn/20190530102442208.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FpbmJpbjIwMTU=,size_16,color_FFFFFF,t_70">
 <meta property="article:published_time" content="2021-09-19T03:22:38.000Z">
-<meta property="article:modified_time" content="2021-09-24T05:33:54.168Z">
+<meta property="article:modified_time" content="2021-09-27T05:50:33.108Z">
 <meta property="article:author" content="GUMP">
 <meta property="article:tag" content="国强-阿甘,国强-阿甘_技术博客">
 <meta name="twitter:card" content="summary">
@@ -257,8 +257,8 @@
 <p>  YUV码流的存储格式其实与其采样的方式密切相关，主流的采样方式有三种，YUV4:4:4，YUV4:2:2，YUV4:2:0，如何根据其采样格式来从码流中还原每个像素点的YUV值，因为只有正确地还原了每个像素点的YUV值，才能通过YUV与RGB的转换公式提取出每个像素点的RGB值，然后显示出来。</p>
 <p> <strong>YUV 4:4:4采样，每一个Y对应一组UV分量。</strong><br><strong>YUV 4:2:2采样，每两个Y共用一组UV分量。</strong><br><strong>YUV 4:2:0采样，每四个Y共用一组UV分量。</strong> </p>
 <p>RGB24使用24位来表示一个像素，RGB分量都用8位表示，取值范围为0-255。在一个2*2的像素区域，RRG暂用的字节数为2 * 2* 3=12字节。那么用yuv表示，占用的字节数为4(Y)+1(u)+1(v)=6字节,其中Y占用4个字节，U和V各占用1字节，比例为4:1:1</p>
-<p> 一般来说，直接采集到的视频数据是RGB24的格式，RGB24一帧的大小size＝width×heigth×3 Bit，RGB32的size＝width×heigth×4，如果是I420（即YUV标准格式4：2：0）的数据量是 size＝width×heigth×1.5 Bit。 </p>
-<p> <strong>YUV特点</strong>：也是一种颜色编码方法，它将亮度信息（Y）与色彩信息（UV）分离，没有UV信息一样 可以显示完整的图像，只不过是黑白的，这样的设计很好地解决了<strong>彩色电视机与黑白电视的兼容问题</strong>。并且，YUV不像RGB那样要求三个独立的视频信号同时传 输，所以用<strong>YUV方式传送占用极少的频宽</strong>。  在传输时占⽤的带宽也会随之减少。 </p>
+<p> 一般来说，直接采集到的视频数据是RGB24的格式，RGB24一帧的大小size＝width×heigth×3 B，RGB32的size＝width×heigth×4 B，如果是I420（即YUV标准格式4：2：0）的数据量是 size＝width×heigth×1.5 B。 </p>
+<p> <strong>YUV特点</strong>：也是一种颜色编码方法，它将亮度信息（Y）与色彩信息（UV）分离，没有UV信息一样 可以显示完整的图像，只不过是黑白的，这样的设计很好地解决了<strong>彩色电视机与黑白电视的兼容问题</strong>。并且，YUV不像RGB那样要求三个独立的视频信号同时传输，所以用<strong>YUV方式传送占用极少的频宽</strong>。  在传输时占⽤的带宽也会随之减少。 </p>
 <h3 id="RGB-—-YUV-颜⾊编码转换"><a href="#RGB-—-YUV-颜⾊编码转换" class="headerlink" title="RGB — YUV 颜⾊编码转换"></a>RGB — YUV 颜⾊编码转换</h3><p>对于图像显示器来说，它是通过<code>RGB模型</code>来显示图像的，⽽在传输图像数据时⼜是使⽤<code>YUV模型</code>，这是因为<code>YUV模型</code>可以节省带宽。因此就需要采集图像时将<code>RGB模型</code>转换到<code>YUV模型</code>，显示时再将<code>YUV模型</code>转换为<code>RGB模型</code></p>
 
     
